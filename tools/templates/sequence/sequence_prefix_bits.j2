@@ -1,0 +1,60 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 Sequence Prefix Bits Constants Template
+
+  Generates #define J2735_PREFIX_BITS_<SEQUENCE> constant for a SEQUENCE type.
+  PREFIX_BITS = extension_bit + optional_count (total bits before first field).
+
+  Context variables:
+    - typedef: ASN1TypeDefinition for the SEQUENCE type with:
+        - name: Type name (e.g., "IntersectionReferenceID")
+        - constraint: SequenceType with preamble_bits, extension_bit, optional_count
+
+  Filters used:
+    - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
+
+  Output format:
+    #define J2735_PREFIX_BITS_BSM_CORE_DATA (0U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 0 ext + 0 opt = 0 bits (non-extensible, all required) */
+    #define J2735_PREFIX_BITS_INTERSECTION_REFERENCE_ID (0U + J2735_INTERNAL_PREAMBLE_BITS(1U)) /* 0 ext + 1 opt = 1 bit (non-extensible, 1 OPTIONAL) */
+    #define J2735_PREFIX_BITS_PATH_PREDICTION (1U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 1 ext + 0 opt = 1 bit (extensible, all required) */
+-#}
+{%- set ext_bit = typedef.constraint.extension_bit -%}
+{%- set opt_count = typedef.constraint.optional_count -%}
+{%- set prefix_bits = typedef.constraint.preamble_bits -%}
+{%- set seq_name = typedef.name | screaming_snake -%}
+{#- Build breakdown comment: "N ext + M opt = T bits (description)" -#}
+{%- if ext_bit == 1 and opt_count > 0 -%}
+{%-   set desc = "extensible, " ~ opt_count ~ " OPTIONAL" ~ ("s" if opt_count != 1 else "") -%}
+{%- elif ext_bit == 1 -%}
+{%-   set desc = "extensible, all required" -%}
+{%- elif opt_count > 0 -%}
+{%-   set desc = "non-extensible, " ~ opt_count ~ " OPTIONAL" ~ ("s" if opt_count != 1 else "") -%}
+{%- else -%}
+{%-   set desc = "non-extensible, all required" -%}
+{%- endif -%}
+{%- set comment = ext_bit ~ " ext + " ~ opt_count ~ " opt = " ~ prefix_bits ~ " bit" ~ ("s" if prefix_bits != 1 else "") ~ " (" ~ desc ~ ")" -%}
+/**
+ * @internal
+ * @brief Number of prefix bits before first field (extension bit + optional preamble).
+ *
+ * @todo: Add calculation explanation: e.g., "0 ext + 2 opt = 2 bits">
+ */
+#define J2735_PREFIX_BITS_{{ seq_name }} \
+  ({{ ext_bit }}U + J2735_INTERNAL_PREAMBLE_BITS({{ opt_count }}U)) /* {{ comment }} */

@@ -1,0 +1,4 @@
+BasedOnStyle: LLVM
+AlignConsecutiveMacros: true
+ColumnLimit: 100
+IndentPPDirectives: AfterHash

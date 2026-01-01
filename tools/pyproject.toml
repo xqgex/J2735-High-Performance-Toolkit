@@ -1,0 +1,100 @@
+# Copyright 2026 Yogev Neumann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Yogev Neumann
+
+# pyproject.toml - Python project configuration for J2735 tools
+# This file configures linters, formatters, and type checkers.
+
+[project]
+name = "j2735-tools"
+version = "0.1.0"
+description = "J2735 specification parser and C code generator"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Yogev Neumann", email = "yogev.j2735@gmail.com" }]
+dependencies = [
+    "jinja2>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "codespell",
+    "coverage",
+    "flake8",
+    "mypy",
+    "pylint",
+    "ruff",
+]
+test = [
+    "hypothesis>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/xqgex/J2735-High-Performance-Toolkit"
+Issues = "https://github.com/xqgex/J2735-High-Performance-Toolkit/issues"
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.codespell]
+ignore-words-list = "bitwidth,bsmcoredata,bsmpartiiextension,calloc,dataelement,dsecond,endcode,endfor,nsnnwn,startswith,uper"
+check-hidden = true
+
+[tool.coverage.run]
+source = ["tools"]
+omit = ["tools/tests/*", "tools/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+show_missing = true
+
+[tool.flake8]
+max-line-length = 100
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+
+[tool.pylint.main]
+py-version = "3.10"
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+]

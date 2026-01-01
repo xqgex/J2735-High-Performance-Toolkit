@@ -1,0 +1,41 @@
+{
+  // 1. Disable Microsoft IntelliSense (Clangd handle code completion)
+  "C_Cpp.intelliSenseEngine": "disabled",
+  // 2. Configure Clangd
+  "clangd.arguments": [
+    "--background-index",
+    "--clang-tidy",
+    "--header-insertion=iwyu",
+    "--completion-style=detailed",
+    "--cross-file-rename"
+  ],
+  "flake8.args": [
+    "--max-line-length=100"
+  ],
+  // 3. Formatting (handled by Clangd and Black)
+  "editor.formatOnSave": true,
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  // 4. File associations
+  "files.associations": {
+    "*.h": "c"
+  },
+  // 5. Code Spell Checker - ignore J2735 domain terms
+  "cSpell.words": [
+    "bitwidth",
+    "bsmcoredata",
+    "bsmpartiiextension",
+    "calloc",
+    "dataelement",
+    "dsecond",
+    "endcode",
+    "endfor",
+    "nsnnwn",
+    "startswith",
+    "uper"
+  ]
+}

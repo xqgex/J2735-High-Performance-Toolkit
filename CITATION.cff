@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Neumann"
+    given-names: "Yogev"
+    email: yogev.j2735@gmail.com
+title: J2735 High-Performance Toolkit
+version: 0.1.0
+date-released: '2026-01-01'
+url: 'https://github.com/xqgex/J2735-High-Performance-Toolkit'
+license: Apache-2.0
+type: software
+abstract: >-
+  Zero-copy, bit-level parser for SAE J2735 UPER-encoded
+  messages, optimized for embedded systems and V2X
+  applications. Implements alignment-safe, endianness-aware
+  parsing without heap allocation.

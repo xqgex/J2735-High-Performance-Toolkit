@@ -1,0 +1,44 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 Has-Extension Macro Template
+
+  Generates #define J2735_<SEQUENCE>_HAS_EXTENSION(buf) for extensible SEQUENCE types.
+  Wraps the core J2735_INTERNAL_HAS_EXTENSION macro with a type-specific name.
+
+  Context variables:
+    - type_name: Type name (e.g., "PathPrediction")
+
+  Filters used:
+    - screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
+
+  Output format:
+    /**
+     * @brief Check if PathPrediction has extension additions present.
+     * ...
+     */
+    #define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)
+-#}
+{%- set seq_upper = type_name | screaming_snake -%}
+/**
+ * @brief Check if {{ type_name }} has extension additions present.
+ * @param buf Pointer to the {{ type_name }} encoding.
+ * @return 1 if extensions are present, 0 otherwise.
+ */
+#define J2735_{{ seq_upper }}_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)

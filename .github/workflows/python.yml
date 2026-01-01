@@ -1,0 +1,494 @@
+# Copyright 2026 Yogev Neumann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Yogev Neumann
+# =============================================================================
+# J2735 High-Performance Toolkit - Python Tools CI Pipeline
+# =============================================================================
+# Security-focused: Only GitHub-maintained actions (actions/*) are used.
+# =============================================================================
+#
+# Pipeline Flow:
+#
+#                            │
+#                        ┌───▼───┐
+#                        │Format │ (black, ruff --fix)
+#                        └───┬───┘
+#                            │ (auto-commit if changed)
+#                            │
+#                    ┌───────┴───────┐
+#                    │               │
+#              ┌─────▼─────┐ ┌───────▼───────┐
+#              │   Test    │ │Static Analysis│
+#              │(unittest, │ │(mypy, pylint, │
+#              │ doctests) │ │ flake8, ruff, │
+#              │+ Coverage │ │ codespell)    │
+#              └─────┬─────┘ └───────┬───────┘
+#                    │               │
+#                    └───────┬───────┘
+#                            │
+#                        ┌───▼───┐
+#                        │Report │ (aggregated PR comment)
+#                        └───────┘
+#
+# =============================================================================
+
+name: Python
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/**'
+      - '.github/workflows/python.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  PYTHON_VERSION: "3.12"
+  # Coverage thresholds
+  COVERAGE_THRESHOLD_GOOD: "90"  # ✅ Green: >= 90%
+  COVERAGE_THRESHOLD_WARN: "70"  # ⚠️ Yellow: >= 70%
+  COVERAGE_MAX_MISSING_LINES: "10"  # Max lines to show before truncating
+  # File paths
+  COVERAGE_SOURCE: "tools"
+  COVERAGE_JSON_FILE: "coverage.json"
+  COVERAGE_OUTPUT_FILE: "coverage_output.txt"
+  TEST_OUTPUT_FILE: "test_output.txt"
+  STATIC_ANALYSIS_OUTPUT_FILE: "static_analysis_summary.txt"
+  # Artifact names
+  ARTIFACT_TEST_RESULTS: "test-results"
+  ARTIFACT_COVERAGE_RESULTS: "coverage-results"
+  ARTIFACT_STATIC_ANALYSIS: "python-static-analysis-results"
+
+jobs:
+  # ===========================================================================
+  # Job 1: Format Check (runs FIRST - gate for all other jobs)
+  # ===========================================================================
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install formatters
+        run: pip install black ruff
+
+      - name: Run black
+        run: black tools/
+
+      - name: Run ruff --fix
+        run: ruff check tools/ --fix
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "style: auto-format Python code"
+          git push
+          echo "::notice::Python code was auto-formatted. A new CI run will start."
+
+  # ===========================================================================
+  # Job 2: Test + Coverage (unittest + doctests with coverage collection)
+  # ===========================================================================
+  test:
+    name: Test + Coverage
+    needs: format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install jinja2 coverage
+
+      - name: Run tests with coverage
+        id: test
+        run: |
+          echo "## Python Tests" > "$TEST_OUTPUT_FILE"
+          echo "" >> "$TEST_OUTPUT_FILE"
+          echo '```' >> "$TEST_OUTPUT_FILE"
+          if coverage run --source="$COVERAGE_SOURCE" -m tools.run_tests 2>&1 | tee -a "$TEST_OUTPUT_FILE"; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo '```' >> "$TEST_OUTPUT_FILE"
+            echo "" >> "$TEST_OUTPUT_FILE"
+            echo "✅ All tests passed" >> "$TEST_OUTPUT_FILE"
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo '```' >> "$TEST_OUTPUT_FILE"
+            echo "" >> "$TEST_OUTPUT_FILE"
+            echo "❌ Tests failed" >> "$TEST_OUTPUT_FILE"
+          fi
+
+      - name: Generate coverage JSON
+        if: steps.test.outputs.status == 'success'
+        run: coverage json -o "$COVERAGE_JSON_FILE"
+
+      - name: Generate coverage report
+        if: steps.test.outputs.status == 'success'
+        shell: python
+        run: |
+          import json
+          import os
+
+          # Configuration from workflow env (required)
+          THRESHOLD_GOOD = int(os.environ["COVERAGE_THRESHOLD_GOOD"])
+          THRESHOLD_WARN = int(os.environ["COVERAGE_THRESHOLD_WARN"])
+          MAX_MISSING_LINES = int(os.environ["COVERAGE_MAX_MISSING_LINES"])
+          COVERAGE_JSON_FILE = os.environ["COVERAGE_JSON_FILE"]
+          COVERAGE_OUTPUT_FILE = os.environ["COVERAGE_OUTPUT_FILE"]
+          COVERAGE_SOURCE = os.environ["COVERAGE_SOURCE"]
+
+          with open(COVERAGE_JSON_FILE) as f:
+              data = json.load(f)
+
+          total_pct = data["totals"]["percent_covered"]
+          total_stmts = data["totals"]["num_statements"]
+          total_miss = data["totals"]["missing_lines"]
+
+          # Collect modules (skip test files and __init__.py)
+          modules = []
+          for filepath, file_data in data["files"].items():
+              if f"/{COVERAGE_SOURCE}/tests/" in filepath or "__init__" in filepath:
+                  continue
+              name = filepath.split("/")[-1]
+              pct = file_data["summary"]["percent_covered"]
+              stmts = file_data["summary"]["num_statements"]
+              miss = file_data["summary"]["missing_lines"]
+              missing = file_data.get("missing_lines", [])
+              modules.append((name, pct, stmts, miss, missing))
+
+          # Sort by coverage descending
+          modules.sort(key=lambda x: -x[1])
+
+          # Build report
+          lines = []
+          lines.append(f"## Coverage: {total_pct:.0f}%\n")
+          lines.append("| Module | Cover |")
+          lines.append("|--------|-------|")
+
+          for name, pct, _, _, _ in modules:
+              if pct >= THRESHOLD_GOOD:
+                  icon = "✅"
+              elif pct >= THRESHOLD_WARN:
+                  icon = "⚠️"
+              else:
+                  icon = "❌"
+              lines.append(f"| {name} | {pct:.0f}% {icon} |")
+
+          lines.append("")
+          lines.append("<details>")
+          lines.append(f"<summary>Details ({total_stmts} statements, {total_miss} missed)</summary>")
+          lines.append("")
+          lines.append("| Module | Stmts | Miss | Missing Lines |")
+          lines.append("|--------|-------|------|---------------|")
+
+          for name, _, stmts, miss, missing in modules:
+              if missing:
+                  missing_str = ", ".join(str(ln) for ln in missing[:MAX_MISSING_LINES])
+                  if len(missing) > MAX_MISSING_LINES:
+                      missing_str += f", ... (+{len(missing) - MAX_MISSING_LINES} more)"
+              else:
+                  missing_str = "-"
+              lines.append(f"| {name} | {stmts} | {miss} | {missing_str} |")
+
+          lines.append("")
+          lines.append("</details>")
+
+          with open(COVERAGE_OUTPUT_FILE, "w") as f:
+              f.write("\n".join(lines) + "\n")
+
+          print(f"Coverage: {total_pct:.1f}%")
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_TEST_RESULTS }}
+          path: ${{ env.TEST_OUTPUT_FILE }}
+
+      - name: Upload coverage artifacts
+        if: steps.test.outputs.status == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_COVERAGE_RESULTS }}
+          path: ${{ env.COVERAGE_OUTPUT_FILE }}
+
+      - name: Fail if tests failed
+        if: steps.test.outputs.status == 'failure'
+        run: |
+          echo "::error::Python tests failed"
+          exit 1
+
+  # ===========================================================================
+  # Job 3: Static Analysis (mypy, pylint, flake8, ruff, codespell)
+  # ===========================================================================
+  static-analysis:
+    name: Static Analysis
+    needs: format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install tools
+        run: pip install jinja2 mypy pylint flake8 ruff codespell
+
+      - name: Run mypy
+        id: mypy
+        run: |
+          echo "### mypy" > mypy_output.txt
+          echo '```' >> mypy_output.txt
+          if python -m mypy tools/ --strict 2>&1 | tee -a mypy_output.txt; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+          echo '```' >> mypy_output.txt
+
+      - name: Run pylint
+        id: pylint
+        run: |
+          echo "### pylint" > pylint_output.txt
+          echo '```' >> pylint_output.txt
+          if python -m pylint tools/ 2>&1 | tee -a pylint_output.txt; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+          echo '```' >> pylint_output.txt
+
+      - name: Run flake8
+        id: flake8
+        run: |
+          echo "### flake8" > flake8_output.txt
+          echo '```' >> flake8_output.txt
+          if python -m flake8 tools/ 2>&1 | tee -a flake8_output.txt; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+          echo '```' >> flake8_output.txt
+
+      - name: Run ruff
+        id: ruff
+        run: |
+          echo "### ruff" > ruff_output.txt
+          echo '```' >> ruff_output.txt
+          if ruff check tools/ 2>&1 | tee -a ruff_output.txt; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+          echo '```' >> ruff_output.txt
+
+      - name: Run codespell
+        id: codespell
+        run: |
+          echo "### codespell" > codespell_output.txt
+          echo '```' >> codespell_output.txt
+          if codespell tools/ 2>&1 | tee -a codespell_output.txt; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+          echo '```' >> codespell_output.txt
+
+      - name: Create summary
+        if: always()
+        run: |
+          mypy_status="${{ steps.mypy.outputs.status }}"
+          pylint_status="${{ steps.pylint.outputs.status }}"
+          flake8_status="${{ steps.flake8.outputs.status }}"
+          ruff_status="${{ steps.ruff.outputs.status }}"
+          codespell_status="${{ steps.codespell.outputs.status }}"
+
+          echo "## Python Static Analysis" > "$STATIC_ANALYSIS_OUTPUT_FILE"
+          echo "" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          echo "| Tool | Status |" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          echo "|------|--------|" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+
+          for tool in mypy pylint flake8 ruff codespell; do
+            status_var="${tool}_status"
+            status="${!status_var}"
+            if [ "$status" = "success" ]; then
+              echo "| $tool | ✅ |" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+            else
+              echo "| $tool | ❌ |" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+            fi
+          done
+
+          echo "" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          cat mypy_output.txt >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          echo "" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          cat pylint_output.txt >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          echo "" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          cat flake8_output.txt >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          echo "" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          cat ruff_output.txt >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          echo "" >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+          cat codespell_output.txt >> "$STATIC_ANALYSIS_OUTPUT_FILE"
+
+      - name: Upload analysis artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_STATIC_ANALYSIS }}
+          path: ${{ env.STATIC_ANALYSIS_OUTPUT_FILE }}
+
+      - name: Fail if analysis found issues
+        if: |
+          steps.mypy.outputs.status == 'failure' ||
+          steps.pylint.outputs.status == 'failure' ||
+          steps.flake8.outputs.status == 'failure' ||
+          steps.ruff.outputs.status == 'failure' ||
+          steps.codespell.outputs.status == 'failure'
+        run: |
+          echo "::error::Python static analysis found issues"
+          exit 1
+
+  # ===========================================================================
+  # Job 4: Aggregate Report (posts single PR comment)
+  # ===========================================================================
+  report:
+    name: Report
+    needs: [test, static-analysis]
+    if: always()
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          path: artifacts
+
+      - name: Build aggregated report
+        id: report
+        run: |
+          {
+            echo "<!-- j2735-python-ci-report-${{ github.event.pull_request.head.sha }} -->"
+            echo "# Python CI Report"
+            echo ""
+            echo "**Commit:** \`${{ github.event.pull_request.head.sha }}\`"
+            echo ""
+            echo "---"
+            echo ""
+
+            # Test Results
+            if [ -f "artifacts/$ARTIFACT_TEST_RESULTS/$TEST_OUTPUT_FILE" ]; then
+              cat "artifacts/$ARTIFACT_TEST_RESULTS/$TEST_OUTPUT_FILE"
+            else
+              echo "## Python Tests"
+              echo "⚠️ Results not available"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+
+            # Coverage Results
+            if [ -f "artifacts/$ARTIFACT_COVERAGE_RESULTS/$COVERAGE_OUTPUT_FILE" ]; then
+              cat "artifacts/$ARTIFACT_COVERAGE_RESULTS/$COVERAGE_OUTPUT_FILE"
+            else
+              echo "## Coverage"
+              echo "⚠️ Results not available"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+
+            # Static Analysis
+            if [ -f "artifacts/$ARTIFACT_STATIC_ANALYSIS/$STATIC_ANALYSIS_OUTPUT_FILE" ]; then
+              cat "artifacts/$ARTIFACT_STATIC_ANALYSIS/$STATIC_ANALYSIS_OUTPUT_FILE"
+            else
+              echo "## Python Static Analysis"
+              echo "⚠️ Results not available"
+            fi
+          } > report.md
+
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('report.md', 'utf8');
+            const sha = '${{ github.event.pull_request.head.sha }}';
+            const marker = `<!-- j2735-python-ci-report-${sha} -->`;
+
+            // Find existing comment for this commit
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            });
+
+            const existing = comments.data.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: report
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }

@@ -1,0 +1,6 @@
+{
+    "script": "misra.py",
+    "args": [
+        "--rule-texts=../.github/workflows/cppcheck/rules.txt"
+    ]
+}

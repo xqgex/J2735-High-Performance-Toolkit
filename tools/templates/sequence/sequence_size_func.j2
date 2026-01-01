@@ -1,0 +1,75 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 Size Function Template
+
+  Generates static inline j2735_inline_<sequence>_size() for extensible SEQUENCE types.
+  Calculates total size in bits, handling extended and non-extended cases.
+
+  Context variables:
+    - type_name: Type name (e.g., "PathPrediction")
+    - root_size_bits: Total root size in bits
+
+  Filters used:
+    - screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
+    - snake_case: CamelCase -> snake_case
+
+  Output format:
+    static inline int j2735_inline_path_prediction_size(...) { ... }
+
+  Dependencies:
+    - J2735_ROOT_SIZE_BITS_<SEQUENCE> (from root_size generator)
+    - J2735_<SEQUENCE>_HAS_EXTENSION (from has_extension generator)
+    - j2735_internal_inline_skip_extensions() (from J2735_macros.h)
+-#}
+{%- set seq_upper = type_name | screaming_snake -%}
+{%- set seq_lower = type_name | snake_case -%}
+/**
+ * @brief Calculate total size in bits of a {{ type_name }} encoding.
+ *
+ * For non-extended messages, returns the fixed root size ({{ root_size_bits }} bits).
+ * For extended messages, parses and skips extension data.
+ *
+ * @param buf           Pointer to the {{ type_name }} encoding.
+ * @param out_size_bits Output: total size in bits.
+ * @return 0 on success, non-zero on parsing error.
+ */
+static inline int j2735_inline_{{ seq_lower }}_size(uint8_t const *const buf, uint32_t *const out_size_bits) {
+  int result = 0;
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy architecture requires packed-struct cast */
+  /* cppcheck-suppress misra-c2012-17.3 ; cppcheck false positive: v is struct member, not function */
+  /* cppcheck-suppress misra-config ; cppcheck cannot resolve struct member v through macro expansion */
+  if (J2735_{{ seq_upper }}_HAS_EXTENSION(buf) == 0U) {
+    *out_size_bits = J2735_ROOT_SIZE_BITS_{{ seq_upper }};
+    result = 0;
+  } else {
+    /* Extensions present - parse them to find total size */
+    uint32_t ext_bits = 0U;
+    int const parse_result = j2735_internal_inline_skip_extensions(buf, J2735_ROOT_SIZE_BITS_{{ seq_upper }}, &ext_bits);
+    if (0 != parse_result) {
+      *out_size_bits = 0U;
+      result = parse_result;
+    } else {
+      *out_size_bits = J2735_ROOT_SIZE_BITS_{{ seq_upper }} + ext_bits;
+      result = 0;
+    }
+  }
+  return result;
+}

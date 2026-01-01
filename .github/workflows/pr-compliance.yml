@@ -1,0 +1,129 @@
+# Copyright 2026 Yogev Neumann
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Yogev Neumann
+# =============================================================================
+# J2735 High-Performance Toolkit - PR Compliance Pipeline
+# =============================================================================
+# Validates that PR descriptions follow the template structure and that
+# all required checklists are completed before merge.
+# =============================================================================
+
+name: PR Compliance
+
+on:
+  pull_request:
+    types:
+      - edited
+      - opened
+      - ready_for_review
+      - reopened
+      - synchronize
+
+# Security: Minimal permissions - read PR, write status checks
+permissions:
+  pull-requests: read
+  checks: write
+
+jobs:
+  # ===========================================================================
+  # Job 1: Validate PR Template & Checklists
+  # ===========================================================================
+  validate-pr:
+    name: Validate Template & Checklists
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Enforce Template & Checklists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || "";
+
+            // Skip validation for Draft PRs
+            if (pr.draft) {
+              core.info("Skipping validation for Draft PR.");
+              return;
+            }
+
+            const errors = [];
+
+            // --- 1. Validate Template Structure ---
+            // We check for key headers to ensure the template wasn't deleted.
+            const requiredHeaders = [
+              "### Description",
+              "### Type of Change",
+              "### Checklist"
+            ];
+            const missingHeaders = requiredHeaders.filter(h => !body.includes(h));
+
+            if (missingHeaders.length > 0) {
+              core.setFailed(`⚠️ PR Body is missing required sections: ${missingHeaders.join(", ")}. Please do not delete the template headers.`);
+              return; // Stop execution if template is broken
+            }
+
+            // --- 2. Section-Aware Parsing ---
+            // We split by lines to parse specific logic for specific sections
+            const lines = body.split(/\r?\n/);
+            let currentSection = "";
+
+            // Trackers for our logic
+            let typeOfChangeChecked = 0;
+
+            const headerRegex = /^#+\s+(.*)$/;
+            const checkedRegex = /^\s*-\s+\[(x|X)\]/i;
+            const uncheckedRegex = /^\s*-\s+\[ \]/;
+
+            for (const line of lines) {
+              const headerMatch = line.match(headerRegex);
+
+              if (headerMatch) {
+                currentSection = headerMatch[1].trim(); // e.g., "Type of Change"
+                continue;
+              }
+
+              // Logic for "Type of Change" section
+              if (currentSection === "Type of Change") {
+                if (checkedRegex.test(line)) {
+                  typeOfChangeChecked++;
+                }
+              }
+
+              // Logic for "Checklist" section
+              if (currentSection === "Checklist") {
+                // If we find an empty box [ ], it's an error
+                if (uncheckedRegex.test(line)) {
+                  // Capture the text of the unchecked item for a helpful error message
+                  const taskName = line.replace(uncheckedRegex, "").trim();
+                  errors.push(`❌ Unchecked item in 'Checklist': "${taskName}"`);
+                }
+              }
+            }
+
+            // --- 3. Final Logic Checks ---
+
+            // Requirement: Must select at least one "Type of Change"
+            if (typeOfChangeChecked === 0) {
+              errors.push("❌ Please select at least one option under '### Type of Change'");
+            }
+
+            // Requirement: Fail if any errors were found
+            if (errors.length > 0) {
+              core.setFailed("PR Compliance Checks Failed:\n" + errors.join("\n"));
+            } else {
+              core.info("✅ PR Template format and checkboxes are valid.");
+            }

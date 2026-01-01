@@ -1,0 +1,52 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 Sequence Width Macros Template
+
+  Generates #define J2735_WIDTH_<SEQUENCE>_<FIELD>(buf) macros for OPTIONAL fields.
+  Returns 0 if field absent, or J2735_BW_<TYPE> if field present.
+  This enables proper offset chaining: OFF_N = OFF_{N-1} + WIDTH_{N-1}.
+
+  Context variables:
+    - typedef: ASN1TypeDefinition for the SEQUENCE type with:
+        - name: Type name (e.g., "IntersectionReferenceID")
+        - constraint.fields: Tuple of SequenceField objects
+
+  Filters used:
+    - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
+
+  Output format:
+    #define J2735_WIDTH_INTERSECTION_REFERENCE_ID_REGION(buf) \
+      (J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf) ? J2735_BW_ROAD_REGULATOR_ID : 0U)
+-#}
+{%- set seq_name = typedef.name | screaming_snake -%}
+{%- for field in typedef.constraint.fields -%}
+{%-   if field.is_optional -%}
+{%-     set field_name = field.name | screaming_snake -%}
+{%-     set field_type_name = field.type_name | screaming_snake -%}
+/**
+ * @internal
+ * @brief Dynamic width of OPTIONAL field '{{ field.name }}'.
+ * @param buf Pointer to the {{ field.type_name }} encoding.
+ * @return J2735_BW_{{ field_type_name }} if present, 0 otherwise.
+ */
+#define J2735_WIDTH_{{ seq_name }}_{{ field_name }}(buf) (J2735_{{ seq_name }}_HAS_{{ field_name }}(buf) ? J2735_BW_{{ field_type_name }} : 0U)
+{#      Force line break after define #}
+{%-   endif -%}
+{%- endfor -%}

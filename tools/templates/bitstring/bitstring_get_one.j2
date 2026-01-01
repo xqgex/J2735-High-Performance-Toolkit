@@ -1,0 +1,65 @@
+{#-
+Copyright 2026 Yogev Neumann
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+SPDX-License-Identifier: Apache-2.0
+SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+Template: bitstring_get_one.j2
+Purpose: Generate public C macros for accessing individual flags from a BIT STRING.
+
+Template Context (from generator):
+  - type_name: str - BIT STRING type name (e.g., "VehicleEventFlags")
+  - is_extensible: bool - Whether the type has extension marker
+  - root_size: int - Root constraint bits (e.g., 13)
+  - named_bits: Mapping from name to index
+
+Example output:
+    /**
+     * @brief Get eventHazardLights flag (ASN.1 bit 0).
+     * ...
+     */
+    #define J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_HAZARD_LIGHTS(buf) \
+      J2735_INTERNAL_GET_ONE_VEHICLE_EVENT_FLAGS(J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS(buf), \
+        J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_HAZARD_LIGHTS)
+-#}
+{%- set seq_upper = type_name | screaming_snake -%}
+{%- for name, index in named_bits.items() %}
+{%    set is_extension = is_extensible and index >= root_size %}
+{%    if is_extension %}
+/**
+ * @brief Get {{ name }} flag (ASN.1 bit {{ index }}, extended form only).
+ *
+ * This flag is only present in extended-form {{ type_name }} messages.
+ *
+ * @param[in] buf Pointer to {{ type_name }} UPER encoding (const uint8_t*).
+ * @pre @p buf must point to valid encoding with +7 byte padding.
+ * @pre Caller should verify J2735_{{ seq_upper }}_IS_EXTENDED(buf) returns true.
+ * @return 0 or 1.
+ * @warning Returns garbage (0 or 1) for non-extended messages. Always check IS_EXTENDED first.
+ */
+{%    else %}
+/**
+ * @brief Get {{ name }} flag (ASN.1 bit {{ index }}).
+ * @param[in] buf Pointer to {{ type_name }} UPER encoding (const uint8_t*).
+ * @pre @p buf must point to valid encoding with +7 byte padding.
+ * @return 0 or 1.
+ */
+{%    endif %}
+#define J2735_{{ seq_upper }}_GET_{{ name | screaming_snake }}(buf) \
+  J2735_INTERNAL_GET_ONE_{{ seq_upper }}(J2735_INTERNAL_RAW_READ_{{ seq_upper }}(buf), \
+    J2735_INTERNAL_BIT_{{ seq_upper }}_{{ name | screaming_snake }})
+
+{%  endfor %}

@@ -1,0 +1,53 @@
+name: Question
+description: Ask a question about usage or implementation
+title: "[QUESTION]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about using the J2735 toolkit?
+        We're happy to help!
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What are you trying to accomplish? What have you already tried?
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Example (if relevant)
+      description: Share any relevant code
+      render: c
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic Area
+      options:
+        - Usage / API
+        - Build System
+        - Porting to new platform
+        - J2735 specification
+        - Performance
+        - Other
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Before asking
+      options:
+        - label: I have read the README
+          required: true
+        - label: I have checked existing issues for similar questions
+          required: true
