@@ -21,12 +21,50 @@ Tests cover generate_sequence_root_size function for extensible SEQUENCE types.
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_sequence import generate_sequence_root_size
+from tools.j2735_c_generator_jinja import create_jinja_env, get_template
+from tools.j2735_spec_constraints import SequenceType
+from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     SpecLoadingTestBase,
+    get_sequence_typedef,
     make_extensible_mock_spec,
     make_nested_mock_spec,
 )
+
+_TEMPLATE_NAME = "sequence/sequence_root_size.j2"
+
+
+def generate_sequence_root_size(type_name: str, spec: J2735Specification) -> str:
+    """Generate C #define constant for root size of an extensible SEQUENCE.
+
+    Only generates output for extensible SEQUENCE types with fixed-width
+    root components (no OPTIONAL fields).
+
+    Args:
+        type_name: Name of the SEQUENCE type (e.g., "PathPrediction").
+        spec: The parsed J2735 specification.
+
+    Returns:
+        C code with #define constant, or empty string if not applicable.
+
+    Raises:
+        ValueError: If type_name is not found or not a SEQUENCE.
+    """
+    typedef = get_sequence_typedef(type_name, spec)
+    assert isinstance(typedef.constraint, SequenceType)  # Guaranteed by getter, required by Mypy
+    if not typedef.constraint.is_extensible or typedef.constraint.root_uper_bit_width is None:
+        return ""
+    template = get_template(create_jinja_env(), _TEMPLATE_NAME)
+
+    # Build list of field type names for symbolic expression
+    field_type_names = [
+        field.type_name for field in typedef.constraint.fields if not field.is_optional
+    ]
+
+    return template.render(
+        field_type_names=field_type_names,
+        typedef=typedef,
+    )
 
 
 class TestRootSizeGeneration(TestCase):

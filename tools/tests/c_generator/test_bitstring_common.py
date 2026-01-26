@@ -20,51 +20,7 @@ Tests cover error handling and naming consistency across all BIT STRING
 generators to ensure uniform behavior and API.
 """
 
-from collections.abc import Callable
-
-from tools.j2735_c_generator_bitstring import generate_bitstring_get
-from tools.j2735_c_generator_bitstring import generate_bitstring_get_one
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_bit_pos
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_get_all
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_get_one
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_is_extension
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_raw_read
-from tools.j2735_c_generator_bitstring import generate_bitstring_is_extended
-from tools.j2735_c_generator_bitstring import generate_bitstring_size
-from tools.j2735_spec_parser import J2735Specification
-from tools.tests.conftest import SpecLoadingTestBase
-
-
-class TestErrorHandling(SpecLoadingTestBase):
-    """Tests for error handling across all generators."""
-
-    def _all_generators(
-        self,
-    ) -> list[Callable[[str, J2735Specification], str]]:
-        """Return all generator functions."""
-        return [
-            generate_bitstring_internal_bit_pos,
-            generate_bitstring_internal_raw_read,
-            generate_bitstring_internal_is_extension,
-            generate_bitstring_internal_get_all,
-            generate_bitstring_internal_get_one,
-            generate_bitstring_is_extended,
-            generate_bitstring_size,
-            generate_bitstring_get,
-            generate_bitstring_get_one,
-        ]
-
-    def test_all_generators_reject_unknown_type(self) -> None:
-        """All generators should raise ValueError for unknown type."""
-        for gen in self._all_generators():
-            with self.assertRaises(ValueError, msg=f"{gen.__name__} should reject unknown type"):
-                gen("NonExistentType", self.spec)
-
-    def test_all_generators_reject_non_bitstring(self) -> None:
-        """All generators should raise ValueError for non-BIT_STRING type."""
-        for gen in self._all_generators():
-            with self.assertRaises(ValueError, msg=f"{gen.__name__} should reject INTEGER"):
-                gen("MsgCount", self.spec)
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
 
 
 class TestConsistency(SpecLoadingTestBase):
@@ -76,15 +32,29 @@ class TestConsistency(SpecLoadingTestBase):
         prefix = "VEHICLE_EVENT_FLAGS"
 
         # Generate all outputs
-        bit_pos = generate_bitstring_internal_bit_pos(type_name, self.spec)
-        raw_read = generate_bitstring_internal_raw_read(type_name, self.spec)
-        is_ext = generate_bitstring_internal_is_extension(type_name, self.spec)
-        get_all = generate_bitstring_internal_get_all(type_name, self.spec)
-        get_one_int = generate_bitstring_internal_get_one(type_name, self.spec)
-        is_extended = generate_bitstring_is_extended(type_name, self.spec)
-        size = generate_bitstring_size(type_name, self.spec)
-        get_pub = generate_bitstring_get(type_name, self.spec)
-        get_one_pub = generate_bitstring_get_one(type_name, self.spec)
+        bit_pos = generate_bitstring_code(
+            "bitstring/bitstring_internal_bit_pos.j2", self.spec, type_name
+        )
+        raw_read = generate_bitstring_code(
+            "bitstring/bitstring_internal_raw_read.j2", self.spec, type_name
+        )
+        is_ext = generate_bitstring_code(
+            "bitstring/bitstring_internal_is_extension.j2", self.spec, type_name
+        )
+        get_all = generate_bitstring_code(
+            "bitstring/bitstring_internal_get_all.j2", self.spec, type_name
+        )
+        get_one_int = generate_bitstring_code(
+            "bitstring/bitstring_internal_get_one.j2", self.spec, type_name
+        )
+        is_extended = generate_bitstring_code(
+            "bitstring/bitstring_is_extended.j2", self.spec, type_name
+        )
+        size = generate_bitstring_code("bitstring/bitstring_size.j2", self.spec, type_name)
+        get_pub = generate_bitstring_code("bitstring/bitstring_get.j2", self.spec, type_name)
+        get_one_pub = generate_bitstring_code(
+            "bitstring/bitstring_get_one.j2", self.spec, type_name
+        )
 
         # All should use the same prefix
         self.assertIn(f"J2735_INTERNAL_BIT_{prefix}_", bit_pos)
@@ -102,9 +72,13 @@ class TestConsistency(SpecLoadingTestBase):
         type_name = "GNSSstatus"
         prefix = "GNSS_STATUS"
 
-        bit_pos = generate_bitstring_internal_bit_pos(type_name, self.spec)
-        size = generate_bitstring_size(type_name, self.spec)
-        get_one_pub = generate_bitstring_get_one(type_name, self.spec)
+        bit_pos = generate_bitstring_code(
+            "bitstring/bitstring_internal_bit_pos.j2", self.spec, type_name
+        )
+        size = generate_bitstring_code("bitstring/bitstring_size.j2", self.spec, type_name)
+        get_one_pub = generate_bitstring_code(
+            "bitstring/bitstring_get_one.j2", self.spec, type_name
+        )
 
         self.assertIn(f"J2735_INTERNAL_BIT_{prefix}_", bit_pos)
         self.assertIn(f"J2735_{prefix}_SIZE", size)

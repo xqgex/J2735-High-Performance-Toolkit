@@ -20,17 +20,10 @@ J2735 Jinja2 Template Utilities.
 Provides Jinja2 environment setup and template loading for C code generation.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from re import sub
-from typing import TYPE_CHECKING
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
-if TYPE_CHECKING:
-    from jinja2 import Template
-
+from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 # =============================================================================
 # Constants

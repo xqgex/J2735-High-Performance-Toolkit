@@ -23,10 +23,7 @@
   Uses the core J2735_INTERNAL_HAS_FIELD macro with the appropriate optional index.
 
   Context variables:
-    - typedef: ASN1TypeDefinition for the SEQUENCE type with:
-        - name: Type name (e.g., "IntersectionReferenceID")
-        - constraint.fields: Tuple of SequenceField objects
-        - constraint.extension_bit: 1 if extensible, 0 otherwise
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -35,18 +32,19 @@
     #define J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf) \
       J2735_INTERNAL_HAS_FIELD((buf), 0U, J2735_OPT_INTERSECTION_REFERENCE_ID_REGION)
 -#}
-{%- set seq_name = typedef.name | screaming_snake -%}
-{%- set ext_bit = typedef.constraint.extension_bit -%}
+{%- set extension_bit = typedef.constraint.extension_bit -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 {%- for field in typedef.constraint.fields -%}
 {%-   if field.is_optional -%}
 {%-     set field_name = field.name | screaming_snake -%}
 /**
  * @brief Check if OPTIONAL field '{{ field.name }}' ({{ field.type_name }}) is present.
- * @param buf Pointer to the {{ typedef.name }} encoding.
+ * @param buf Pointer to the {{ typedef_name }} encoding.
  * @return 1 if present, 0 otherwise.
  */
-#define J2735_{{ seq_name }}_HAS_{{ field_name }}(buf) \
-  J2735_INTERNAL_HAS_FIELD((buf), {{ ext_bit }}U, J2735_OPT_{{ seq_name }}_{{ field_name }})
+#define J2735_{{ typedef_name_upper }}_HAS_{{ field_name }}(buf) \
+  J2735_INTERNAL_HAS_FIELD((buf), {{ extension_bit }}U, J2735_OPT_{{ typedef_name_upper }}_{{ field_name }})
 {#      Force line break after define #}
 {%-   endif -%}
 {%- endfor -%}

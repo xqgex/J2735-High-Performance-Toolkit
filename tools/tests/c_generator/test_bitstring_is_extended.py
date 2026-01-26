@@ -20,8 +20,9 @@ Tests cover generate_bitstring_is_extended which generates
 J2735_<TYPE>_IS_EXTENDED public API macros.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_is_extended
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_is_extended.j2"
 
 
 class TestIsExtendedGenerator(SpecLoadingTestBase):
@@ -29,14 +30,12 @@ class TestIsExtendedGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_has_public_api(self) -> None:
         """VehicleEventFlags should have IS_EXTENDED macro."""
-        code = generate_bitstring_is_extended("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         self.assertIn("J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED", code)
         # Should call internal macro
         self.assertIn("J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS", code)
 
     def test_non_extensible_type_always_false(self) -> None:
         """GNSSstatus should always return 0 (never extended)."""
-        code = generate_bitstring_is_extended("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_GNSS_STATUS_IS_EXTENDED", code)

@@ -22,7 +22,7 @@
 name = "j2735-tools"
 version = "0.1.0"
 description = "J2735 specification parser and C code generator"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "Yogev Neumann", email = "yogev.j2735@gmail.com" }]
@@ -50,10 +50,10 @@ Issues = "https://github.com/xqgex/J2735-High-Performance-Toolkit/issues"
 
 [tool.black]
 line-length = 100
-target-version = ["py310"]
+target-version = ["py311"]
 
 [tool.codespell]
-ignore-words-list = "bitwidth,bsmcoredata,bsmpartiiextension,calloc,dataelement,dsecond,endcode,endfor,nsnnwn,startswith,uper"
+ignore-words-list = "bitstring,bitwidth,bsmcoredata,bsmpartiiextension,calloc,dataelement,dsecond,endcode,endfor,ifndef,nsnnwn,startswith,uper"
 check-hidden = true
 
 [tool.coverage.run]
@@ -72,7 +72,7 @@ show_missing = true
 max-line-length = 100
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -81,15 +81,23 @@ warn_unused_ignores = true
 strict_equality = true
 extra_checks = true
 
-[tool.pylint.main]
-py-version = "3.10"
+[tool.pylint.DESIGN]
+max-attributes = 8
 
-[tool.pylint.format]
+[tool.pylint.FORMAT]
 max-line-length = 100
+max-module-lines = 2000
+
+[tool.pylint.main]
+py-version = "3.11"
+
+[tool.pylint.'MESSAGES CONTROL']
+# TODO: Disable the specific "fixme" warning (W0511) globally while the project is in development
+disable = ["W0511"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [

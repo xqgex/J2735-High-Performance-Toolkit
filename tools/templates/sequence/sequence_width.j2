@@ -24,9 +24,7 @@
   This enables proper offset chaining: OFF_N = OFF_{N-1} + WIDTH_{N-1}.
 
   Context variables:
-    - typedef: ASN1TypeDefinition for the SEQUENCE type with:
-        - name: Type name (e.g., "IntersectionReferenceID")
-        - constraint.fields: Tuple of SequenceField objects
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -35,7 +33,7 @@
     #define J2735_WIDTH_INTERSECTION_REFERENCE_ID_REGION(buf) \
       (J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf) ? J2735_BW_ROAD_REGULATOR_ID : 0U)
 -#}
-{%- set seq_name = typedef.name | screaming_snake -%}
+{%- set typedef_name_upper = typedef.name | screaming_snake -%}
 {%- for field in typedef.constraint.fields -%}
 {%-   if field.is_optional -%}
 {%-     set field_name = field.name | screaming_snake -%}
@@ -46,7 +44,7 @@
  * @param buf Pointer to the {{ field.type_name }} encoding.
  * @return J2735_BW_{{ field_type_name }} if present, 0 otherwise.
  */
-#define J2735_WIDTH_{{ seq_name }}_{{ field_name }}(buf) (J2735_{{ seq_name }}_HAS_{{ field_name }}(buf) ? J2735_BW_{{ field_type_name }} : 0U)
+#define J2735_WIDTH_{{ typedef_name_upper }}_{{ field_name }}(buf) (J2735_{{ typedef_name_upper }}_HAS_{{ field_name }}(buf) ? J2735_BW_{{ field_type_name }} : 0U)
 {#      Force line break after define #}
 {%-   endif -%}
 {%- endfor -%}

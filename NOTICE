@@ -1,5 +1,21 @@
 J2735 High-Performance Toolkit Copyright 2026 Yogev Neumann
 
-This product includes software developed by Yogev Neumann. Project Repository: https://github.com/xqgex/J2735-High-Performance-Toolkit
+This product includes software developed by Yogev Neumann.
+Project Repository: https://github.com/xqgex/J2735-High-Performance-Toolkit
 
-The name "J2735 High-Performance Toolkit" and associated branding are trademarks of Yogev Neumann. See the Trademark Policy in README.md for usage guidelines.
+TRADEMARK POLICY
+
+The name "J2735 High-Performance Toolkit" and associated branding are
+trademarks of Yogev Neumann.
+
+You are free to:
+- Fork this project and modify the code
+- Distribute modified versions under the Apache 2.0 license
+- Use this library in commercial and proprietary applications
+
+However, if you distribute a modified version, you must not:
+- Use the name "J2735 High-Performance Toolkit" in a way that implies your
+  version is the official release
+- Use the project name or branding to suggest endorsement of your derivative work
+
+You must clearly state that your version is a modification of the original.

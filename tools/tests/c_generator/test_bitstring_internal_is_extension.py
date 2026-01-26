@@ -20,8 +20,9 @@ Tests cover generate_bitstring_internal_is_extension which generates
 J2735_INTERNAL_IS_EXTENSION_<TYPE> macros to check extension marker.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_is_extension
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_internal_is_extension.j2"
 
 
 class TestIsExtensionGenerator(SpecLoadingTestBase):
@@ -29,16 +30,14 @@ class TestIsExtensionGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_generates_extension_check(self) -> None:
         """VehicleEventFlags should have extension bit check."""
-        code = generate_bitstring_internal_is_extension("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         self.assertIn("J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS", code)
         # Should use named constant for shift amount
         self.assertIn("J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS - 1U", code)
 
     def test_non_extensible_type_generates_always_false(self) -> None:
         """GNSSstatus (non-extensible) should return 0."""
-        code = generate_bitstring_internal_is_extension("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_INTERNAL_IS_EXTENSION_GNSS_STATUS", code)
         # Non-extensible always returns 0
         self.assertIn("(0U)", code)

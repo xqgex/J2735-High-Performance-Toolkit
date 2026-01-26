@@ -21,10 +21,7 @@ Template: bitstring_is_extended.j2
 Purpose: Generate public C macro for checking if a BIT STRING is in extended form.
 
 Template Context (from generator):
-  - type_name: str - BIT STRING type name (e.g., "VehicleEventFlags")
-  - is_extensible: bool - Whether the type has extension marker
-  - root_size: int - Root constraint bits (e.g., 13)
-  - ext_bits: int - Extended constraint bits (e.g., 14)
+  - typedef: The full typedef object containing the metadata
 
 Example output (is_extensible=True):
     /**
@@ -34,29 +31,32 @@ Example output (is_extensible=True):
     #define J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(buf) \
       J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS(J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS(buf))
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
-{%  if is_extensible %}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
+{%  if typedef.constraint.is_extensible %}
 /**
- * @brief Check if {{ type_name }} is in extended form.
+ * @brief Check if {{ typedef_name }} is in extended form.
  *
  * Extended form includes {{ ext_bits }} flags (bits 0-{{ ext_bits - 1 }}).
  * Root form has only {{ root_size }} flags (bits 0-{{ root_size - 1 }}).
  *
- * @param[in] buf Pointer to the start of the {{ type_name }} UPER encoding (const uint8_t*).
- * @pre @p buf must point to valid {{ type_name }} encoding with +7 byte padding.
+ * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
+ * @pre @p buf must point to valid {{ typedef_name }} encoding with +7 byte padding.
  * @return Non-zero (true) if extended ({{ ext_bits }} flags), zero (false) if root ({{ root_size }} flags).
  */
-#define J2735_{{ seq_upper }}_IS_EXTENDED(buf) \
-  J2735_INTERNAL_IS_EXTENSION_{{ seq_upper }}(J2735_INTERNAL_RAW_READ_{{ seq_upper }}(buf))
+#define J2735_{{ typedef_name_upper }}_IS_EXTENDED(buf) \
+  J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}(J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}(buf))
 {%  else %}
 /**
- * @brief Check if {{ type_name }} is in extended form.
+ * @brief Check if {{ typedef_name }} is in extended form.
  *
- * {{ type_name }} is a fixed-size BIT STRING with {{ root_size }} bits.
+ * {{ typedef_name }} is a fixed-size BIT STRING with {{ root_size }} bits.
  * It does not have an extension marker, so this always returns 0 (false).
  *
- * @param[in] buf Pointer to the start of the {{ type_name }} UPER encoding (const uint8_t*).
+ * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_{{ seq_upper }}_IS_EXTENDED(buf) (0)
+#define J2735_{{ typedef_name_upper }}_IS_EXTENDED(buf) (0)
 {%  endif %}

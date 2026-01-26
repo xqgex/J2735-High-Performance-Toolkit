@@ -20,8 +20,9 @@ Tests cover generate_bitstring_get_one which generates
 J2735_<TYPE>_GET_<FLAG> macros for each named bit.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_get_one
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_get_one.j2"
 
 
 class TestGetOneGenerator(SpecLoadingTestBase):
@@ -29,8 +30,7 @@ class TestGetOneGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_all_flags(self) -> None:
         """VehicleEventFlags should have macro for each named bit."""
-        code = generate_bitstring_get_one("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         # Root flag
         self.assertIn("J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_HAZARD_LIGHTS", code)
         # Extension flag
@@ -40,8 +40,7 @@ class TestGetOneGenerator(SpecLoadingTestBase):
 
     def test_extension_flag_has_warning(self) -> None:
         """Extension flags should have warning in Doxygen."""
-        code = generate_bitstring_get_one("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         # jackKnife is bit 13 (extension)
         jack_knife_idx = code.find("eventJackKnife")
         self.assertGreater(jack_knife_idx, 0)
@@ -51,14 +50,12 @@ class TestGetOneGenerator(SpecLoadingTestBase):
 
     def test_non_extensible_type_no_extension_warning(self) -> None:
         """GNSSstatus flags should NOT have extension warnings."""
-        code = generate_bitstring_get_one("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_GNSS_STATUS_GET_", code)
         # Non-extensible should not have extension warnings
         self.assertNotIn("extended form only", code)
 
     def test_small_type_lane_direction(self) -> None:
         """LaneDirection (2-bit) should have 2 GET macros."""
-        code = generate_bitstring_get_one("LaneDirection", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "LaneDirection")
         self.assertIn("J2735_LANE_DIRECTION_GET_", code)

@@ -22,10 +22,11 @@ This module provides:
 """
 
 from pathlib import Path
-
 from unittest import TestCase
 
+from tools.j2735_c_generator_jinja import create_jinja_env, get_template
 from tools.j2735_spec_constraints import (
+    BitStringConstraint,
     IntegerConstraint,
     SequenceField,
     SequenceType,
@@ -212,6 +213,71 @@ def make_extensible_mock_spec() -> J2735Specification:
         data_elements=(),
         type_registry=registry,
     )
+
+
+# =============================================================================
+# Shared typedef Validators
+# =============================================================================
+
+
+def _validate_bitstring_type(typedef: ASN1TypeDefinition | None) -> None:
+    """Validate that type_name exists and is a BIT STRING in the spec.
+
+    Args:
+        typedef: The ASN.1 type definition to validate.
+
+    Raises:
+        ValueError: If type_name is not found or not a BIT STRING.
+    """
+    if typedef is None:
+        raise ValueError("Type not found in specification")
+    if typedef.type_class != ASN1TypeClass.BIT_STRING:
+        raise ValueError(f"Type '{typedef.name}' is not a BIT STRING")
+    if not isinstance(typedef.constraint, BitStringConstraint):
+        raise ValueError(f"Type '{typedef.name}' has unexpected constraint type")
+
+
+def generate_bitstring_code(template_path: str, spec: J2735Specification, type_name: str) -> str:
+    """Generate BIT STRING C code for a given template.
+
+    Args:
+        template_path: Path to the Jinja2 template for BIT STRING code generation.
+        spec: The parsed J2735 specification.
+        type_name: Name of the BIT STRING type (e.g., "VehicleEventFlags").
+
+    Returns:
+        C code from the rendered template.
+
+    Raises:
+        ValueError: If type_name is not found or not a BIT STRING.
+    """
+    typedef = spec.lookup_type(type_name)
+    _validate_bitstring_type(typedef)
+    env = create_jinja_env()
+    return get_template(env, template_path).render(typedef=typedef)
+
+
+def get_sequence_typedef(type_name: str, spec: J2735Specification) -> ASN1TypeDefinition:
+    """Lookup and validate a SEQUENCE type from the specification.
+
+    Args:
+        type_name: Name of the type to look up.
+        spec: The parsed J2735 specification.
+
+    Returns:
+        The type definition (guaranteed to have SequenceType constraint).
+
+    Raises:
+        ValueError: If type not found, not a SEQUENCE, or missing constraint.
+    """
+    typedef = spec.lookup_type(type_name)
+    if typedef is None:
+        raise ValueError(f"Type '{type_name}' not found in specification")
+    if typedef.type_class != ASN1TypeClass.SEQUENCE:
+        raise ValueError(f"Type '{type_name}' is not a SEQUENCE")
+    if not isinstance(typedef.constraint, SequenceType):
+        raise ValueError(f"Type '{type_name}' has no SequenceType constraint")
+    return typedef
 
 
 # =============================================================================

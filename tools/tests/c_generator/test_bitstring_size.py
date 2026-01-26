@@ -20,8 +20,9 @@ Tests cover generate_bitstring_size which generates
 J2735_<TYPE>_SIZE macros returning bit count.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_size
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_size.j2"
 
 
 class TestSizeGenerator(SpecLoadingTestBase):
@@ -29,8 +30,7 @@ class TestSizeGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_has_conditional_size(self) -> None:
         """VehicleEventFlags should have root and extended sizes."""
-        code = generate_bitstring_size("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         self.assertIn("J2735_VEHICLE_EVENT_FLAGS_SIZE", code)
         # Root: 1 + 13 = 14 bits -> 14U (or as documented)
         # Extended: 1 + 8 + 13 = 22 bits -> 22U
@@ -39,21 +39,18 @@ class TestSizeGenerator(SpecLoadingTestBase):
 
     def test_non_extensible_8bit_type(self) -> None:
         """GNSSstatus (8-bit) should return fixed 8."""
-        code = generate_bitstring_size("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_GNSS_STATUS_SIZE", code)
         self.assertIn("8U", code)
 
     def test_non_extensible_12bit_type(self) -> None:
         """AllowedManeuvers (12-bit) should return fixed 12."""
-        code = generate_bitstring_size("AllowedManeuvers", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "AllowedManeuvers")
         self.assertIn("J2735_ALLOWED_MANEUVERS_SIZE", code)
         self.assertIn("12U", code)
 
     def test_small_2bit_type(self) -> None:
         """LaneDirection (2-bit) should return fixed 2."""
-        code = generate_bitstring_size("LaneDirection", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "LaneDirection")
         self.assertIn("J2735_LANE_DIRECTION_SIZE", code)
         self.assertIn("2U", code)

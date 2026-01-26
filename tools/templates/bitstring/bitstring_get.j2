@@ -21,10 +21,7 @@ Template: bitstring_get.j2
 Purpose: Generate public C macro for getting all flags as a single integer value.
 
 Template Context (from generator):
-  - type_name: str - BIT STRING type name (e.g., "VehicleEventFlags")
-  - is_extensible: bool - Whether the type has extension marker
-  - root_size: int - Root constraint bits (e.g., 13)
-  - ext_bits: int - Extended constraint bits (e.g., 14)
+  - typedef: The full typedef object containing the metadata
 
 Example output (is_extensible=True, root_size=13, ext_bits=14):
     /**
@@ -34,32 +31,36 @@ Example output (is_extensible=True, root_size=13, ext_bits=14):
     #define J2735_VEHICLE_EVENT_FLAGS_GET(buf) \
       J2735_INTERNAL_GET_ALL_VEHICLE_EVENT_FLAGS(J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS(buf))
 -#}
+{%- set is_extensible = typedef.constraint.is_extensible -%}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 {%- set return_type = ext_bits | c_type -%}
-{%- set seq_upper = type_name | screaming_snake -%}
-{% if is_extensible %}
+{%  if is_extensible %}
 /**
- * @brief Get all {{ type_name }} as a single {{ return_type }} value.
+ * @brief Get all {{ typedef_name }} as a single {{ return_type }} value.
  *
  * Returns all flag bits packed into a right-aligned integer.
  * The number of significant bits depends on extension state:
  * - Root form: bits 0-{{ root_size - 1 }} valid ({{ root_size }} bits), bit {{ root_size }} is zero
  * - Extended form: bits 0-{{ ext_bits - 1 }} valid ({{ ext_bits }} bits)
  *
- * @param[in] buf Pointer to the start of the {{ type_name }} UPER encoding (const uint8_t*).
- * @pre @p buf must point to valid {{ type_name }} encoding with +7 byte padding.
+ * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
+ * @pre @p buf must point to valid {{ typedef_name }} encoding with +7 byte padding.
  * @return Right-aligned flag value ({{ return_type }}). Bit 0 of result = first named bit.
- * @note Use J2735_{{ seq_upper }}_IS_EXTENDED() to determine if bit {{ root_size }} is meaningful.
+ * @note Use J2735_{{ typedef_name_upper }}_IS_EXTENDED() to determine if bit {{ root_size }} is meaningful.
  */
-{% else %}
+{%  else %}
 /**
- * @brief Get all {{ type_name }} as a single {{ return_type }} value.
+ * @brief Get all {{ typedef_name }} as a single {{ return_type }} value.
  *
  * Returns all {{ root_size }} flag bits packed into a right-aligned integer.
  *
- * @param[in] buf Pointer to the start of the {{ type_name }} UPER encoding (const uint8_t*).
- * @pre @p buf must point to valid {{ type_name }} encoding with +7 byte padding.
+ * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
+ * @pre @p buf must point to valid {{ typedef_name }} encoding with +7 byte padding.
  * @return Right-aligned flag value ({{ return_type }}). Bit 0 of result = first named bit.
  */
-{% endif %}
-#define J2735_{{ seq_upper }}_GET(buf) \
-  J2735_INTERNAL_GET_ALL_{{ seq_upper }}(J2735_INTERNAL_RAW_READ_{{ seq_upper }}(buf))
+{%  endif %}
+#define J2735_{{ typedef_name_upper }}_GET(buf) \
+  J2735_INTERNAL_GET_ALL_{{ typedef_name_upper }}(J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}(buf))

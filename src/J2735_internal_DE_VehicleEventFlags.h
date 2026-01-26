@@ -193,11 +193,11 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  */
 #define J2735_INTERNAL_GET_ALL_VEHICLE_EVENT_FLAGS(raw22)                                          \
   (J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS(raw22) ? /* Extended: low 14 bits */            \
-       ((uint16_t)((raw22) & ((1U << J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS) - 1U)))          \
+       ((uint16_t)((raw22) & ((1UL << J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS) - 1U)))         \
                                                           : /* Non-ext: bits 20..8 = 13 bits */    \
        ((uint16_t)(((raw22) >> (J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS - 1U -            \
                                 J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS)) &                   \
-                   ((1U << J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS) - 1U))))
+                   ((1UL << J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS) - 1U))))
 
 /**
  * @internal

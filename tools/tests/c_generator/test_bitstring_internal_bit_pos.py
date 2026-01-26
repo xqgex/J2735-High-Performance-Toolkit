@@ -20,8 +20,9 @@ Tests cover generate_bitstring_internal_bit_pos which generates
 J2735_INTERNAL_BIT_<TYPE>_<FLAG> constants for named bits.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_bit_pos
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_internal_bit_pos.j2"
 
 
 class TestBitPosGenerator(SpecLoadingTestBase):
@@ -29,8 +30,7 @@ class TestBitPosGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_includes_all_named_bits(self) -> None:
         """VehicleEventFlags should have 14 bit position constants."""
-        code = generate_bitstring_internal_bit_pos("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         # Root bits (0-12)
         self.assertIn("J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_HAZARD_LIGHTS", code)
         self.assertIn("0U", code)
@@ -40,16 +40,14 @@ class TestBitPosGenerator(SpecLoadingTestBase):
 
     def test_non_extensible_type_gnss_status(self) -> None:
         """GNSSstatus (8-bit non-extensible) should generate 8 constants."""
-        code = generate_bitstring_internal_bit_pos("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_INTERNAL_BIT_GNSS_STATUS_", code)
         # Check macro structure
         self.assertIn("#define J2735_INTERNAL_BIT_GNSS_STATUS_", code)
 
     def test_small_type_lane_direction(self) -> None:
         """LaneDirection (2-bit) should generate 2 constants."""
-        code = generate_bitstring_internal_bit_pos("LaneDirection", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "LaneDirection")
         self.assertIn("J2735_INTERNAL_BIT_LANE_DIRECTION_", code)
         # Should have bits 0 and 1
         self.assertIn("0U", code)
@@ -58,11 +56,11 @@ class TestBitPosGenerator(SpecLoadingTestBase):
     def test_invalid_type_raises_value_error(self) -> None:
         """Non-existent type should raise ValueError."""
         with self.assertRaises(ValueError) as ctx:
-            generate_bitstring_internal_bit_pos("NonExistentType", self.spec)
+            _ = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "NonExistentType")
         self.assertIn("not found", str(ctx.exception))
 
     def test_non_bitstring_type_raises_value_error(self) -> None:
         """INTEGER type should raise ValueError."""
         with self.assertRaises(ValueError) as ctx:
-            generate_bitstring_internal_bit_pos("MsgCount", self.spec)
+            _ = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "MsgCount")
         self.assertIn("not a BIT STRING", str(ctx.exception))

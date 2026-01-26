@@ -1,138 +1,79 @@
 # J2735 High-Performance Toolkit
 
-Zero-copy parser for SAE J2735 UPER-encoded messages.
+**Zero-copy, O(1) parser for SAE J2735 V2X structures.**
 
-> ⚠️ **Early Development**: This project is under active development. The API is not yet stable and may change frequently. Not all J2735 message types are implemented.
+Designed for embedded RSU/OBU firmware where CPU cycles and memory bandwidth are critical.
 
-## Specification
+> ⚠️ **Early Development**: The API is currently unstable. Refer to the `tests/` directory for the most up-to-date usage examples.
 
-Based on **SAE J2735_202409** (September 2024 revision).
+**Specification**: SAE J2735_202409 (September 2024 revision)
 
-## Design Philosophy & Performance
+## ⚡ The Performance Invariant
 
-This library is designed for **High-Frequency/Low-Latency** environments (RSU/OBU firmware) where CPU cycles and memory bandwidth are at a premium. It provides the convenience of struct-like access without the penalty of serialization.
+Standard ASN.1 parsers (like `asn1c`) deserialize the entire message into a struct before you can read a single field. This toolkit does not deserialize. It calculates bit-offsets on the fly.
 
-### 1. The UPER Alignment Problem
-
-Unlike network protocols such as TCP/IP, J2735 UPER is **bit-aligned**, not byte-aligned.
-- **The Consequence**: A single 7-bit field shifts the alignment of all subsequent data.
-- **Why specific libraries are needed**: You cannot simply cast a C struct over the raw buffer (e.g., `(BSM*)buffer`). Doing so would read misaligned bits and produce garbage data. This forces most developers to rely on heavy serialization libraries.
-
-### 2. vs. Standard ASN.1 Compilers (e.g., `asn1c`)
-
-The standard approach in the open-source community is to use an ASN.1 compiler to generate C code.
-- **The Workflow**: The compiler generates a parser that walks the bits stream, allocates memory (typically `calloc`/`malloc`), and **copies** the data into a fully populated C structure.
-- **The Cost**: This "Deserialization" step is $O(N)$ relative to the message size. It incurs CPU overhead for copying data and memory overhead for the structure, even if you only need to read a single field (like Latitude).
-- **Our Approach**: **Zero-Copy Introspection**. We do not deserialize. We calculate the bit-offset of the specific field you need and read only those bits. If you only need one field, you pay only for one read.
-
-### 3. Complexity Analysis
-
-| Metric | Traditional ASN.1 Parsers | **This Library** | Notes |
-| :--- | :--- | :--- | :--- |
-| **Runtime Complexity** | $O(N)$ | **$O(1)$** | Traditional parsers must process the full stream. We jump directly to the target bits. |
-| **Space Complexity** | $O(N)$ | **$O(1)$** | Traditional parsers allocate mirrored structs (Deep Copy). We use the buffer in-place (Zero Copy). |
-| **Initialization** | Slow (Allocation + Parsing) | **Instant** | No setup phase required before reading data. |
-
-## Integration
-
-This is a **header-only** library. Copy the `src/` directory to your project and include:
-
-```c
-#include "J2735_api.h"
-```
-
-No linking required. No dependencies beyond standard C11.
-
-### Requirements
-
-- C11 compiler (GCC, Clang, or MSVC)
-- Little-endian host (big-endian support exists but is less tested)
-
-### Buffer Requirements
-
-⚠️ **Critical**: All buffers passed to parsing macros **must** include 7 bytes of readable padding beyond the logical message end. This enables safe 64-bit reads without per-access bounds checks.
-
-```c
-uint8_t buf[MESSAGE_SIZE + 7];  // Always allocate with padding
-```
-
-## API Patterns
-
-The library follows consistent naming conventions:
-
-| Pattern | Purpose |
-|---------|---------|
-| `J2735_<TYPE>_GET_<FIELD>(buf)` | Read a field value |
-| `J2735_<TYPE>_HAS_<FIELD>(buf)` | Check OPTIONAL field presence |
-| `J2735_<TYPE>_IS_EXTENDED(buf)` | Check extension marker |
-| `J2735_<TYPE>_SIZE(buf)` | Get wire size in bits |
-| `J2735_BW_<TYPE>` | Bit-width constant |
-| `J2735_INTERNAL_*` | Implementation details (do not use directly) |
-
-## Structure
+**Why can't you just cast a C struct over the buffer?** Because J2735 UPER is **bit-aligned**, not byte-aligned:
 
 ```
-J2735/
-├── build/       # Build artifacts
-├── src/         # Library headers
-├── tests/       # Test suite
-└── tools/       # Python code generators
+Byte:     [  0   ] [  1   ] [  2   ]
+Bits:     76543210 76543210 76543210
+Fields:   [ A   ][ B          ]
+          7 bits  12 bits      <-- Spans across byte boundaries
 ```
 
-## Build
+Traditional parsers copy everything to a struct. We jump directly to the bits you need.
 
-```bash
-make clean       # Clean build artifacts
-make test        # Build and run tests
+| Metric      | Standard ASN.1 Parsers | This Toolkit |
+| ----------- | ---------------------- | ------------ |
+| **Complexity** | `O(N)` (Must parse everything)    | `O(1)` (Jump to specific bits) |
+| **Memory**     | `O(N)` (Allocates mirror structs) | `O(1)` (Reads buffer in-place) |
+| **Startup**    | Slow (Allocation + Init)          | **Instant** (Stateless macros) |
+
+## 🛠️ Integration
+
+**Header-only**. No libraries to link.
+
+1. Copy the `src/` folder to your project.
+2. Include `J2735_api.h` or specific internal headers.
+
+### Critical Requirement: Buffer Padding
+
+You **must** allocate **7 extra bytes** at the end of your input buffer.
+
+- **Why?** The parser performs safe 64-bit unaligned loads. Without padding, reading the last byte of a message could trigger a memory access violation.
+- **Invariant**: `uint8_t buf[MSG_SIZE + 7];`
+
+## 💻 Usage & Documentation
+
+Because this library is in active alpha, the code itself is the source of truth.
+
+1. **For API Examples**: See `tests/`.
+   - The test files (e.g., `tests/J2735_internal_DF_BSMcoreData_test.c`) contain compiled, verified examples of how to access fields.
+2. **For Available Types**: See `src/`.
+   - Header files define the e xact macros available for each J2735 Data Frame.
+
+## Build & Test
+
+```sh
+make check     # Static analysis (cppcheck)
+make clean     # Clean build artifacts
+make format    # Code formatting (clang-format)
+make sanitize  # ASan + UBSan
+make test      # Build and run tests
+make tidy      # Static analysis (clang-tidy)
+make valgrind  # Memory leak check
 ```
 
-## Quality Checks
+Supports GCC, Clang, and MSVC. To use a specific compiler:
 
-```bash
-make check       # Cppcheck
-make format      # Clang-Format
-make sanitize    # ASan + UBSan
-make tidy        # Clang-Tidy
-make valgrind    # Valgrind
-```
-
-## Compiler
-
-The project support Clang, GCC and MSVC. To set the default compiler, set the `CC` environment variable. For example, to use Clang:
-
-```bash
+```sh
 CC=clang make test
 ```
 
-## License
-
-This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for details.
-
-```
-Copyright 2026 Yogev Neumann
-SPDX-License-Identifier: Apache-2.0
-```
-
-## Trademark Policy
-
-The name **"J2735 High-Performance Toolkit"** and associated branding are
-trademarks of Yogev Neumann.
-
-You are free to:
-- Fork this project and modify the code
-- Distribute modified versions under the Apache 2.0 license
-- Use this library in commercial and proprietary applications
-
-**However**, if you distribute a modified version, you **must not**:
-- Use the name "J2735 High-Performance Toolkit" in a way that implies your
-  version is the official release
-- Use the project name or branding to suggest endorsement of your derivative work
-
-You **must** clearly state that your version is a modification of the original.
-
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-By submitting a Pull Request, you agree that your contribution will be licensed
-under the Apache License 2.0.
+## License
+
+[Apache 2.0](LICENSE) - Copyright 2026 Yogev Neumann

@@ -16,7 +16,18 @@
   SPDX-License-Identifier: Apache-2.0
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
+{#-
+Template: file_header_de.j2
+Purpose: Generate the file header comment for a data element (DE) C header file.
+
+Template Context (from generator):
+  - typedef: The full typedef object containing the metadata
+-#}
 {#- Compute derived values for the header -#}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set type_name = typedef.name -%}
 {%- set root_wire_size = 1 + root_size -%}
 {%- set garbage_bits = read_bits - 1 - root_size -%}
 {%- set ext_bit_pos = read_bits - 1 -%}
@@ -31,7 +42,7 @@
  * @brief J2735 {{ type_name }} Definition and Access Macros.
  *
  * {{ type_name }} ::= BIT STRING {
-{% for name, index in named_bits.items() | sort(attribute='1') %}
+{% for name, index in typedef.constraint.named_bits.items() | sort(attribute='1') %}
  *     {{ name }} ({{ index }}){{ "," if not loop.last else "" }}
 {% endfor %}
  * } (SIZE ({{ root_size }}{{ ", ..." if is_extensible else "" }}{{ ", " ~ ext_bits if is_extensible and ext_bits != root_size else "" }}))

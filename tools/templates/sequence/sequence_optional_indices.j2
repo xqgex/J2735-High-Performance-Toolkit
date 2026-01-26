@@ -24,9 +24,7 @@
   Use with J2735_INTERNAL_HAS_FIELD(buf, opt_offset, index) where opt_offset is 0 or 1.
 
   Context variables:
-    - typedef: ASN1TypeDefinition for the SEQUENCE type with:
-        - name: Type name (e.g., "IntersectionReferenceID")
-        - constraint.fields: Tuple of SequenceField objects
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -34,12 +32,12 @@
   Output format:
     #define J2735_OPT_INTERSECTION_REFERENCE_ID_REGION 0U /* optional bitmap bit 0 */
 -#}
-{%- set seq_name = typedef.name | screaming_snake -%}
+{%- set typedef_name_upper = typedef.name | screaming_snake -%}
 {%- set ns = namespace(opt_idx=0) -%}
 {%- for field in typedef.constraint.fields -%}
 {%-   if field.is_optional -%}
 {%-     set field_name = field.name | screaming_snake -%}
-#define J2735_OPT_{{ seq_name }}_{{ field_name }} {{ ns.opt_idx }}U /* optional bitmap bit {{ ns.opt_idx }} */
+#define J2735_OPT_{{ typedef_name_upper }}_{{ field_name }} {{ ns.opt_idx }}U /* optional bitmap bit {{ ns.opt_idx }} */
 {#      Force line break after define #}
 {%-     set ns.opt_idx = ns.opt_idx + 1 -%}
 {%-   endif -%}

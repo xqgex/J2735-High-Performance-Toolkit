@@ -14,11 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
-"""DEPRECATED: This module has been split into separate files.
 
-DO NOT USE THIS FILE. It exists only as a redirect notice.
-See:
-    - j2735_c_generator_dataframe.py
-    - j2735_c_generator_wire_format.py
-    - j2735_c_generator_jinja.py
-"""
+[flake8]
+max-line-length = 100

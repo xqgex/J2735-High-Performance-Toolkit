@@ -23,7 +23,7 @@
   Wraps the core J2735_INTERNAL_HAS_EXTENSION macro with a type-specific name.
 
   Context variables:
-    - type_name: Type name (e.g., "PathPrediction")
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
@@ -35,10 +35,11 @@
      */
     #define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 /**
- * @brief Check if {{ type_name }} has extension additions present.
- * @param buf Pointer to the {{ type_name }} encoding.
+ * @brief Check if {{ typedef_name }} has extension additions present.
+ * @param buf Pointer to the {{ typedef_name }} encoding.
  * @return 1 if extensions are present, 0 otherwise.
  */
-#define J2735_{{ seq_upper }}_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)
+#define J2735_{{ typedef_name_upper }}_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)

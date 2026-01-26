@@ -110,10 +110,9 @@ static inline uint8_t j2735_internal_inline_read_nsnnwn(uint8_t const *const buf
   uint8_t result = 0U;
   /* Single bit read: 0 or 1, safely fits uint8_t */
   /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy architecture requires packed-struct cast */
-  uint8_t const first_bit =
-      (uint8_t)J2735_READ_BITS(buf, bit_off, J2735_INTERNAL_NSNNWN_PREFIX_BITS);
+  uint8_t const bit_1st = (uint8_t)J2735_READ_BITS(buf, bit_off, J2735_INTERNAL_NSNNWN_PREFIX_BITS);
 
-  if (0U == first_bit) {
+  if (0U == bit_1st) {
     /* Small form: 1 prefix + 6 value = 7 bits total, value 0-63 */
     /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy architecture requires packed-struct cast */
     *out_val = (uint32_t)J2735_READ_BITS(buf, bit_off + J2735_INTERNAL_NSNNWN_PREFIX_BITS,

@@ -101,10 +101,10 @@ jobs:
         run: pip install black ruff
 
       - name: Run black
-        run: black tools/
+        run: black tools/ --config tools/pyproject.toml
 
       - name: Run ruff --fix
-        run: ruff check tools/ --fix
+        run: ruff check tools/ --fix --config tools/pyproject.toml
 
       - name: Check for changes
         id: changes
@@ -314,7 +314,7 @@ jobs:
         run: |
           echo "### flake8" > flake8_output.txt
           echo '```' >> flake8_output.txt
-          if python -m flake8 tools/ 2>&1 | tee -a flake8_output.txt; then
+          if python -m flake8 tools/ --config tools/.flake8 2>&1 | tee -a flake8_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failure" >> $GITHUB_OUTPUT
@@ -326,7 +326,7 @@ jobs:
         run: |
           echo "### ruff" > ruff_output.txt
           echo '```' >> ruff_output.txt
-          if ruff check tools/ 2>&1 | tee -a ruff_output.txt; then
+          if ruff check tools/ --config tools/pyproject.toml 2>&1 | tee -a ruff_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failure" >> $GITHUB_OUTPUT
@@ -338,7 +338,7 @@ jobs:
         run: |
           echo "### codespell" > codespell_output.txt
           echo '```' >> codespell_output.txt
-          if codespell tools/ 2>&1 | tee -a codespell_output.txt; then
+          if codespell tools/ --toml tools/pyproject.toml 2>&1 | tee -a codespell_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failure" >> $GITHUB_OUTPUT

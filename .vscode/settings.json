@@ -22,10 +22,12 @@
   },
   // 4. File associations
   "files.associations": {
-    "*.h": "c"
+    "*.h": "c",
+    "*.j2": "jinja-cpp"
   },
   // 5. Code Spell Checker - ignore J2735 domain terms
   "cSpell.words": [
+    "bitstring",
     "bitwidth",
     "bsmcoredata",
     "bsmpartiiextension",
@@ -34,6 +36,7 @@
     "dsecond",
     "endcode",
     "endfor",
+    "ifndef",
     "nsnnwn",
     "startswith",
     "uper"

@@ -23,9 +23,7 @@
   Pattern: J2735_INTERNAL_RAW_READ_{TYPE}(buf)
 
   Context variables:
-    - type_name: Type name (e.g., "VehicleEventFlags")
-    - read_bits: Total bits to read from buffer
-    - is_extensible: Whether the BIT STRING is extensible
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -35,19 +33,22 @@
     /** @internal @brief Read N bits... */
     #define J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS(buf) J2735_READ_BITS((buf), 0U, 22U)
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
+{%- set is_extensible = typedef.constraint.is_extensible -%}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 {%- set read_bytes = read_bits | bytes_from_bits -%}
 /**
  * @internal
- * @brief Read {{ read_bits }} bits from buffer for {{ type_name }}.
+ * @brief Read {{ read_bits }} bits from buffer for {{ typedef_name }}.
  *
- * This is the ONLY macro that performs I/O (calls J2735_READ_BITS) for {{ type_name }}.
+ * This is the ONLY macro that performs I/O (calls J2735_READ_BITS) for {{ typedef_name }}.
  * All other macros operate purely on the {{ read_bits }}-bit value returned by this macro.
  *
- * @param[in] buf Pointer to UPER-encoded {{ type_name }} (const uint8_t*).
+ * @param[in] buf Pointer to UPER-encoded {{ typedef_name }} (const uint8_t*).
  * @pre @p buf must point to at least {{ read_bytes }} bytes of readable memory.
  * @pre Buffer should include +7 bytes padding beyond data for J2735_READ_BITS safety.
- * @pre @p buf must be aligned to the start of the {{ type_name }} encoding.
+ * @pre @p buf must be aligned to the start of the {{ typedef_name }} encoding.
 {% if is_extensible %}
  * @return {{ read_bits }}-bit value as uint64_t with wire bits left-justified:
  *         - Bit {{ read_bits - 1 }}: Extension marker (0=root, 1=extended)
@@ -57,5 +58,5 @@
 {% endif %}
  * @note Internal use only. Not part of the public API.
  */
-#define J2735_INTERNAL_RAW_READ_{{ seq_upper }}(buf) \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }})
+#define J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}(buf) \
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }})

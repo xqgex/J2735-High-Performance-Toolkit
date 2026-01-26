@@ -21,14 +21,7 @@ Template: bitstring_internal_get_all.j2
 Purpose: Generate C macro for extracting all flag bits from pre-read raw value.
 
 Template Context (from generator):
-  - type_name: str - BIT STRING type name (e.g., "VehicleEventFlags")
-  - is_extensible: bool - Whether the type has extension marker
-  - read_bits: int - Total bits read (e.g., 22)
-  - root_size: int - Root constraint bits (e.g., 13)
-  - ext_bits: int - Extended constraint bits (e.g., 14)
-  - root_mask: int - Mask for root bits (e.g., 0x1FFF)
-  - ext_mask: int - Mask for extended bits (e.g., 0x3FFF)
-  - root_shift: int - Right shift for root extraction (e.g., 8)
+  - typedef: The full typedef object containing the metadata
 
 Example output (is_extensible=True, read_bits=22, root_size=13, ext_bits=14):
     /**
@@ -41,12 +34,16 @@ Example output (is_extensible=True, read_bits=22, root_size=13, ext_bits=14):
            ? ((uint16_t)((raw22) & 0x3FFFU)) \
            : ((uint16_t)(((raw22) >> 8U) & 0x1FFFU)))
 -#}
-{%- set ext_mask = (2 ** ext_bits) - 1 -%}
-{%- set root_shift = read_bits - 1 - root_size -%}
-{%- set root_mask = (2 ** root_size) - 1 -%}
-{%- set seq_upper = type_name | screaming_snake -%}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef.name  | screaming_snake -%}
+{%- set ext_mask = (2 ** ext_bits) - 1 -%}{#- Mask for extended bits (e.g., 0x3FFF) -#}
+{%- set root_shift = read_bits - 1 - root_size -%}{#- Right shift for root extraction (e.g., 8) -#}
+{%- set root_mask = (2 ** root_size) - 1 -%}{#- Mask for root bits (e.g., 0x1FFF) -#}
 {%- set return_type = ext_bits | c_type -%}
-{% if is_extensible %}
+{%  if typedef.constraint.is_extensible %}
 /**
  * @internal
  * @brief Extract all flag bits from pre-read {{ read_bits }}-bit raw value.
@@ -63,28 +60,29 @@ Example output (is_extensible=True, read_bits=22, root_size=13, ext_bits=14):
  *           {{ "%2d" | format(read_bits - 1) }}  {{ "%2d" | format(read_bits - 2) }}..{{ "%2d" | format(ext_bits) }}   {{ "%2d" | format(ext_bits - 1) }}  {{ "%2d" | format(ext_bits - 2) }}      0
  *   Extract: raw{{ read_bits }} & 0x{{ "%X" | format(ext_mask) }} -> {{ ext_bits }} bits
  *
- * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ seq_upper }}().
+ * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @return Right-aligned flag bits as {{ return_type }}:
  *         - {{ root_size }} significant bits (0x0000-0x{{ "%04X" | format(root_mask) }}) if non-extended
  *         - {{ ext_bits }} significant bits (0x0000-0x{{ "%04X" | format(ext_mask) }}) if extended
- * @note Internal use only. Use J2735_{{ seq_upper }}_GET() for public API.
+ * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET() for public API.
  */
-#define J2735_INTERNAL_GET_ALL_{{ seq_upper }}(raw{{ read_bits }}) \
-  (J2735_INTERNAL_IS_EXTENSION_{{ seq_upper }}(raw{{ read_bits }}) \
+#define J2735_INTERNAL_GET_ALL_{{ typedef_name_upper }}(raw{{ read_bits }}) \
+  (J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}(raw{{ read_bits }}) \
     ? /* Extended: low {{ ext_bits }} bits */ \
-    (({{ return_type }})((raw{{ read_bits }}) & ((1U << J2735_INTERNAL_EXT_SIZE_{{ seq_upper }}) - 1U))) \
+    (({{ return_type }})((raw{{ read_bits }}) & ((1U << J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }}) - 1U))) \
     : /* Non-ext: bits {{ read_bits - 2 }}..{{ root_shift }} = {{ root_size }} bits */ \
-    (({{ return_type }})(((raw{{ read_bits }}) >> (J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }} - 1U - J2735_INTERNAL_ROOT_SIZE_{{ seq_upper }})) & ((1U << J2735_INTERNAL_ROOT_SIZE_{{ seq_upper }}) - 1U))))
-{% else %}
+    (({{ return_type }})(((raw{{ read_bits }}) >> (J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} - 1U - J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }})) \
+                         & ((1U << J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }}) - 1U))))
+{%  else %}
 /**
  * @internal
  * @brief Extract all flag bits from pre-read {{ read_bits }}-bit raw value.
  *
- * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ seq_upper }}().
+ * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @return Right-aligned flag bits as {{ return_type }}:
  *         - {{ root_size }} significant bits (0x0000-0x{{ "%04X" | format(root_mask) }})
- * @note Internal use only. Use J2735_{{ seq_upper }}_GET() for public API.
+ * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET() for public API.
  */
-#define J2735_INTERNAL_GET_ALL_{{ seq_upper }}(raw{{ read_bits }}) \
+#define J2735_INTERNAL_GET_ALL_{{ typedef_name_upper }}(raw{{ read_bits }}) \
   (({{ return_type }})((raw{{ read_bits }}) & 0x{{ "%X" | format(root_mask) }}U))
-{% endif %}
+{%  endif %}

@@ -29,15 +29,8 @@ Example usage:
     print(code)
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from .j2735_c_generator_jinja import create_jinja_env, get_template
-from .j2735_spec_parser import ASN1TypeDefinition
-
-if TYPE_CHECKING:
-    from .j2735_spec_parser import J2735Specification
+from .j2735_spec_parser import ASN1TypeDefinition, J2735Specification
 
 _BITWIDTH_TEMPLATE_NAME = "bitwidth_constants.j2"
 

@@ -20,8 +20,9 @@ Tests cover generate_bitstring_get which generates
 J2735_<TYPE>_GET public API macros that return all flags.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_get
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_get.j2"
 
 
 class TestGetGenerator(SpecLoadingTestBase):
@@ -29,8 +30,7 @@ class TestGetGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_has_public_get(self) -> None:
         """VehicleEventFlags should have GET macro."""
-        code = generate_bitstring_get("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         self.assertIn("J2735_VEHICLE_EVENT_FLAGS_GET", code)
         # Should call internal macros
         self.assertIn("J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS", code)
@@ -38,6 +38,5 @@ class TestGetGenerator(SpecLoadingTestBase):
 
     def test_non_extensible_type_simpler(self) -> None:
         """GNSSstatus should have simpler GET macro."""
-        code = generate_bitstring_get("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_GNSS_STATUS_GET", code)

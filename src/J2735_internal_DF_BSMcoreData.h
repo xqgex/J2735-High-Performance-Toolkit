@@ -53,7 +53,8 @@
 
 /* Internal - Structure metadata */
 #define J2735_PREFIX_BITS_BSM_CORE_DATA                                                            \
-  (0U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 0 ext + 0 opt = 0 bits (non-extensible, all required) */
+  (0U +                                                                                            \
+   J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 0 ext + 0 opt = 0 bits (non-extensible, all required) */
 
 /* Internal - Root component size (for calculating where extensions start) */
 
