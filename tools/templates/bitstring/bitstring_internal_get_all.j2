@@ -64,15 +64,17 @@ Example output (is_extensible=True, read_bits=22, root_size=13, ext_bits=14):
  * @return Right-aligned flag bits as {{ return_type }}:
  *         - {{ root_size }} significant bits (0x0000-0x{{ "%04X" | format(root_mask) }}) if non-extended
  *         - {{ ext_bits }} significant bits (0x0000-0x{{ "%04X" | format(ext_mask) }}) if extended
+ * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
+ *       The compiler optimizes the truncation to {{ return_type }}.
  * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_{{ typedef_name_upper }}(raw{{ read_bits }}) \
   (J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}(raw{{ read_bits }}) \
     ? /* Extended: low {{ ext_bits }} bits */ \
-    (({{ return_type }})((raw{{ read_bits }}) & ((1U << J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }}) - 1U))) \
+    (({{ return_type }})((raw{{ read_bits }}) & ((1ULL << J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }}) - 1ULL))) \
     : /* Non-ext: bits {{ read_bits - 2 }}..{{ root_shift }} = {{ root_size }} bits */ \
     (({{ return_type }})(((raw{{ read_bits }}) >> (J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} - 1U - J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }})) \
-                         & ((1U << J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }}) - 1U))))
+                         & ((1ULL << J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }}) - 1ULL))))
 {%  else %}
 /**
  * @internal

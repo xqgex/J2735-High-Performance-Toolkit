@@ -238,7 +238,7 @@ class TestOctetStringConstraintProperties(TestCase):
     @given(
         data=st.tuples(st.integers(0, 500), st.integers(0, 500)).filter(
             lambda x: x[0] < x[1]
-        )  # Use .filter() to ensure min_val is always <= max_val
+        )  # Use .filter() to ensure min_val is always < max_val
     )
     def test_variable_size_has_none_width(self, data: tuple[int, int]) -> None:
         """Variable-size OCTET STRING has None bit-width."""
@@ -266,7 +266,7 @@ class TestIA5StringConstraintProperties(TestCase):
     @given(
         data=st.tuples(st.integers(0, 500), st.integers(0, 500)).filter(
             lambda x: x[0] < x[1]
-        )  # Use .filter() to ensure min_val is always <= max_val
+        )  # Use .filter() to ensure min_val is always < max_val
     )
     def test_variable_size_has_none_width(self, data: tuple[int, int]) -> None:
         """Variable-size IA5String has None bit-width."""

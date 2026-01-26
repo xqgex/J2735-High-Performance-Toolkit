@@ -250,6 +250,7 @@ def generate_bitstring_code(template_path: str, spec: J2735Specification, type_n
 
     Raises:
         ValueError: If type_name is not found or not a BIT STRING.
+        jinja2.TemplateNotFound: If template_path does not exist.
     """
     typedef = spec.lookup_type(type_name)
     _validate_bitstring_type(typedef)

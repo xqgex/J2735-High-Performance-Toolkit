@@ -189,15 +189,17 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  * @return Right-aligned flag bits as uint16_t:
  *         - 13 significant bits (0x0000-0x1FFF) if non-extended
  *         - 14 significant bits (0x0000-0x3FFF) if extended
+ * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
+ *       The compiler optimizes the truncation to uint16_t.
  * @note Internal use only. Use J2735_VEHICLE_EVENT_FLAGS_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_VEHICLE_EVENT_FLAGS(raw22)                                          \
   (J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS(raw22) ? /* Extended: low 14 bits */            \
-       ((uint16_t)((raw22) & ((1UL << J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS) - 1U)))         \
+       ((uint16_t)((raw22) & ((1ULL << J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS) - 1ULL)))      \
                                                           : /* Non-ext: bits 20..8 = 13 bits */    \
        ((uint16_t)(((raw22) >> (J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS - 1U -            \
                                 J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS)) &                   \
-                   ((1UL << J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS) - 1U))))
+                   ((1ULL << J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS) - 1ULL))))
 
 /**
  * @internal
