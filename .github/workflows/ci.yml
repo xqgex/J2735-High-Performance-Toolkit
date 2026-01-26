@@ -150,6 +150,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup LLVM (macOS)
+        if: startsWith(matrix.os, 'macos-') && startsWith(matrix.compiler, 'clang-')
+        run: |
+          LLVM_VERSION=$(echo "${{ matrix.compiler }}" | sed 's/clang-//')
+          LLVM_PATH="$(brew --prefix llvm@$LLVM_VERSION)/bin"
+          echo "$LLVM_PATH" >> $GITHUB_PATH
+          ln -sf "$LLVM_PATH/clang" "$LLVM_PATH/${{ matrix.compiler }}"
+
       - name: Build & Test (Unix)
         if: matrix.compiler != 'msvc'
         env:
@@ -163,7 +171,14 @@ jobs:
           if not exist build mkdir build
           for /f "delims=" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath') do set VSDIR=%%i
           call "%VSDIR%\VC\Auxiliary\Build\vcvars64.bat"
-          cl /std:c11 /W4 /WX /O2 /Isrc /Fe:build\J2735_run_tests.exe tests\J2735_run_tests.c
+          cl /std:c11 /W4 /WX /O2 /Isrc /Fe:build\J2735_run_tests.exe ^
+            tests\J2735_internal_DE_VehicleEventFlags_test.c ^
+            tests\J2735_internal_DF_BSMcoreData_test.c ^
+            tests\J2735_internal_DF_IntersectionReferenceID_test.c ^
+            tests\J2735_internal_DF_PathPrediction_test.c ^
+            tests\J2735_run_tests.c ^
+            tests\J2735_UPER_test.c ^
+            tests\unity.c
           build\J2735_run_tests.exe
 
   # ===========================================================================
