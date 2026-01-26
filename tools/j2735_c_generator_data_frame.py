@@ -35,7 +35,6 @@ from .j2735_c_generator_wire_format import compute_wire_format
 from .j2735_spec_constraints import SequenceType
 from .j2735_spec_parser import ASN1TypeClass, ASN1TypeDefinition, J2735Specification
 
-
 _SEQUENCE_TEMPLATE_NAME = "assemble_df.j2"
 
 # Maximum wire bits for single I/O pattern (J2735_READ_BITS limit at worst alignment)
