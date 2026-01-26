@@ -190,6 +190,10 @@ jobs:
         id: cppcheck
         run: |
           echo "### cppcheck" > cppcheck_output.txt
+          echo '' >> cppcheck_output.txt
+          echo '<details>' >> cppcheck_output.txt
+          echo '<summary>Click to expand</summary>' >> cppcheck_output.txt
+          echo '' >> cppcheck_output.txt
           echo '```' >> cppcheck_output.txt
           if make check 2>&1 | tee -a cppcheck_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -197,11 +201,17 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
           echo '```' >> cppcheck_output.txt
+          echo '' >> cppcheck_output.txt
+          echo '</details>' >> cppcheck_output.txt
 
       - name: Run clang-tidy
         id: tidy
         run: |
           echo "### clang-tidy" > tidy_output.txt
+          echo '' >> tidy_output.txt
+          echo '<details>' >> tidy_output.txt
+          echo '<summary>Click to expand</summary>' >> tidy_output.txt
+          echo '' >> tidy_output.txt
           echo '```' >> tidy_output.txt
           if make tidy 2>&1 | tee -a tidy_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -209,6 +219,8 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
           echo '```' >> tidy_output.txt
+          echo '' >> tidy_output.txt
+          echo '</details>' >> tidy_output.txt
 
       - name: Create summary
         if: always()

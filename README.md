@@ -50,7 +50,7 @@ Because this library is in active alpha, the code itself is the source of truth.
 1. **For API Examples**: See `tests/`.
    - The test files (e.g., `tests/J2735_internal_DF_BSMcoreData_test.c`) contain compiled, verified examples of how to access fields.
 2. **For Available Types**: See `src/`.
-   - Header files define the e xact macros available for each J2735 Data Frame.
+   - Header files define the exact macros available for each J2735 Data Frame.
 
 ## Build & Test
 

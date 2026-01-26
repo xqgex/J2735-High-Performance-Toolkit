@@ -23,8 +23,9 @@
 
 # Directory structure (relative to this Makefile's location)
 MAKEFILE_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-SRC_DIR      := $(realpath $(MAKEFILE_DIR)../src)
-BUILD_DIR    := $(realpath $(MAKEFILE_DIR)../build)
+ROOT_DIR     := $(realpath $(MAKEFILE_DIR)..)
+SRC_DIR      := $(ROOT_DIR)/src
+BUILD_DIR    := $(ROOT_DIR)/build
 
 # -----------------------------------------------------------------------------
 # Autodiscovery - scales as project grows

@@ -144,22 +144,30 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: pip install jinja2 coverage
+        run: pip install coverage hypothesis jinja2
 
       - name: Run tests with coverage
         id: test
         run: |
+          set -o pipefail
           echo "## Python Tests" > "$TEST_OUTPUT_FILE"
+          echo "" >> "$TEST_OUTPUT_FILE"
+          echo "<details>" >> "$TEST_OUTPUT_FILE"
+          echo "<summary>Test Output</summary>" >> "$TEST_OUTPUT_FILE"
           echo "" >> "$TEST_OUTPUT_FILE"
           echo '```' >> "$TEST_OUTPUT_FILE"
           if coverage run --source="$COVERAGE_SOURCE" -m tools.run_tests 2>&1 | tee -a "$TEST_OUTPUT_FILE"; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo '```' >> "$TEST_OUTPUT_FILE"
             echo "" >> "$TEST_OUTPUT_FILE"
+            echo "</details>" >> "$TEST_OUTPUT_FILE"
+            echo "" >> "$TEST_OUTPUT_FILE"
             echo "✅ All tests passed" >> "$TEST_OUTPUT_FILE"
           else
             echo "status=failure" >> $GITHUB_OUTPUT
             echo '```' >> "$TEST_OUTPUT_FILE"
+            echo "" >> "$TEST_OUTPUT_FILE"
+            echo "</details>" >> "$TEST_OUTPUT_FILE"
             echo "" >> "$TEST_OUTPUT_FILE"
             echo "❌ Tests failed" >> "$TEST_OUTPUT_FILE"
           fi
@@ -283,11 +291,12 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install tools
-        run: pip install jinja2 mypy pylint flake8 ruff codespell
+        run: pip install codespell flake8 hypothesis jinja2 mypy pylint ruff
 
       - name: Run mypy
         id: mypy
         run: |
+          set -o pipefail
           echo "### mypy" > mypy_output.txt
           echo '```' >> mypy_output.txt
           if python -m mypy tools/ --strict 2>&1 | tee -a mypy_output.txt; then
@@ -300,9 +309,10 @@ jobs:
       - name: Run pylint
         id: pylint
         run: |
+          set -o pipefail
           echo "### pylint" > pylint_output.txt
           echo '```' >> pylint_output.txt
-          if python -m pylint tools/ 2>&1 | tee -a pylint_output.txt; then
+          if python -m pylint tools/ --rcfile=tools/pyproject.toml 2>&1 | tee -a pylint_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failure" >> $GITHUB_OUTPUT
@@ -312,10 +322,15 @@ jobs:
       - name: Run flake8
         id: flake8
         run: |
+          set -o pipefail
           echo "### flake8" > flake8_output.txt
           echo '```' >> flake8_output.txt
           if python -m flake8 tools/ --config tools/.flake8 2>&1 | tee -a flake8_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
+            # Check if only header lines (no actual output)
+            if [ "$(wc -l < flake8_output.txt)" -le 2 ]; then
+              echo "No issues found" >> flake8_output.txt
+            fi
           else
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
@@ -324,6 +339,7 @@ jobs:
       - name: Run ruff
         id: ruff
         run: |
+          set -o pipefail
           echo "### ruff" > ruff_output.txt
           echo '```' >> ruff_output.txt
           if ruff check tools/ --config tools/pyproject.toml 2>&1 | tee -a ruff_output.txt; then
@@ -336,10 +352,15 @@ jobs:
       - name: Run codespell
         id: codespell
         run: |
+          set -o pipefail
           echo "### codespell" > codespell_output.txt
           echo '```' >> codespell_output.txt
           if codespell tools/ --toml tools/pyproject.toml 2>&1 | tee -a codespell_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
+            # Check if only header lines (no actual output)
+            if [ "$(wc -l < codespell_output.txt)" -le 2 ]; then
+              echo "No issues found" >> codespell_output.txt
+            fi
           else
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
