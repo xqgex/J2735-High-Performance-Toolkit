@@ -116,47 +116,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Ubuntu 24.04 Architecture x64 Clang 16.0.6, 17.0.6, 18.1.3 and GCC 13.2.0
-          # 1. GCC 13: Newest GCC on x64
-          # 2. Clang 18: Newest Clang on x64
-          - os: ubuntu-24.04
-            compiler: gcc-13
-          - os: ubuntu-24.04
-            compiler: clang-18
-          # Ubuntu 22.04 Architecture x64 Clang 13.0.1, 14.0.0, 15.0.7 and GCC 11.2.0
-          # 1. GCC 11: Oldest GCC - compatibility floor
-          # 2. Clang 13: Oldest Clang - compatibility floor
-          - os: ubuntu-22.04
-            compiler: gcc-11
-          - os: ubuntu-22.04
-            compiler: clang-13
-          # macOS 15 Architecture arm64 Clang 17.0.0, 18.1.8 and GCC 13.4.0, 14.3.0, 15.2.0
-          # 1. GCC 15: Newest GCC on ARM64
-          # 2. Clang 18: Newest Clang on ARM64
-          - os: macos-15
-            compiler: gcc-15
-          - os: macos-15
-            compiler: clang-18
-          # macOS 13 Architecture Intel Clang 14.0.0, 15.0.7 and GCC 12.4.0, 13.4.0, 14.3.0, 15.1.0
-          # 1. GCC 12: Oldest GCC on Intel
-          - os: macos-13
-            compiler: gcc-12
-          # Windows Server 2025 Architecture x64 MSVC
-          # 1. Windows codepath
-          - os: windows-2025
-            compiler: msvc
+          # Linux x64 - Compiler version boundaries
+          - { os: ubuntu-22.04,     compiler: gcc-11   }
+          - { os: ubuntu-22.04,     compiler: clang-13 }
+          # Linux arm64 - Newest compilers + ARM architecture
+          - { os: ubuntu-24.04-arm, compiler: gcc-14   }
+          - { os: ubuntu-24.04-arm, compiler: clang-18 }
+          # macOS arm64 - Apple Clang (clang-17)
+          - { os: macos-26,         compiler: clang    }
+          # macOS x64 - GCC with macOS toolchain
+          - { os: macos-15-intel,   compiler: gcc-15   }
+          # Windows x64 - MSVC
+          - { os: windows-2025,     compiler: msvc     }
+          # Windows arm64 - MSVC
+          - { os: windows-11-arm,   compiler: msvc     }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup LLVM (macOS)
-        if: startsWith(matrix.os, 'macos-') && startsWith(matrix.compiler, 'clang-')
-        run: |
-          LLVM_VERSION=$(echo "${{ matrix.compiler }}" | sed 's/clang-//')
-          LLVM_PATH="$(brew --prefix llvm@$LLVM_VERSION)/bin"
-          echo "$LLVM_PATH" >> $GITHUB_PATH
-          ln -sf "$LLVM_PATH/clang" "$LLVM_PATH/${{ matrix.compiler }}"
 
       - name: Build & Test (Unix)
         if: matrix.compiler != 'msvc'

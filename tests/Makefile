@@ -189,7 +189,9 @@ endif
 # Test Framework Suppressions (for third-party code like Unity)
 # -----------------------------------------------------------------------------
 TEST_SUPPRESS_WFLAGS := -Wno-float-equal
-ifndef IS_CLANG
+ifdef IS_CLANG
+    TEST_SUPPRESS_WFLAGS += -Wno-covered-switch-default
+else
     ifeq ($(shell expr $(COMPILER_VERSION) \>= 14), 1)
         TEST_SUPPRESS_WFLAGS += -Wno-useless-cast
         TEST_SUPPRESS_WFLAGS += -Wno-suggest-attribute=returns_nonnull
