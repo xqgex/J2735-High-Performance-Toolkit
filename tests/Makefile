@@ -235,7 +235,7 @@ $(BUILD_DIR)/%_test.o: %_test.c $(HEADERS) | $(BUILD_DIR)
 
 # Link main + test suites + library into single test binary
 $(TEST_BIN): $(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS) $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ $(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
+	$(CC) $(CFLAGS) $(TEST_SUPPRESS_WFLAGS) -o $@ $(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
 
 # Run all tests
 test: $(TEST_BIN)
