@@ -23,8 +23,7 @@
   Pattern: J2735_INTERNAL_EXT_SIZE_{TYPE} {EXT_SIZE}U
 
   Context variables:
-    - type_name: Type name (e.g., "VehicleEventFlags")
-    - ext_bits: Extended size in bits
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -33,9 +32,11 @@
     /** @internal @brief Extended size of... */
     #define J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS 14U
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 /**
  * @internal
- * @brief Extended size of {{ type_name }} in bits.
+ * @brief Extended size of {{ typedef_name }} in bits.
  */
-#define J2735_INTERNAL_EXT_SIZE_{{ seq_upper }} {{ ext_bits }}U
+#define J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }} {{ ext_bits }}U

@@ -23,11 +23,7 @@
   Pattern: J2735_INTERNAL_IS_EXTENSION_{TYPE}(raw)
 
   Context variables:
-    - type_name: Type name (e.g., "VehicleEventFlags")
-    - is_extensible: Whether the BIT STRING is extensible
-    - read_bits: Total bits read from buffer
-    - root_size: Number of bits in root form
-    - ext_bits: Number of bits in extended form
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -35,9 +31,13 @@
   Output format:
     #define J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS(raw22) (((raw22) >> 21U) != 0U)
 -#}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set typedef_name = typedef.name -%}
 {%- set ext_bit_pos = read_bits - 1 -%}
-{%- set seq_upper = type_name | screaming_snake -%}
-{% if is_extensible %}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
+{%  if typedef.constraint.is_extensible %}
 /**
  * @internal
  * @brief Check extension bit from pre-read {{ read_bits }}-bit raw value.
@@ -46,22 +46,22 @@
  * - 0 = Root form: {{ root_size }} flag bits follow immediately after extension bit
  * - 1 = Extended form: 7-bit nsnnwn (value={{ ext_bits }}) followed by {{ ext_bits }} flag bits
  *
- * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ seq_upper }}().
+ * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_{{ seq_upper }}_IS_EXTENDED() for public API.
+ * @note Internal use only. Use J2735_{{ typedef_name_upper }}_IS_EXTENDED() for public API.
  */
-#define J2735_INTERNAL_IS_EXTENSION_{{ seq_upper }}(raw{{ read_bits }}) \
-  (((raw{{ read_bits }}) >> (J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }} - 1U)) != 0U)
-{% else %}
+#define J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}(raw{{ read_bits }}) \
+  (((raw{{ read_bits }}) >> (J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} - 1U)) != 0U)
+{%  else %}
 /**
  * @internal
- * @brief Extension check for non-extensible {{ type_name }}.
+ * @brief Extension check for non-extensible {{ typedef_name }}.
  *
  * This type is not extensible, so always returns false (0).
  *
- * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ seq_upper }}().
+ * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @return Always 0 (not extended).
  * @note Internal use only.
  */
-#define J2735_INTERNAL_IS_EXTENSION_{{ seq_upper }}(raw{{ read_bits }}) (0U)
-{% endif %}
+#define J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}(raw{{ read_bits }}) (0U)
+{%  endif %}

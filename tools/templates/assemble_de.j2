@@ -16,34 +16,44 @@
   SPDX-License-Identifier: Apache-2.0
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
+{#-
+Template: assemble_de.j2
+Purpose: Generate C header file for a data element (DE).
+
+Template Context (from generator):
+  - typedef: The full typedef object containing the metadata
+-#}
+{%- set is_extensible = typedef.constraint.is_extensible -%}
+{%- set named_bits = typedef.constraint.named_bits -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 {#- Banner line width: 100 chars total, content area is 92 chars -#}
 {%- set W = 92 -%}
-{%- set seq_upper = type_name | screaming_snake -%}
-{% include 'license.j2' %}
-{% include 'file_header_de.j2' %}
-#ifndef J2735_INTERNAL_DE_{{ type_name | upper }}_H
-#define J2735_INTERNAL_DE_{{ type_name | upper }}_H
+{%  include 'license.j2' %}
+{%  include 'file_header_de.j2' %}
+#ifndef J2735_INTERNAL_DE_{{ typedef_name | upper }}_H
+#define J2735_INTERNAL_DE_{{ typedef_name | upper }}_H
 
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
 /*  Constants                                                                                     */
 /* ============================================================================================== */
-{% include 'bitstring/bitstring_internal_root_size.j2' %}
-{% if is_extensible %}
+{%  include 'bitstring/bitstring_internal_root_size.j2' %}
+{%  if is_extensible %}
 
-{% include 'bitstring/bitstring_internal_ext_size.j2' %}
+{%    include 'bitstring/bitstring_internal_ext_size.j2' %}
 
-{% include 'bitstring/bitstring_internal_max_wire_bits.j2' %}
+{%    include 'bitstring/bitstring_internal_max_wire_bits.j2' %}
 
-_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }} ==
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} ==
                    (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_NSNNWN_SMALL_BITS +
-                    J2735_INTERNAL_EXT_SIZE_{{ seq_upper }}),
+                    J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }}),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
-{% endif %}
-{% if named_bits %}
+{%  endif %}
+{%  if named_bits %}
 
-{% set bit_position_constants_line = "@note Internal use only. Use the public J2735_" ~ (seq_upper) ~ "_GET_*() accessors instead." %}
+{%    set bit_position_constants_line = "@note Internal use only. Use the public J2735_" ~ (typedef_name_upper) ~ "_GET_*() accessors instead." %}
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
@@ -52,41 +62,41 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }} ==
 /*                                                                                                */
 /*  {{ "%-*s"|format(W, bit_position_constants_line) }}  */
 /* ============================================================================================== */
-{% include 'bitstring/bitstring_internal_bit_pos.j2' %}
-{% endif %}
+{%    include 'bitstring/bitstring_internal_bit_pos.j2' %}
+{%  endif %}
 
 /* ============================================================================================== */
 /*  INTERNAL: Raw Buffer Read                                                                     */
 /* ============================================================================================== */
-{% include 'bitstring/bitstring_internal_raw_read.j2' %}
+{%  include 'bitstring/bitstring_internal_raw_read.j2' %}
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
 /* ============================================================================================== */
-{% include 'bitstring/bitstring_internal_is_extension.j2' %}
-{% if data_type == "bit_string" %}
+{%  include 'bitstring/bitstring_internal_is_extension.j2' %}
+{%  if data_type == "bit_string" %}
 
 /* ============================================================================================== */
 /*  INTERNAL: Extract Flags                                                                       */
 /* ============================================================================================== */
-{% include 'bitstring/bitstring_internal_get_all.j2' %}
+{%    include 'bitstring/bitstring_internal_get_all.j2' %}
 
-{% include 'bitstring/bitstring_internal_get_one.j2' %}
+{%    include 'bitstring/bitstring_internal_get_one.j2' %}
 {% endif %}
 
-{% set public_api_line = "PUBLIC API: " ~ type_name ~ " Accessors" %}
+{%  set public_api_line = "PUBLIC API: " ~ typedef_name ~ " Accessors" %}
 /* ============================================================================================== */
 /*  {{ "%-*s"|format(W, public_api_line) }}  */
 /* ============================================================================================== */
-{% include 'bitstring/bitstring_is_extended.j2' %}
+{%  include 'bitstring/bitstring_is_extended.j2' %}
 
-{% include 'bitstring/bitstring_size.j2' %}
+{%  include 'bitstring/bitstring_size.j2' %}
 
-{% include 'bitstring/bitstring_get.j2' %}
-{% if data_type == "bit_string" and named_bits %}
+{%  include 'bitstring/bitstring_get.j2' %}
+{%  if data_type == "bit_string" and named_bits %}
 
-{% include 'bitstring/bitstring_get_one.j2' %}
-{% endif %}
+{%    include 'bitstring/bitstring_get_one.j2' %}
+{%  endif %}
 
-#endif /* J2735_INTERNAL_DE_{{ type_name | upper }}_H */
+#endif /* J2735_INTERNAL_DE_{{ typedef_name | upper }}_H */
 {# Blank Line #}

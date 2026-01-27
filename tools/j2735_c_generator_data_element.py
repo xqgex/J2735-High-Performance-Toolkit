@@ -18,15 +18,9 @@
 TODO
 """
 
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from .j2735_c_generator_jinja import create_jinja_env, get_template
 from .j2735_spec_constraints import BitStringConstraint
-
-if TYPE_CHECKING:
-    from .j2735_spec_parser import J2735Specification
+from .j2735_spec_parser import J2735Specification
 
 _TEMPLATE_NAME = "assemble_de.j2"
 
@@ -58,15 +52,6 @@ def generate_data_element(type_name: str, spec: J2735Specification) -> str:
     template = get_template(env, _TEMPLATE_NAME)
 
     return template.render(
-        # Type identification
-        type_name=type_name,
         data_type=typedef.type_class.name.lower(),
-        # Constraint properties
-        is_extensible=typedef.constraint.is_extensible,
-        root_size=typedef.constraint.root_size,
-        ext_bits=typedef.constraint.ext_bits,
-        # Wire encoding sizes
-        read_bits=typedef.constraint.read_bits,
-        # Named bits for accessor generation
-        named_bits=typedef.constraint.named_bits,
+        typedef=typedef,
     )

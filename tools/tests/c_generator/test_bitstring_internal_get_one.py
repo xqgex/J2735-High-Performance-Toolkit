@@ -20,8 +20,9 @@ Tests cover generate_bitstring_internal_get_one which generates
 J2735_INTERNAL_GET_ONE_<TYPE> macros that extract a single bit.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_get_one
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_internal_get_one.j2"
 
 
 class TestInternalGetOneGenerator(SpecLoadingTestBase):
@@ -29,8 +30,7 @@ class TestInternalGetOneGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_bit_extraction(self) -> None:
         """VehicleEventFlags should extract single bit."""
-        code = generate_bitstring_internal_get_one("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         self.assertIn("J2735_INTERNAL_GET_ONE_VEHICLE_EVENT_FLAGS", code)
         # Should have bit extraction logic
         self.assertIn(">>", code)
@@ -38,7 +38,6 @@ class TestInternalGetOneGenerator(SpecLoadingTestBase):
 
     def test_non_extensible_type_simpler_logic(self) -> None:
         """GNSSstatus should also extract single bit."""
-        code = generate_bitstring_internal_get_one("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_INTERNAL_GET_ONE_GNSS_STATUS", code)
         self.assertIn("& 1U", code)

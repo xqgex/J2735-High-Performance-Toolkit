@@ -20,8 +20,9 @@ Tests cover generate_bitstring_internal_get_all which generates
 J2735_INTERNAL_GET_ALL_<TYPE> macros that extract all flag bits.
 """
 
-from tools.j2735_c_generator_bitstring import generate_bitstring_internal_get_all
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+
+_TEMPLATE_NAME = "bitstring/bitstring_internal_get_all.j2"
 
 
 class TestInternalGetAllGenerator(SpecLoadingTestBase):
@@ -29,14 +30,12 @@ class TestInternalGetAllGenerator(SpecLoadingTestBase):
 
     def test_extensible_type_has_shift_logic(self) -> None:
         """VehicleEventFlags should mask and shift correctly."""
-        code = generate_bitstring_internal_get_all("VehicleEventFlags", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
         self.assertIn("J2735_INTERNAL_GET_ALL_VEHICLE_EVENT_FLAGS", code)
         # Should have shift for root flags
         self.assertIn(">>", code)
 
     def test_non_extensible_type_no_extension_handling(self) -> None:
         """GNSSstatus should have simple mask without extension logic."""
-        code = generate_bitstring_internal_get_all("GNSSstatus", self.spec)
-
+        code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
         self.assertIn("J2735_INTERNAL_GET_ALL_GNSS_STATUS", code)

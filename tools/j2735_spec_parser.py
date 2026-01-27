@@ -25,15 +25,13 @@ This module provides:
     - UPER bit-width calculation per ITU-T X.691
 """
 
-from __future__ import annotations
-
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum, auto
 from pathlib import Path
 from re import DOTALL, MULTILINE, Pattern
 from re import compile as re_compile
-from typing import Final
+from typing import Final, Self
 
 from .j2735_spec_constraints import (
     BitStringConstraint,
@@ -146,7 +144,7 @@ class ASN1TypeClass(Enum):
         return f"<{self.__class__.__name__}.{self.name}>"
 
     @classmethod
-    def from_definition(cls, raw_def: str) -> ASN1TypeClass:
+    def from_definition(cls, raw_def: str) -> "ASN1TypeClass":
         """Classify an ASN.1 type from its definition string.
 
         Args:
@@ -248,7 +246,7 @@ class ASN1TypeDefinition:
         return self.constraint.uper_bit_width
 
     @classmethod
-    def from_asn1(cls, name: str, raw_def: str, **kwargs: str) -> ASN1TypeDefinition:
+    def from_asn1(cls, name: str, raw_def: str, **kwargs: str) -> Self:
         """Parse a complete ASN.1 type definition.
 
         Factory method to create an ASN1TypeDefinition from raw ASN.1 text.
@@ -347,7 +345,7 @@ class SpecEntry:
     line_number: int | None  # TODO: Inspect if still unused
 
     @classmethod
-    def from_data_element_block(cls, block: str, line_offset: int) -> SpecEntry | None:
+    def from_data_element_block(cls, block: str, line_offset: int) -> Self | None:
         """Parse a single Data Element block from section 7.
 
         Args:
@@ -362,7 +360,6 @@ class SpecEntry:
             return None
 
         section_number = header_match.group(1)
-        name = header_match.group(2)
 
         # Extract Use: description
         use_match = _USE_BLOCK_PATTERN.search(block)
@@ -370,39 +367,36 @@ class SpecEntry:
 
         # Extract ASN.1 Representation
         asn1_match = _ASN1_REPR_BLOCK_PATTERN.search(block)
-        asn1_text = asn1_match.group(1).strip() if asn1_match else ""
 
         # Extract Remarks
         remarks_match = _REMARKS_BLOCK_PATTERN.search(block)
-        remarks = remarks_match.group(1).strip() if remarks_match else ""
 
         # Parse the ASN.1 definition
         asn1_def = None
-        if asn1_text:
+        if asn1_text := asn1_match.group(1).strip() if asn1_match else "":
             # Find the main type definition line
             type_def_match = _ASN1_TYPE_DEF_PATTERN.search(asn1_text)
             if type_def_match:
-                type_name = type_def_match.group(1)
                 type_body = type_def_match.group(2)
 
                 # For multi-line definitions, capture everything until comment-only lines
-                remaining = asn1_text[type_def_match.end() :]  # noqa: E203  # Black VS flake8
                 # Add continuation lines (those that aren't just comments)
-                for line in remaining.splitlines():
+                for line in asn1_text[
+                    type_def_match.end() :  # noqa: E203  # Black VS flake8
+                ].splitlines():
                     stripped = line.strip()
                     if stripped and not stripped.startswith(_ASN1_COMMENT_PREFIX):
                         type_body += " " + stripped
                     elif stripped.startswith(_ASN1_COMMENT_PREFIX):
                         # Keep comments that contain encoding info
-                        stripped_lower = stripped.lower()
                         if (
-                            _COMMENT_BIT_KEYWORD in stripped_lower
-                            or _COMMENT_SIZE_KEYWORD in stripped_lower
+                            _COMMENT_BIT_KEYWORD in stripped.lower()
+                            or _COMMENT_SIZE_KEYWORD in stripped.lower()
                         ):
                             type_body += " " + stripped
 
                 asn1_def = ASN1TypeDefinition.from_asn1(
-                    type_name,
+                    type_def_match.group(1),
                     type_body,
                     spec_section=section_number,
                     description=use_description,
@@ -411,16 +405,16 @@ class SpecEntry:
         return cls(
             section_number=section_number,
             entry_type=J2735EntryKind.DATA_ELEMENTS,
-            name=name,
+            name=header_match.group(2),
             abbreviation="",
             use_description=use_description,
             asn1_definition=asn1_def,
-            remarks=remarks,
+            remarks=remarks_match.group(1).strip() if remarks_match else "",
             line_number=line_offset,
         )
 
     @classmethod
-    def from_data_frame_block(cls, block: str, line_offset: int) -> SpecEntry | None:
+    def from_data_frame_block(cls, block: str, line_offset: int) -> Self | None:
         """Parse a single Data Frame block from section 6.
 
         Args:
@@ -454,11 +448,9 @@ class SpecEntry:
         if asn1_text:
             type_def_match = _ASN1_TYPE_DEF_DOTALL_PATTERN.search(asn1_text)
             if type_def_match:
-                type_name = type_def_match.group(1)
-                type_body = type_def_match.group(2).strip()
                 asn1_def = ASN1TypeDefinition.from_asn1(
-                    type_name,
-                    type_body,
+                    type_def_match.group(1),
+                    type_def_match.group(2).strip(),
                     spec_section=section_number,
                     description=use_description,
                 )
@@ -475,7 +467,7 @@ class SpecEntry:
         )
 
     @classmethod
-    def from_message_block(cls, block: str, line_offset: int) -> SpecEntry | None:
+    def from_message_block(cls, block: str, line_offset: int) -> Self | None:
         """Parse a single Message block from section 5.
 
         Args:
@@ -510,11 +502,9 @@ class SpecEntry:
         if asn1_text:
             type_def_match = _ASN1_TYPE_DEF_DOTALL_PATTERN.search(asn1_text)
             if type_def_match:
-                type_name = type_def_match.group(1)
-                type_body = type_def_match.group(2).strip()
                 asn1_def = ASN1TypeDefinition.from_asn1(
-                    type_name,
-                    type_body,
+                    type_def_match.group(1),
+                    type_def_match.group(2).strip(),
                     spec_section=section_number,
                     description=use_description,
                 )
@@ -555,22 +545,26 @@ def _resolve_constraint(
         return None
 
     if isinstance(constraint, TypeReference):
+        type_ref_return = None
         # Look up the referenced type
         if constraint.name in resolving:
             # TODO: Circular references silently return None. Consider:
             #   - Logging an error for debugging
             #   - Raising an exception that propagates to the caller
             #   - Making cycles impossible by construction (prove with types)
-            return None  # Circular reference
-        typedef = registry.get(constraint.name)
-        if typedef is None:
-            return constraint  # Keep as unresolved reference
-        # Recursively resolve the referenced type's constraint
-        return _resolve_constraint(
-            typedef.constraint,
-            registry,
-            resolving | {constraint.name},
-        )
+            pass  # Circular reference
+        else:
+            typedef = registry.get(constraint.name)
+            type_ref_return = (
+                constraint
+                if typedef is None
+                else _resolve_constraint(
+                    typedef.constraint,
+                    registry,
+                    resolving | {constraint.name},
+                )
+            )
+        return type_ref_return
 
     if isinstance(constraint, SequenceType):
         # Resolve each field's type using evolve()
@@ -667,7 +661,7 @@ class J2735Specification:
         cls,
         content: str,
         version: str = _DEFAULT_VERSION,
-    ) -> J2735Specification:
+    ) -> Self:
         """Parse J2735 specification from content string.
 
         This is the core parsing method that processes the specification text.

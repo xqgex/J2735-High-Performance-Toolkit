@@ -21,13 +21,7 @@ Template: bitstring_internal_get_one.j2
 Purpose: Generate C macro for extracting a single flag bit from pre-read raw value.
 
 Template Context (from generator):
-  - type_name: str - BIT STRING type name (e.g., "VehicleEventFlags")
-  - is_extensible: bool - Whether the type has extension marker
-  - read_bits: int - Total bits read (e.g., 22)
-  - root_size: int - Root constraint bits (e.g., 13)
-  - ext_bits: int - Extended constraint bits (e.g., 14)
-  - ext_flag_base: int - Bit position of F0 in extended form (e.g., 13)
-  - root_flag_base: int - Bit position of F0 in non-extended/root form (e.g., 20)
+  - typedef: The full typedef object containing the metadata
 
 Example output (is_extensible=True, read_bits=22, ext_flag_base=13, root_flag_base=20):
     /**
@@ -40,10 +34,13 @@ Example output (is_extensible=True, read_bits=22, ext_flag_base=13, root_flag_ba
         ? (((raw22) >> (13U - (bit_pos))) & 1U) \
         : (((raw22) >> (20U - (bit_pos))) & 1U)))
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
-{% if is_extensible %}
-{%- set ext_flag_base = ext_bits - 1 -%}
-{%- set root_flag_base = read_bits - 2 -%}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set typedef_name_upper = typedef.name | screaming_snake -%}
+{%  if typedef.constraint.is_extensible %}
+{%-   set ext_flag_base = ext_bits - 1 -%}
+{%-   set root_flag_base = read_bits - 2 -%}
 /**
  * @internal
  * @brief Extract a single flag bit from pre-read {{ read_bits }}-bit raw value.
@@ -58,32 +55,32 @@ Example output (is_extensible=True, read_bits=22, ext_flag_base=13, root_flag_ba
  *   F0 at bit {{ ext_flag_base }}, F1 at bit {{ ext_flag_base - 1 }}, ..., F{{ ext_bits - 1 }} at bit 0
  *   Formula: (raw{{ read_bits }} >> ({{ ext_flag_base }} - bit_pos)) & 1
  *
- * @param[in] raw{{ read_bits }}   Value previously returned by J2735_INTERNAL_RAW_READ_{{ seq_upper }}().
- * @param[in] bit_pos ASN.1 bit position (0-{{ ext_bits - 1 }}). Use J2735_INTERNAL_BIT_{{ seq_upper }}_*
+ * @param[in] raw{{ read_bits }}   Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
+ * @param[in] bit_pos ASN.1 bit position (0-{{ ext_bits - 1 }}). Use J2735_INTERNAL_BIT_{{ typedef_name_upper }}_*
  *                    constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= {{ root_size }} reads undefined garbage bits.
  *          Caller should verify IS_EXTENDED before accessing extension-only flags.
- * @note Internal use only. Use J2735_{{ seq_upper }}_GET_*() accessors for public API.
+ * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET_*() accessors for public API.
  */
-#define J2735_INTERNAL_GET_ONE_{{ seq_upper }}(raw{{ read_bits }}, bit_pos) \
-  ((uint8_t)(J2735_INTERNAL_IS_EXTENSION_{{ seq_upper }}(raw{{ read_bits }}) \
+#define J2735_INTERNAL_GET_ONE_{{ typedef_name_upper }}(raw{{ read_bits }}, bit_pos) \
+  ((uint8_t)(J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}(raw{{ read_bits }}) \
     ? /* Extended: F0 at bit {{ ext_flag_base }} */ \
-    (((raw{{ read_bits }}) >> ((J2735_INTERNAL_EXT_SIZE_{{ seq_upper }} - 1U) - (bit_pos))) & 1U) \
+    (((raw{{ read_bits }}) >> ((J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }} - 1U) - (bit_pos))) & 1U) \
     : /* Non-ext: F0 at bit {{ root_flag_base }} */ \
-    (((raw{{ read_bits }}) >> ((J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }} - 2U) - (bit_pos))) & 1U)))
-{% else %}
-{%- set root_flag_base = root_size - 1 -%}
+    (((raw{{ read_bits }}) >> ((J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} - 2U) - (bit_pos))) & 1U)))
+{%  else %}
+{%-   set root_flag_base = root_size - 1 -%}
 /**
  * @internal
  * @brief Extract a single flag bit from pre-read {{ read_bits }}-bit raw value.
  *
- * @param[in] raw{{ read_bits }}   Value previously returned by J2735_INTERNAL_RAW_READ_{{ seq_upper }}().
- * @param[in] bit_pos ASN.1 bit position (0-{{ ext_bits - 1 }}). Use J2735_INTERNAL_BIT_{{ seq_upper }}_*
+ * @param[in] raw{{ read_bits }}   Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
+ * @param[in] bit_pos ASN.1 bit position (0-{{ ext_bits - 1 }}). Use J2735_INTERNAL_BIT_{{ typedef_name_upper }}_*
  *                    constants.
  * @return 0 or 1 as uint8_t.
- * @note Internal use only. Use J2735_{{ seq_upper }}_GET_*() accessors for public API.
+ * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET_*() accessors for public API.
  */
-#define J2735_INTERNAL_GET_ONE_{{ seq_upper }}(raw{{ read_bits }}, bit_pos) \
+#define J2735_INTERNAL_GET_ONE_{{ typedef_name_upper }}(raw{{ read_bits }}, bit_pos) \
   ((uint8_t)(((raw{{ read_bits }}) >> ({{ root_flag_base }}U - (bit_pos))) & 1U))
-{% endif %}
+{%  endif %}

@@ -26,9 +26,8 @@
   and maintainability. Compiler evaluates to constant at compile time.
 
   Context variables:
-    - type_name: Type name (e.g., "PathPrediction")
-    - root_size_bits: Total root size in bits (for comment)
     - field_type_names: List of field type names (e.g., ["RadiusOfCurvature", "Confidence"])
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
@@ -38,12 +37,13 @@
       (J2735_PREFIX_BITS_PATH_PREDICTION + J2735_BW_RADIUS_OF_CURVATURE + \
        J2735_BW_CONFIDENCE) /* 25 bits */
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
+{%- set root_uper_bit_width = typedef.constraint.root_uper_bit_width -%}
+{%- set typedef_name_upper = typedef.name | screaming_snake -%}
 /**
  * @internal
  * @brief Total size of root component in bits (prefix + all root fields).
  *
  * Used to locate where extension data begins when extension bit is set.
  */
-#define J2735_ROOT_SIZE_BITS_{{ seq_upper }} \
-  (J2735_PREFIX_BITS_{{ seq_upper }}{% for ft in field_type_names %} + J2735_BW_{{ ft | screaming_snake }}{% endfor %}) /* {{ root_size_bits }} bits */
+#define J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }} \
+  (J2735_PREFIX_BITS_{{ typedef_name_upper }}{% for ft in field_type_names %} + J2735_BW_{{ ft | screaming_snake }}{% endfor %}) /* {{ root_uper_bit_width }} bits */

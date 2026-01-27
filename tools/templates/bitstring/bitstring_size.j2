@@ -21,9 +21,7 @@ Template: bitstring_size.j2
 Purpose: Generate public C macro for getting wire size of a BIT STRING in bits.
 
 Template Context (from generator):
-  - type_name: str - BIT STRING type name (e.g., "VehicleEventFlags")
-  - is_extensible: bool - Whether the type has extension marker
-  - read_bits: int - Wire size for extended form in bits (e.g., 22)
+    - typedef: The full typedef object containing the metadata
 
 Example output (is_extensible=True, read_bits=22):
     /**
@@ -36,30 +34,33 @@ Example output (is_extensible=True, read_bits=22):
         ? 22U \
         : 14U)
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
-{% if is_extensible %}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
+{%  if typedef.constraint.is_extensible %}
 /**
- * @brief Get wire size of {{ type_name }} in bits.
+ * @brief Get wire size of {{ typedef_name }} in bits.
  *
- * Use this to advance a bit cursor past the {{ type_name }} field.
+ * Use this to advance a bit cursor past the {{ typedef_name }} field.
  *
- * @param[in] buf Pointer to the start of the {{ type_name }} UPER encoding (const uint8_t*).
- * @pre @p buf must point to valid {{ type_name }} encoding with +7 byte padding.
+ * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
+ * @pre @p buf must point to valid {{ typedef_name }} encoding with +7 byte padding.
  * @return {{ read_bits }}U if extended form, {{ root_size + 1 }}U if root form.
  */
-#define J2735_{{ seq_upper }}_SIZE(buf) \
-  (J2735_INTERNAL_IS_EXTENSION_{{ seq_upper }}( \
-    J2735_INTERNAL_RAW_READ_{{ seq_upper }}(buf)) \
-    ? J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }} \
-    : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_{{ seq_upper }}))
-{% else %}
+#define J2735_{{ typedef_name_upper }}_SIZE(buf) \
+  (J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}( \
+    J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}(buf)) \
+    ? J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} \
+    : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }}))
+{%  else %}
 /**
- * @brief Get wire size of {{ type_name }} in bits.
+ * @brief Get wire size of {{ typedef_name }} in bits.
  *
- * {{ type_name }} is a fixed-size BIT STRING, always {{ root_size }} bits on wire.
+ * {{ typedef_name }} is a fixed-size BIT STRING, always {{ root_size }} bits on wire.
  *
- * @param[in] buf Pointer to the start of the {{ type_name }} UPER encoding (const uint8_t*).
+ * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
  * @return Always {{ root_size }}U.
  */
-#define J2735_{{ seq_upper }}_SIZE(buf) (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_{{ seq_upper }})
-{% endif %}
+#define J2735_{{ typedef_name_upper }}_SIZE(buf) (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }})
+{%  endif %}

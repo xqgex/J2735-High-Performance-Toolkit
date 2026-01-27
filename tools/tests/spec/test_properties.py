@@ -28,7 +28,7 @@ correctly implemented across the entire input domain.
 from math import ceil, log2
 from unittest import TestCase
 
-from hypothesis import assume, given, settings
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from tools.j2735_spec_constraints import (
@@ -62,18 +62,18 @@ class TestIntegerConstraintProperties(TestCase):
     """Property-based tests for IntegerConstraint."""
 
     @given(
-        min_val=st.integers(min_value=MIN_INT, max_value=MAX_INT),
-        max_val=st.integers(min_value=MIN_INT, max_value=MAX_INT),
+        data=st.tuples(st.integers(MIN_INT, MAX_INT), st.integers(MIN_INT, MAX_INT)).filter(
+            lambda x: x[0] <= x[1]
+        )  # Use .filter() to ensure min_val is always <= max_val
     )
     @settings(max_examples=1000)
-    def test_bit_width_matches_itu_formula(self, min_val: int, max_val: int) -> None:
+    def test_bit_width_matches_itu_formula(self, data: tuple[int, int]) -> None:
         """UPER bit-width matches ITU-T X.691 formula: ceil(log2(max - min + 1)).
 
         Per ITU-T X.691 Section 13.2.2, a constrained whole number is encoded
         using the minimum number of bits needed to represent the range.
         """
-        assume(min_val <= max_val)
-
+        min_val, max_val = data
         constraint = IntegerConstraint(min_value=min_val, max_value=max_val)
         range_size = max_val - min_val + 1
 
@@ -90,24 +90,24 @@ class TestIntegerConstraintProperties(TestCase):
         )
 
     @given(
-        min_val=st.integers(min_value=MIN_INT, max_value=MAX_INT),
-        max_val=st.integers(min_value=MIN_INT, max_value=MAX_INT),
+        data=st.tuples(st.integers(MIN_INT, MAX_INT), st.integers(MIN_INT, MAX_INT)).filter(
+            lambda x: x[0] <= x[1]
+        )  # Use .filter() to ensure min_val is always <= max_val
     )
-    def test_range_size_is_positive(self, min_val: int, max_val: int) -> None:
+    def test_range_size_is_positive(self, data: tuple[int, int]) -> None:
         """Range size is always >= 1 for valid constraints."""
-        assume(min_val <= max_val)
-
+        min_val, max_val = data
         constraint = IntegerConstraint(min_value=min_val, max_value=max_val)
         self.assertGreaterEqual(constraint.range_size, 1)
 
     @given(
-        min_val=st.integers(min_value=MIN_INT, max_value=MAX_INT),
-        max_val=st.integers(min_value=MIN_INT, max_value=MAX_INT),
+        data=st.tuples(st.integers(MIN_INT, MAX_INT), st.integers(MIN_INT, MAX_INT)).filter(
+            lambda x: x[0] <= x[1]
+        )  # Use .filter() to ensure min_val is always <= max_val
     )
-    def test_bit_width_is_non_negative(self, min_val: int, max_val: int) -> None:
+    def test_bit_width_is_non_negative(self, data: tuple[int, int]) -> None:
         """Bit-width is never negative."""
-        assume(min_val <= max_val)
-
+        min_val, max_val = data
         constraint = IntegerConstraint(min_value=min_val, max_value=max_val)
         self.assertGreaterEqual(constraint.uper_bit_width, 0)
 
@@ -236,12 +236,13 @@ class TestOctetStringConstraintProperties(TestCase):
         self.assertEqual(constraint.uper_bit_width, size * 8)
 
     @given(
-        min_size=st.integers(min_value=0, max_value=500),
-        max_size=st.integers(min_value=0, max_value=500),
+        data=st.tuples(st.integers(0, 500), st.integers(0, 500)).filter(
+            lambda x: x[0] < x[1]
+        )  # Use .filter() to ensure min_val is always < max_val
     )
-    def test_variable_size_has_none_width(self, min_size: int, max_size: int) -> None:
+    def test_variable_size_has_none_width(self, data: tuple[int, int]) -> None:
         """Variable-size OCTET STRING has None bit-width."""
-        assume(min_size < max_size)  # Must be different for variable size
+        min_size, max_size = data
         constraint = OctetStringConstraint(min_size=min_size, max_size=max_size)
         self.assertFalse(constraint.is_fixed_size)
         self.assertIsNone(constraint.uper_bit_width)
@@ -263,12 +264,13 @@ class TestIA5StringConstraintProperties(TestCase):
         self.assertEqual(constraint.uper_bit_width, size * 7)
 
     @given(
-        min_size=st.integers(min_value=0, max_value=500),
-        max_size=st.integers(min_value=0, max_value=500),
+        data=st.tuples(st.integers(0, 500), st.integers(0, 500)).filter(
+            lambda x: x[0] < x[1]
+        )  # Use .filter() to ensure min_val is always < max_val
     )
-    def test_variable_size_has_none_width(self, min_size: int, max_size: int) -> None:
+    def test_variable_size_has_none_width(self, data: tuple[int, int]) -> None:
         """Variable-size IA5String has None bit-width."""
-        assume(min_size < max_size)
+        min_size, max_size = data
         constraint = IA5StringConstraint(min_size=min_size, max_size=max_size)
         self.assertFalse(constraint.is_fixed_size)
         self.assertIsNone(constraint.uper_bit_width)
@@ -323,17 +325,12 @@ class TestSequenceTypeProperties(TestCase):
         self.assertEqual(constraint.uper_bit_width, expected_total)
 
     @given(
-        widths=st.lists(
-            st.integers(min_value=1, max_value=32),
-            min_size=1,
-            max_size=10,
-        ),
-        optional_index=st.integers(min_value=0, max_value=9),
+        widths=st.lists(st.integers(1, 32), min_size=1, max_size=10),
+        data=st.data(),
     )
-    def test_optional_field_means_none_width(self, widths: list[int], optional_index: int) -> None:
+    def test_optional_field_means_none_width(self, widths: list[int], data: st.DataObject) -> None:
         """SEQUENCE with any OPTIONAL field has None bit-width."""
-        assume(optional_index < len(widths))
-
+        optional_index = data.draw(st.integers(0, len(widths) - 1))
         fields = tuple(
             SequenceField(
                 name=f"field{i}",
@@ -346,7 +343,6 @@ class TestSequenceTypeProperties(TestCase):
             for i, w in enumerate(widths)
         )
         constraint = SequenceType(fields=fields, is_extensible=False)
-
         # Any optional field means we can't determine fixed bit-width
         self.assertIsNone(constraint.uper_bit_width)
 

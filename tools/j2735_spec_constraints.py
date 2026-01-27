@@ -30,24 +30,13 @@ This module provides:
     - OctetStringConstraint: OCTET STRING SIZE constraints
 """
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from math import ceil, log2
 from re import DOTALL, Pattern
 from re import compile as re_compile
-from sys import version_info
-from typing import TYPE_CHECKING, Annotated, ClassVar, Final
-
-if version_info >= (3, 11):
-    from typing import Self
-else:
-    if TYPE_CHECKING:
-        from typing_extensions import Self
-    else:
-        Self = object  # Runtime placeholder; only used for annotations
+from typing import Annotated, ClassVar, Final, Self
 
 # These type aliases document constraints that are validated at runtime
 # via __post_init__. They help communicate intent to readers and tools.
@@ -336,7 +325,7 @@ class BitStringConstraint(UPERConstraint):
         return self.root_size
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> BitStringConstraint | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse BIT STRING constraint from ASN.1 definition.
 
         Handles three patterns:
@@ -438,7 +427,7 @@ class BooleanType(UPERConstraint):
         return 1
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> BooleanType | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse BOOLEAN from ASN.1 definition.
 
         Args:
@@ -546,7 +535,7 @@ class ChoiceType(UPERConstraint):
         return ceil(log2(self.alternative_count))
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> ChoiceType | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse CHOICE type from ASN.1 definition.
 
         Args:
@@ -682,7 +671,110 @@ class EnumeratedType(UPERConstraint):
         return base_bits
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> EnumeratedType | None:
+    def _extract_explicit_values(
+        cls,
+        body: str,
+    ) -> tuple[dict[str, int], dict[int, tuple[str, int]]]:
+        """Extract explicit enum values with their positions from body text.
+
+        Scans for patterns like "name (42)" and returns both a name->value mapping
+        and a position->(name, value) mapping for later merge with implicit values.
+
+        Args:
+            body: The body text inside ENUMERATED { ... }.
+
+        Returns:
+            Tuple of:
+                - explicit_values: Maps enum name to its explicit integer value.
+                - explicit_positions: Maps character position to (name, value) tuple.
+
+        Examples:
+            >>> vals, pos = EnumeratedType._extract_explicit_values("off (0), on (1)")
+            >>> vals
+            {'off': 0, 'on': 1}
+            >>> len(pos)  # Two positions recorded
+            2
+            >>> vals, _ = EnumeratedType._extract_explicit_values("a (5), b (10)")
+            >>> vals
+            {'a': 5, 'b': 10}
+        """
+        explicit_values: dict[str, int] = {}
+        explicit_positions: dict[int, tuple[str, int]] = {}
+        for val_match in cls._VALUE_PATTERN.finditer(body):
+            name = val_match.group(1)
+            explicit_values[name] = int(val_match.group(2))
+            explicit_positions[val_match.start()] = (name, explicit_values[name])
+        return explicit_values, explicit_positions
+
+    @classmethod
+    def _extract_implicit_names(
+        cls,
+        body: str,
+        explicit_values: dict[str, int],
+    ) -> list[tuple[int, str]]:
+        """Extract implicit enum names (without explicit values) from body text.
+
+        Finds identifiers that appear without an explicit "(n)" value assignment.
+        Skips names already in explicit_values to avoid double-counting.
+
+        Args:
+            body: The body text inside ENUMERATED { ... }.
+            explicit_values: Already-extracted explicit values to skip.
+
+        Returns:
+            List of (position, name) tuples for implicit values, sorted by position.
+
+        Examples:
+            >>> EnumeratedType._extract_implicit_names("low, medium, high", {})
+            [(0, 'low'), (3, 'medium'), (11, 'high')]
+            >>> EnumeratedType._extract_implicit_names("a (0), b, c", {"a": 0})
+            [(5, 'b'), (8, 'c')]
+        """
+        implicit_names: list[tuple[int, str]] = []
+        for imp_match in cls._IMPLICIT_VALUE_PATTERN.finditer(body):
+            name = imp_match.group(1)
+            if name not in explicit_values:
+                implicit_names.append((imp_match.start(), name))
+        return implicit_names
+
+    @staticmethod
+    def _assign_values(all_items: list[tuple[int, str, int | None]]) -> dict[str, int]:
+        """Assign integer values to enum items in document order.
+
+        For items with explicit values, uses that value. For implicit items,
+        continues from the last assigned value + 1 (or 0 if none assigned yet).
+
+        This implements ASN.1 enumeration semantics where implicit values
+        auto-increment from the previous value.
+
+        Args:
+            all_items: List of (position, name, explicit_value_or_None) tuples,
+                       must be sorted by position.
+
+        Returns:
+            Dict mapping enum names to their final assigned values.
+
+        Examples:
+            >>> EnumeratedType._assign_values([(0, "a", 0), (5, "b", None), (10, "c", None)])
+            {'a': 0, 'b': 1, 'c': 2}
+            >>> EnumeratedType._assign_values([(0, "x", 5), (5, "y", None), (10, "z", 10)])
+            {'x': 5, 'y': 6, 'z': 10}
+            >>> EnumeratedType._assign_values([(0, "p", None), (5, "q", None)])
+            {'p': 0, 'q': 1}
+        """
+        values: dict[str, int] = {}
+        next_implicit = 0
+        for _, name, explicit_value in all_items:
+            if explicit_value is not None:
+                values[name] = explicit_value
+                next_implicit = explicit_value + 1
+            else:
+                values[name] = next_implicit
+                next_implicit += 1
+        return values
+
+    @classmethod
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse ENUMERATED type from ASN.1 definition.
 
         Supports both explicit values (name (n)) and implicit values (name only).
@@ -716,31 +808,13 @@ class EnumeratedType(UPERConstraint):
 
         # Verify all content is recognized - fail on any unrecognized tokens
         # This catches malformed input like neg(-1), name(0xFF), garbage, etc.
-        remaining = cls._RECOGNIZED_TOKEN.sub("", body)
-        if remaining.strip():
+        if cls._RECOGNIZED_TOKEN.sub("", body).strip():
             # Unrecognized content found - fail loudly rather than silently ignore
             return None
 
-        is_extensible = _ASN1_EXTENSION_MARKER in body
-
-        # First, find all explicit values and their positions
-        explicit_values: dict[str, int] = {}
-        explicit_positions: dict[int, tuple[str, int]] = {}  # position -> (name, value)
-        for val_match in cls._VALUE_PATTERN.finditer(body):
-            name = val_match.group(1)
-            value = int(val_match.group(2))
-            explicit_values[name] = value
-            explicit_positions[val_match.start()] = (name, value)
-
-        # Now find all implicit values (names without explicit value)
-        # The implicit pattern is designed to avoid matching words in comments
-        # by requiring proper ASN.1 delimiters before and after the identifier
-        implicit_names: list[tuple[int, str]] = []  # (position, name)
-        for imp_match in cls._IMPLICIT_VALUE_PATTERN.finditer(body):
-            name = imp_match.group(1)
-            # Skip extension marker and already-explicit values
-            if name not in explicit_values:
-                implicit_names.append((imp_match.start(), name))
+        # Extract explicit and implicit values using helper methods
+        explicit_values, explicit_positions = cls._extract_explicit_values(body)
+        implicit_names = cls._extract_implicit_names(body, explicit_values)
 
         # If no values found at all, return None
         if not explicit_values and not implicit_names:
@@ -759,19 +833,10 @@ class EnumeratedType(UPERConstraint):
         # Sort by position
         all_items.sort(key=lambda x: x[0])
 
-        # Assign values
-        values: dict[str, int] = {}
-        next_implicit = 0
+        # Assign values in document order
+        values = cls._assign_values(all_items)
 
-        for _, name, explicit_value in all_items:
-            if explicit_value is not None:
-                values[name] = explicit_value
-                next_implicit = explicit_value + 1
-            else:
-                values[name] = next_implicit
-                next_implicit += 1
-
-        return cls(values=values, is_extensible=is_extensible)
+        return cls(values=values, is_extensible=_ASN1_EXTENSION_MARKER in body)
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
@@ -858,7 +923,7 @@ class IA5StringConstraint(UPERConstraint):
         return None
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> IA5StringConstraint | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse IA5String constraint from ASN.1 definition.
 
         Args:
@@ -956,7 +1021,7 @@ class IntegerConstraint(UPERConstraint):
         return ceil(log2(self.range_size))
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> IntegerConstraint | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse INTEGER constraint from ASN.1 definition.
 
         Args:
@@ -1052,7 +1117,7 @@ class OctetStringConstraint(UPERConstraint):
         return None
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> OctetStringConstraint | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse OCTET STRING constraint from ASN.1 definition.
 
         Args:
@@ -1116,7 +1181,7 @@ class SequenceField:
     section_comment: str
     inline_comment: str
 
-    def evolve(self, **kwargs: object) -> SequenceField:
+    def evolve(self, **kwargs: object) -> Self:
         """Create a copy with specified fields replaced.
 
         This is useful during type resolution to replace TypeReference
@@ -1146,7 +1211,7 @@ class SequenceField:
         return replace(self, **kwargs)  # type: ignore[arg-type]
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> tuple[SequenceField, ...]:
+    def from_asn1(cls, raw_def: str) -> tuple[Self, ...]:
         """Parse SEQUENCE fields from an ASN.1 definition.
 
         Extracts field names, types, optionality, and comments from a SEQUENCE
@@ -1218,7 +1283,7 @@ class SequenceField:
         if body is None:
             return ()
 
-        fields: list[SequenceField] = []
+        fields: list[Self] = []
         pending_section_comment: str = ""
 
         # Process line by line to correctly handle comments
@@ -1257,8 +1322,6 @@ class SequenceField:
                 if len(tokens) < 2:
                     continue
 
-                field_name = tokens[0]
-                field_type_name = tokens[1]
                 is_optional = _ASN1_OPTIONAL_KEYWORD in tokens[2:] if len(tokens) > 2 else False
 
                 # Inline comment only applies to the LAST field on the line
@@ -1266,9 +1329,9 @@ class SequenceField:
 
                 fields.append(
                     cls(
-                        name=field_name,
-                        type_name=field_type_name,
-                        type=TypeReference(name=field_type_name),
+                        name=tokens[0],
+                        type_name=tokens[1],
+                        type=TypeReference(name=tokens[1]),
                         is_optional=is_optional,
                         section_comment=pending_section_comment,
                         inline_comment=inline_comment,
@@ -1343,7 +1406,7 @@ class SequenceOfType(UPERConstraint):
         return None
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> SequenceOfType | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """SequenceOfType is not directly parsed here - requires resolution.
 
         Args:
@@ -1592,7 +1655,7 @@ class SequenceType(UPERConstraint):
         return self.extension_bit + self.optional_count
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> SequenceType | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """Parse a SEQUENCE type from an ASN.1 definition.
 
         Creates a SequenceType with fields containing TypeReference placeholders
@@ -1669,7 +1732,7 @@ class TypeReference(UPERConstraint):
         return None
 
     @classmethod
-    def from_asn1(cls, raw_def: str) -> TypeReference | None:
+    def from_asn1(cls, raw_def: str) -> Self | None:
         """TypeReference is not parsed from ASN.1 - always returns None.
 
         Args:

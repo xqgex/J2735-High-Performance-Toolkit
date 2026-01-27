@@ -24,13 +24,7 @@
   Uses J2735_OFF_<SEQUENCE>_<FIELD>(buf) which handles both fixed and dynamic offsets.
 
   Context variables:
-    - typedef: ASN1TypeDefinition for the SEQUENCE type with:
-        - name: Type name (e.g., "BSMcoreData")
-        - constraint.fields: Tuple of SequenceField objects with:
-            - name: Field name (e.g., "msgCnt")
-            - type_name: Type name (e.g., "MsgCount")
-            - type: Resolved constraint with uper_bit_width, and for INTEGER: min_value
-        - uper_bit_width: Total bit-width
+  - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -44,7 +38,8 @@
     #define J2735_BSM_CORE_DATA_GET_LAT(buf) \
       J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf), J2735_OFF_BSM_CORE_DATA_LAT(buf), J2735_BW_LATITUDE), J2735_BW_LATITUDE, int32_t)
 -#}
-{%- set seq_name = typedef.name | screaming_snake -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 {%- for field in typedef.constraint.fields -%}
 {#-   Determine if this field is signed (INTEGER with min_value < 0) -#}
 {%-   set bits = field.type.uper_bit_width -%}
@@ -57,19 +52,19 @@
 {%-   set max_val = field.type.max_value if field.type.max_value is defined else (2**bits - 1) -%}
 /**
  * @brief Get '{{ field.name }}' ({{ field.type_name }}, {{ signedness }} {{ bits }} bits).
- * @param buf Pointer to the {{ typedef.name }} encoding.
+ * @param buf Pointer to the {{ typedef_name }} encoding.
  * @return {{ field.type_name }} value ({{ return_type }}, range {{ min_val }}..{{ max_val }}).
 {%    if field.is_optional %}
- * @pre J2735_{{ seq_name }}_HAS_{{ field_name }}(buf) must be true.
+ * @pre J2735_{{ typedef_name_upper }}_HAS_{{ field_name }}(buf) must be true.
 {%    endif %}
  */
 {%    if is_signed -%}
-#define J2735_{{ seq_name }}_GET_{{ field_name }}(buf) \
-  J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf), J2735_OFF_{{ seq_name }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}), J2735_BW_{{ field_type_name }}, {{ return_type }})
+#define J2735_{{ typedef_name_upper }}_GET_{{ field_name }}(buf) \
+  J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf), J2735_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}), J2735_BW_{{ field_type_name }}, {{ return_type }})
 {#      Force line break after define #}
 {%-   else -%}
-#define J2735_{{ seq_name }}_GET_{{ field_name }}(buf) \
-  (({{ return_type }})J2735_READ_BITS((buf), J2735_OFF_{{ seq_name }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}))
+#define J2735_{{ typedef_name_upper }}_GET_{{ field_name }}(buf) \
+  (({{ return_type }})J2735_READ_BITS((buf), J2735_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}))
 {#      Force line break after define #}
 {%-   endif -%}
 {%- endfor -%}

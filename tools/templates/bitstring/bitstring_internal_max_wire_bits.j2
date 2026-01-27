@@ -23,9 +23,7 @@
   Pattern: J2735_INTERNAL_MAX_WIRE_BITS_{TYPE} {EXT_SIZE}U
 
   Context variables:
-    - type_name: Type name (e.g., "VehicleEventFlags")
-    - ext_bits: Extended size in bits
-    - read_bits: Maximum wire encoding size in bits
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -34,12 +32,15 @@
     /** @internal @brief Maximum wire encoding size of... */
     #define J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS 22U
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 /**
  * @internal
- * @brief Maximum wire encoding size of {{ type_name }} in bits.
+ * @brief Maximum wire encoding size of {{ typedef_name }} in bits.
  *
  * Used for single-read optimization: read all possible bits at once.
  * Calculated as: 1 (ext bit) + 7 (nsnnwn) + {{ ext_bits }}U (max payload).
  */
-#define J2735_INTERNAL_MAX_WIRE_BITS_{{ seq_upper }} {{ read_bits }}U
+#define J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} {{ read_bits }}U

@@ -21,16 +21,11 @@ Computes byte-by-byte wire format representation for UPER-encoded SEQUENCEs.
 Used to generate Doxygen documentation with visual wire format tables.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Final
+from typing import Final
 
 from .j2735_spec_constraints import SequenceType
-
-if TYPE_CHECKING:
-    from .j2735_spec_parser import ASN1TypeDefinition
-
+from .j2735_spec_parser import ASN1TypeDefinition
 
 # =============================================================================
 # Constants
@@ -74,6 +69,121 @@ class ByteSegment:
     field_bits: str
     is_first: bool
     is_last: bool
+
+
+# =============================================================================
+# Helper Functions
+# =============================================================================
+
+
+def _format_field_bits(
+    bit_width: int,
+    bits_remaining: int,
+    bits_in_this_byte: int,
+) -> str:
+    """Format human-readable bit range description for a segment.
+
+    Args:
+        bit_width: Total bits in the field.
+        bits_remaining: Bits still to be processed (including this segment).
+        bits_in_this_byte: Bits in the current byte segment.
+
+    Returns:
+        Formatted string like "(Bits 31-24)", "(Bit 7)", "(8)", or "".
+
+    Examples:
+        >>> _format_field_bits(1, 1, 1)  # Single bit field
+        ''
+        >>> _format_field_bits(8, 8, 8)  # Fits in one byte
+        '(8)'
+        >>> _format_field_bits(32, 32, 8)  # First byte of 32-bit
+        '(Bits 31-24)'
+        >>> _format_field_bits(32, 24, 8)  # Second byte of 32-bit
+        '(Bits 23-16)'
+        >>> _format_field_bits(32, 8, 8)  # Last byte of 32-bit
+        '(Bits 7-0)'
+        >>> _format_field_bits(9, 1, 1)  # Single bit at end
+        '(Bit 0)'
+    """
+    if bit_width == 1:
+        return ""
+    if bit_width == bits_in_this_byte:  # Entire field fits in one segment
+        return f"({bit_width})"
+
+    bits_consumed = bit_width - bits_remaining
+    high_bit = bit_width - 1 - bits_consumed
+    low_bit = high_bit - bits_in_this_byte + 1
+
+    if high_bit == low_bit:
+        return _BIT_SINGLE.format(high_bit=high_bit)
+    return _BIT_RANGE.format(high_bit=high_bit, low_bit=low_bit)
+
+
+def _generate_field_segments(
+    field_name: str,
+    type_name: str,
+    bit_width: int,
+    start_bit: int,
+) -> tuple[ByteSegment, ...]:
+    """Generate ByteSegments for a single field.
+
+    Args:
+        field_name: Name of the field.
+        type_name: ASN.1 type name for display.
+        bit_width: Total bit width of the field.
+        start_bit: Starting bit position in the SEQUENCE.
+
+    Returns:
+        Tuple of ByteSegments spanning the field.
+
+    Examples:
+        >>> segs = _generate_field_segments("id", "TemporaryID", 32, 0)
+        >>> len(segs)  # 32 bits = 4 bytes
+        4
+        >>> segs[0].byte_offset, segs[0].bit_count, segs[0].field_bits
+        (0, 8, '(Bits 31-24)')
+        >>> segs[3].byte_offset, segs[3].is_last, segs[3].field_bits
+        (3, True, '(Bits 7-0)')
+        >>> segs = _generate_field_segments("msgCnt", "MsgCount", 8, 0)
+        >>> len(segs)  # 8 bits = 1 byte
+        1
+        >>> segs[0].is_first, segs[0].is_last, segs[0].field_bits
+        (True, True, '(8)')
+        >>> segs = _generate_field_segments("flag", "BOOLEAN", 1, 7)
+        >>> segs[0].byte_offset, segs[0].bit_start, segs[0].field_bits
+        (0, 7, '')
+    """
+    segments: list[ByteSegment] = []
+    bit_pos = start_bit
+    bits_remaining = bit_width
+    is_first = True
+
+    while bits_remaining > 0:
+        byte_idx = bit_pos // _BITS_PER_BYTE
+        bit_in_byte = bit_pos % _BITS_PER_BYTE
+        bits_in_this_byte = min(_BITS_PER_BYTE - bit_in_byte, bits_remaining)
+        is_last = bits_remaining == bits_in_this_byte
+
+        field_bits = _format_field_bits(bit_width, bits_remaining, bits_in_this_byte)
+
+        segments.append(
+            ByteSegment(
+                byte_offset=byte_idx,
+                bit_start=bit_in_byte,
+                bit_count=bits_in_this_byte,
+                field_name=field_name,
+                type_name=type_name,
+                field_bits=field_bits,
+                is_first=is_first,
+                is_last=is_last,
+            )
+        )
+
+        bit_pos += bits_in_this_byte
+        bits_remaining -= bits_in_this_byte
+        is_first = False
+
+    return tuple(segments)
 
 
 # =============================================================================
@@ -133,49 +243,14 @@ def compute_wire_format(typedef: ASN1TypeDefinition) -> tuple[tuple[ByteSegment,
     current_bit = 0
 
     for field, bit_width in zip(fields, field_widths, strict=True):
-        # Use type_name for display (preserved during resolution)
-        display_name = field.type_name
-
-        bit_start = current_bit
-        bits_remaining = bit_width
-        is_first = True
-
-        while bits_remaining > 0:
-            byte_idx = bit_start // _BITS_PER_BYTE
-            bit_in_byte = bit_start % _BITS_PER_BYTE
-            bits_in_this_byte = min(_BITS_PER_BYTE - bit_in_byte, bits_remaining)
-            is_last = bits_remaining == bits_in_this_byte
-
-            # Generate human-readable bit range description
-            if bit_width == 1:
-                field_bits = ""
-            elif is_first and is_last:
-                field_bits = f"({bit_width})"
-            else:
-                bits_consumed = bit_width - bits_remaining
-                high_bit = bit_width - 1 - bits_consumed
-                low_bit = high_bit - bits_in_this_byte + 1
-                if high_bit == low_bit:
-                    field_bits = _BIT_SINGLE.format(high_bit=high_bit)
-                else:
-                    field_bits = _BIT_RANGE.format(high_bit=high_bit, low_bit=low_bit)
-
-            segment = ByteSegment(
-                byte_offset=byte_idx,
-                bit_start=bit_in_byte,
-                bit_count=bits_in_this_byte,
-                field_name=field.name,
-                type_name=display_name,
-                field_bits=field_bits,
-                is_first=is_first,
-                is_last=is_last,
-            )
-            result[byte_idx].append(segment)
-
-            bit_start += bits_in_this_byte
-            bits_remaining -= bits_in_this_byte
-            is_first = False
-
+        segments = _generate_field_segments(
+            field_name=field.name,
+            type_name=field.type_name,
+            bit_width=bit_width,
+            start_bit=current_bit,
+        )
+        for segment in segments:
+            result[segment.byte_offset].append(segment)
         current_bit += bit_width
 
     return tuple(tuple(byte_segments) for byte_segments in result)

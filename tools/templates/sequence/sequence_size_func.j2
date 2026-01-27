@@ -23,8 +23,7 @@
   Calculates total size in bits, handling extended and non-extended cases.
 
   Context variables:
-    - type_name: Type name (e.g., "PathPrediction")
-    - root_size_bits: Total root size in bits
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
@@ -38,36 +37,38 @@
     - J2735_<SEQUENCE>_HAS_EXTENSION (from has_extension generator)
     - j2735_internal_inline_skip_extensions() (from J2735_macros.h)
 -#}
-{%- set seq_upper = type_name | screaming_snake -%}
-{%- set seq_lower = type_name | snake_case -%}
+{%- set typedef_name = typedef.name -%}
+{%- set root_uper_bit_width = typedef.constraint.root_uper_bit_width -%}
+{%- set typedef_name_lower = typedef_name | snake_case -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
 /**
- * @brief Calculate total size in bits of a {{ type_name }} encoding.
+ * @brief Calculate total size in bits of a {{ typedef_name }} encoding.
  *
- * For non-extended messages, returns the fixed root size ({{ root_size_bits }} bits).
+ * For non-extended messages, returns the fixed root size ({{ root_uper_bit_width }} bits).
  * For extended messages, parses and skips extension data.
  *
- * @param buf           Pointer to the {{ type_name }} encoding.
+ * @param buf           Pointer to the {{ typedef_name }} encoding.
  * @param out_size_bits Output: total size in bits.
  * @return 0 on success, non-zero on parsing error.
  */
-static inline int j2735_inline_{{ seq_lower }}_size(uint8_t const *const buf, uint32_t *const out_size_bits) {
+static inline int j2735_inline_{{ typedef_name_lower }}_size(uint8_t const *const buf, uint32_t *const out_size_bits) {
   int result = 0;
 
   /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy architecture requires packed-struct cast */
   /* cppcheck-suppress misra-c2012-17.3 ; cppcheck false positive: v is struct member, not function */
   /* cppcheck-suppress misra-config ; cppcheck cannot resolve struct member v through macro expansion */
-  if (J2735_{{ seq_upper }}_HAS_EXTENSION(buf) == 0U) {
-    *out_size_bits = J2735_ROOT_SIZE_BITS_{{ seq_upper }};
+  if (J2735_{{ typedef_name_upper }}_HAS_EXTENSION(buf) == 0U) {
+    *out_size_bits = J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }};
     result = 0;
   } else {
     /* Extensions present - parse them to find total size */
     uint32_t ext_bits = 0U;
-    int const parse_result = j2735_internal_inline_skip_extensions(buf, J2735_ROOT_SIZE_BITS_{{ seq_upper }}, &ext_bits);
+    int const parse_result = j2735_internal_inline_skip_extensions(buf, J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }}, &ext_bits);
     if (0 != parse_result) {
       *out_size_bits = 0U;
       result = parse_result;
     } else {
-      *out_size_bits = J2735_ROOT_SIZE_BITS_{{ seq_upper }} + ext_bits;
+      *out_size_bits = J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }} + ext_bits;
       result = 0;
     }
   }

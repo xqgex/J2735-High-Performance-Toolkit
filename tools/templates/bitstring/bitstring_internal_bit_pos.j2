@@ -23,8 +23,7 @@
   Pattern: J2735_INTERNAL_BIT_{TYPE}_{FLAG} {INDEX}U
 
   Context variables:
-    - type_name: Type name (e.g., "VehicleEventFlags")
-    - named_bits: Mapping from name to index
+    - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
@@ -33,7 +32,7 @@
     #define J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_HAZARD_LIGHTS 0U
     #define J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_JACK_KNIFE    13U
 -#}
-{%- set seq_upper = type_name | screaming_snake %}
-{%  for name, index in named_bits.items() %}
-#define J2735_INTERNAL_BIT_{{ seq_upper }}_{{ name | screaming_snake }} {{ index }}U
+{%- set typedef_name_upper = typedef.name | screaming_snake -%}
+{%  for name, index in typedef.constraint.named_bits.items() %}
+#define J2735_INTERNAL_BIT_{{ typedef_name_upper }}_{{ name | screaming_snake }} {{ index }}U
 {%  endfor %}

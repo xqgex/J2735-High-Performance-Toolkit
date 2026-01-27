@@ -9,6 +9,12 @@ The following actions require explicit user approval before execution:
 - **File Deletion**: Do not delete existing files. If you believe a file should be removed, notify the user and wait for approval.
 - **Git State Changes**: Do not execute Git commands that modify repository state (e.g., `commit`, `push`, `checkout`, `reset`, `rebase`, `merge`). Read-only commands like `git log`, `git status`, and `git diff` are allowed.
 
+### Terminal Output
+
+- **NEVER** use `head`, `tail`, or other truncation when running commands.
+- **ALWAYS** show full output to understand the complete result.
+- Truncated output hides critical errors and leads to incorrect conclusions.
+
 ## Critical Technical Constraints
 
 ### 1. Zero-Copy Mandate

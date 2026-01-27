@@ -21,12 +21,39 @@ Tests cover generate_sequence_has_extension function for extensible SEQUENCE typ
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_sequence import generate_sequence_has_extension
+from tools.j2735_c_generator_jinja import create_jinja_env, get_template
+from tools.j2735_spec_constraints import SequenceType
+from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     SpecLoadingTestBase,
+    get_sequence_typedef,
     make_extensible_mock_spec,
     make_nested_mock_spec,
 )
+
+_TEMPLATE_NAME = "sequence/sequence_has_extension.j2"
+
+
+def generate_sequence_has_extension(type_name: str, spec: J2735Specification) -> str:
+    """Generate C #define macro for checking extension bit in a SEQUENCE.
+
+    Only generates output for extensible SEQUENCE types.
+
+    Args:
+        type_name: Name of the SEQUENCE type (e.g., "PathPrediction").
+        spec: The parsed J2735 specification.
+
+    Returns:
+        C code with #define macro, or empty string if not extensible.
+
+    Raises:
+        ValueError: If type_name is not found or not a SEQUENCE.
+    """
+    typedef = get_sequence_typedef(type_name, spec)
+    assert isinstance(typedef.constraint, SequenceType)  # Guaranteed by getter, required by Mypy
+    if not typedef.constraint.is_extensible:
+        return ""
+    return get_template(create_jinja_env(), _TEMPLATE_NAME).render(typedef=typedef)
 
 
 class TestHasExtensionGeneration(TestCase):
