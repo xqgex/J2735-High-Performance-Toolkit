@@ -189,8 +189,13 @@ endif
 # Test Framework Suppressions (for third-party code like Unity)
 # -----------------------------------------------------------------------------
 TEST_SUPPRESS_WFLAGS := -Wno-float-equal
+TEST_SUPPRESS_WFLAGS += -Wno-padded
 ifdef IS_CLANG
     TEST_SUPPRESS_WFLAGS += -Wno-covered-switch-default
+    # Clang 19+ / Apple Clang warnings (silently ignored by older Clang via -Wno-unknown-warning-option)
+    TEST_SUPPRESS_WFLAGS += -Wno-unknown-warning-option
+    TEST_SUPPRESS_WFLAGS += -Wno-poison-system-directories
+    TEST_SUPPRESS_WFLAGS += -Wno-pre-c11-compat
 else
     ifeq ($(shell expr $(COMPILER_VERSION) \>= 14), 1)
         TEST_SUPPRESS_WFLAGS += -Wno-useless-cast
@@ -226,7 +231,7 @@ $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 
 # Compile test suite files into object files
 $(BUILD_DIR)/%_test.o: %_test.c $(HEADERS) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(TEST_SUPPRESS_WFLAGS) -c -o $@ $<
 
 # Link main + test suites + library into single test binary
 $(TEST_BIN): $(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS) $(HEADERS) | $(BUILD_DIR)
