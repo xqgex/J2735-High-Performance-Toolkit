@@ -182,10 +182,10 @@ jobs:
         id: cppcheck
         run: |
           echo "### cppcheck" > cppcheck_output.txt
-          echo '' >> cppcheck_output.txt
-          echo '<details>' >> cppcheck_output.txt
-          echo '<summary>Click to expand</summary>' >> cppcheck_output.txt
-          echo '' >> cppcheck_output.txt
+          echo "" >> cppcheck_output.txt
+          echo "<details>" >> cppcheck_output.txt
+          echo "<summary>Click to expand</summary>" >> cppcheck_output.txt
+          echo "" >> cppcheck_output.txt
           echo '```' >> cppcheck_output.txt
           if make check 2>&1 | tee -a cppcheck_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -193,17 +193,16 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
           echo '```' >> cppcheck_output.txt
-          echo '' >> cppcheck_output.txt
-          echo '</details>' >> cppcheck_output.txt
-
+          echo "" >> cppcheck_output.txt
+          echo "</details>" >> cppcheck_output.txt
       - name: Run clang-tidy
         id: tidy
         run: |
           echo "### clang-tidy" > tidy_output.txt
-          echo '' >> tidy_output.txt
-          echo '<details>' >> tidy_output.txt
-          echo '<summary>Click to expand</summary>' >> tidy_output.txt
-          echo '' >> tidy_output.txt
+          echo "" >> tidy_output.txt
+          echo "<details>" >> tidy_output.txt
+          echo "<summary>Click to expand</summary>" >> tidy_output.txt
+          echo "" >> tidy_output.txt
           echo '```' >> tidy_output.txt
           if make tidy 2>&1 | tee -a tidy_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -211,9 +210,8 @@ jobs:
             echo "status=failure" >> $GITHUB_OUTPUT
           fi
           echo '```' >> tidy_output.txt
-          echo '' >> tidy_output.txt
-          echo '</details>' >> tidy_output.txt
-
+          echo "" >> tidy_output.txt
+          echo "</details>" >> tidy_output.txt
       - name: Create summary
         if: always()
         run: |
@@ -269,15 +267,22 @@ jobs:
         run: |
           echo "## Sanitizers (ASan + UBSan)" > sanitizer_output.txt
           echo "" >> sanitizer_output.txt
+          echo "<details>" >> sanitizer_output.txt
+          echo "<summary>Test Output</summary>" >> sanitizer_output.txt
+          echo "" >> sanitizer_output.txt
           echo '```' >> sanitizer_output.txt
           if make sanitize 2>&1 | tee -a sanitizer_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo '```' >> sanitizer_output.txt
             echo "" >> sanitizer_output.txt
+            echo "</details>" >> sanitizer_output.txt
+            echo "" >> sanitizer_output.txt
             echo "✅ No issues detected" >> sanitizer_output.txt
           else
             echo "status=failure" >> $GITHUB_OUTPUT
             echo '```' >> sanitizer_output.txt
+            echo "" >> sanitizer_output.txt
+            echo "</details>" >> sanitizer_output.txt
             echo "" >> sanitizer_output.txt
             echo "❌ Issues detected" >> sanitizer_output.txt
           fi
@@ -319,15 +324,22 @@ jobs:
         run: |
           echo "## Valgrind Memory Check" > valgrind_output.txt
           echo "" >> valgrind_output.txt
+          echo "<details>" >> valgrind_output.txt
+          echo "<summary>Test Output</summary>" >> valgrind_output.txt
+          echo "" >> valgrind_output.txt
           echo '```' >> valgrind_output.txt
           if make valgrind 2>&1 | tee -a valgrind_output.txt; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo '```' >> valgrind_output.txt
             echo "" >> valgrind_output.txt
+            echo "</details>" >> valgrind_output.txt
+            echo "" >> valgrind_output.txt
             echo "✅ No memory issues detected" >> valgrind_output.txt
           else
             echo "status=failure" >> $GITHUB_OUTPUT
             echo '```' >> valgrind_output.txt
+            echo "" >> valgrind_output.txt
+            echo "</details>" >> valgrind_output.txt
             echo "" >> valgrind_output.txt
             echo "❌ Memory issues detected" >> valgrind_output.txt
           fi
