@@ -42,6 +42,6 @@ The following actions require explicit user approval before execution:
 
 ## Definition of Done
 
-- Code must compile using the Makefile with `make all`.
+- Code must pass `make pre-push` (includes multi-compiler build, static analysis, sanitizers, valgrind).
 - Documentation must include "Wire Format" visual tables (IPv4 style).
 - All bit-widths must be verified against J2735_202409.

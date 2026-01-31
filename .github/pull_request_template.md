@@ -26,7 +26,5 @@
 - [ ] I have read the [CONTRIBUTING.md](../CONTRIBUTING.md) guidelines
 - [ ] I have added/updated documentation as needed
 - [ ] I have added tests that prove my fix/feature works
-- [ ] I have run tests locally (`make test`)
-- [ ] I have run static analysis checks locally (`make check`)
-- [ ] I have verified that my changes do not introduce new memory leaks (`make valgrind` and `make sanitize`)
+- [ ] I have run `make pre-push` and all checks pass
 - [ ] I have signed my commits (DCO) using `git commit -s`

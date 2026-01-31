@@ -26,57 +26,38 @@ ifeq ($(origin CC),default)
     CC := gcc
 endif
 
-.PHONY: all test clean check sanitize valgrind format tidy help info
+.PHONY: all check clean format help info pre-push sanitize test tidy valgrind
 
 # Default target
 all:
 	@$(MAKE) -C tests CC='$(CC)' all
 
-test:
-	@$(MAKE) -C tests CC='$(CC)' test
+check:
+	@$(MAKE) -C tests CC='$(CC)' check
 
 clean:
 	@$(MAKE) -C tests CC='$(CC)' clean
 
-check:
-	@$(MAKE) -C tests CC='$(CC)' check
-
-tidy:
-	@$(MAKE) -C tests CC='$(CC)' tidy
-
 format:
 	@$(MAKE) -C tests CC='$(CC)' format
 
-sanitize:
-	@$(MAKE) -C tests CC='$(CC)' sanitize
-
-valgrind:
-	@$(MAKE) -C tests CC='$(CC)' valgrind
+help:
+	@$(MAKE) -C tests CC='$(CC)' help
 
 info:
 	@$(MAKE) -C tests CC='$(CC)' info
 
-help:
-	@echo "J2735 High-Performance Toolkit"
-	@echo "==============================="
-	@echo ""
-	@echo "All targets are delegated to tests/Makefile"
-	@echo ""
-	@echo "Build Targets:"
-	@echo "  make           Build all test binaries"
-	@echo "  make test      Build and run all tests"
-	@echo "  make clean     Remove build artifacts"
-	@echo ""
-	@echo "Quality Targets:"
-	@echo "  make check        Static analysis (cppcheck)"
-	@echo "  make tidy         Static analysis (clang-tidy)"
-	@echo "  make format       Format code (clang-format)"
-	@echo "  make sanitize     Build/run with ASan + UBSan"
-	@echo "  make valgrind     Memory leak check (valgrind)"
-	@echo ""
-	@echo "Info:"
-	@echo "  make info      Show build configuration"
-	@echo "  make help      This message"
-	@echo ""
-	@echo "Options:"
-	@echo "  CC=clang       Use Clang instead of GCC"
+pre-push:
+	@$(MAKE) -C tests CC='$(CC)' pre-push
+
+sanitize:
+	@$(MAKE) -C tests CC='$(CC)' sanitize
+
+test:
+	@$(MAKE) -C tests CC='$(CC)' test
+
+tidy:
+	@$(MAKE) -C tests CC='$(CC)' tidy
+
+valgrind:
+	@$(MAKE) -C tests CC='$(CC)' valgrind
