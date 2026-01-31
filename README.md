@@ -58,6 +58,7 @@ Because this library is in active alpha, the code itself is the source of truth.
 make check     # Static analysis (cppcheck)
 make clean     # Clean build artifacts
 make format    # Code formatting (clang-format)
+make pre-push  # Run ALL checks (recommended before pushing)
 make sanitize  # ASan + UBSan
 make test      # Build and run tests
 make tidy      # Static analysis (clang-tidy)

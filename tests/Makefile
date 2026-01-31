@@ -212,11 +212,24 @@ CFLAGS := -std=c17 -O3 $(WFLAGS) $(INCLUDES)
 # Debug flags for sanitizer/valgrind builds
 DBG_CFLAGS := -std=c17 -g -O1 -fno-omit-frame-pointer $(WFLAGS) $(INCLUDES)
 
+# -----------------------------------------------------------------------------
+# Pre-push Compiler Detection
+# Auto-detect available GCC (11+) and Clang (13+) versions for pre-push testing
+# Uses 'which' with explicit path checking to avoid spurious output
+# -----------------------------------------------------------------------------
+AVAILABLE_GCC   := $(strip $(foreach v,11 12 13 14 15 16 17 18 19 20,$(if $(shell which gcc-$(v) 2>/dev/null),gcc-$(v))))
+AVAILABLE_CLANG := $(strip $(foreach v,13 14 15 16 17 18 19 20 21 22 23 24 25,$(if $(shell which clang-$(v) 2>/dev/null),clang-$(v))))
+GCC_MIN         := $(firstword $(AVAILABLE_GCC))
+GCC_MAX         := $(lastword $(AVAILABLE_GCC))
+CLANG_MIN       := $(firstword $(AVAILABLE_CLANG))
+CLANG_MAX       := $(lastword $(AVAILABLE_CLANG))
+PRE_PUSH_COMPILERS := $(sort $(GCC_MIN) $(GCC_MAX) $(CLANG_MIN) $(CLANG_MAX))
+
 # =============================================================================
 # Targets
 # =============================================================================
 
-.PHONY: all test clean check sanitize valgrind format tidy help info
+.PHONY: all check clean format help info pre-push sanitize test tidy valgrind
 
 # Create build directory
 $(BUILD_DIR):
@@ -236,16 +249,6 @@ $(BUILD_DIR)/%_test.o: %_test.c $(HEADERS) | $(BUILD_DIR)
 # Link main + test suites + library into single test binary
 $(TEST_BIN): $(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS) $(HEADERS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(TEST_SUPPRESS_WFLAGS) -o $@ $(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
-
-# Run all tests
-test: $(TEST_BIN)
-	@echo "=== Running Tests ==="
-	$(TEST_BIN)
-	@echo "=== All Tests Passed ==="
-
-# Clean build artifacts
-clean:
-	rm -rf $(BUILD_DIR)/*
 
 # Static analysis with cppcheck
 # Note: -D__GNUC__ tells cppcheck to analyze only the GCC code path (not MSVC or unsupported)
@@ -272,22 +275,9 @@ check:
 		$(ALL_H_FILES) $(PROJECT_C_FILES)
 	@echo "=== Static Analysis Complete ==="
 
-# clang-tidy static analysis
-tidy:
-	@echo "=== clang-tidy ==="
-	@clang-tidy \
-		--checks=*,-altera-struct-pack-align,-altera-unroll-loops,-llvm-header-guard \
-		--fix-notes \
-		--fix-errors \
-		--format-style=llvm \
-		--header-filter=$(SRC_DIR)/.* \
-		--warnings-as-errors=* \
-		-p=./build/ \
-		$(PROJECT_C_FILES) \
-		-- \
-		-std=c17 \
-		-I$(SRC_DIR)
-	@echo "=== clang-tidy Complete ==="
+# Clean build artifacts
+clean:
+	rm -rf $(BUILD_DIR)/*
 
 # Format code with clang-format
 format:
@@ -299,32 +289,30 @@ format:
 		$(ALL_C_FILES)
 	@echo "=== Formatting Complete ==="
 
-# Build and run with sanitizers
-sanitize: $(BUILD_DIR) $(SUITE_OBJS) $(LIB_OBJS)
-	@echo "=== AddressSanitizer ==="
-	$(CC) -fsanitize=address $(DBG_CFLAGS) -o $(TEST_BIN_ASAN) \
-		$(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
-	$(TEST_BIN_ASAN)
+# Help
+help:
+	@echo "J2735 High-Performance Toolkit"
+	@echo "=============================="
 	@echo ""
-	@echo "=== UndefinedBehaviorSanitizer ==="
-	$(CC) -fsanitize=undefined $(DBG_CFLAGS) -o $(TEST_BIN_UBSAN) \
-		$(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
-	$(TEST_BIN_UBSAN)
+	@echo "Build Targets:"
+	@echo "  make (all)     Build all test binaries (build/)"
+	@echo "  make test      Build and run all tests"
+	@echo "  make clean     Remove build artifacts"
 	@echo ""
-	@echo "=== Sanitizer Checks Complete ==="
-
-# Memory check with Valgrind
-valgrind: $(BUILD_DIR) $(SUITE_OBJS) $(LIB_OBJS)
-	@echo "=== Valgrind Memory Check ==="
-	$(CC) $(DBG_CFLAGS) -o $(TEST_BIN_VALGND) \
-		$(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
-	valgrind \
-		--leak-check=full \
-		--error-exitcode=1 \
-		--show-leak-kinds=all \
-		--track-origins=yes \
-		$(TEST_BIN_VALGND)
-	@echo "=== Valgrind Complete ==="
+	@echo "Quality Targets:"
+	@echo "  make check        Static analysis (cppcheck)"
+	@echo "  make format       Format code (clang-format)"
+	@echo "  make pre-push     Run ALL checks (use before pushing)"
+	@echo "  make sanitize     Build/run with ASan + UBSan"
+	@echo "  make tidy         Static analysis (clang-tidy)"
+	@echo "  make valgrind     Memory leak check (valgrind)"
+	@echo ""
+	@echo "Info:"
+	@echo "  make help      This message"
+	@echo "  make info      Show build configuration"
+	@echo ""
+	@echo "Options:"
+	@echo "  CC=clang       Use Clang instead of GCC"
 
 # Show build configuration
 info:
@@ -342,28 +330,88 @@ info:
 	@echo "  Library:     $(LIB_SRCS)"
 	@echo "  Binary:      $(TEST_BIN)"
 
-# Help
-help:
-	@echo "J2735 High-Performance Toolkit"
-	@echo "==============================="
+# Pre-push validation - auto-detects and tests with available compilers
+pre-push:
+	@echo "=== Pre-push validation ==="
 	@echo ""
-	@echo "Build Targets:"
-	@echo "  make           Build all test binaries (build/)"
-	@echo "  make test      Build and run all tests"
-	@echo "  make clean     Remove build directory"
+	@echo "[1/7] Format check..."
+	@$(MAKE) CC='$(CC)' format >/dev/null 2>&1 || (echo "❌ FAIL: format"; exit 1)
+	@echo "      ✅ Format applied"
+	@echo "[2/7] Build/Test with multiple compilers..."
+	@if [ -z "$(PRE_PUSH_COMPILERS)" ]; then \
+		echo "❌ FAIL: No supported compilers found (need GCC 11+ or Clang 13+)"; \
+		exit 1; \
+	fi
+	@for compiler in $(PRE_PUSH_COMPILERS); do \
+		echo "      Testing with $$compiler..."; \
+		$(MAKE) CC=$$compiler clean test >/dev/null 2>&1 || \
+			(echo "❌ FAIL: $$compiler"; exit 1); \
+		echo "      ✅ $$compiler OK"; \
+	done
+	@echo "[3/7] Static analysis (cppcheck)..."
+	@$(MAKE) CC='$(CC)' check >/dev/null 2>&1 || (echo "❌ FAIL: cppcheck"; exit 1)
+	@echo "      ✅ cppcheck OK"
+	@echo "[4/7] Static analysis (clang-tidy)..."
+	@$(MAKE) CC='$(CC)' tidy >/dev/null 2>&1 || (echo "❌ FAIL: clang-tidy"; exit 1)
+	@echo "      ✅ clang-tidy OK"
+	@echo "[5/7] Sanitizers (ASan + UBSan)..."
+	@$(MAKE) CC='$(CC)' sanitize >/dev/null 2>&1 || (echo "❌ FAIL: sanitizers"; exit 1)
+	@echo "      ✅ Sanitizers OK"
+	@echo "[6/7] Valgrind memory check..."
+	@$(MAKE) CC='$(CC)' valgrind >/dev/null 2>&1 || (echo "❌ FAIL: valgrind"; exit 1)
+	@echo "      ✅ Valgrind OK"
+	@echo "[7/7] Cleaning up..."
+	@$(MAKE) CC='$(CC)' clean >/dev/null 2>&1
+	@echo "      ✅ Clean"
 	@echo ""
-	@echo "Quality Targets:"
-	@echo "  make check        Static analysis (cppcheck)"
-	@echo "  make tidy         Static analysis (clang-tidy)"
-	@echo "  make format       Format code (clang-format)"
-	@echo "  make sanitize     Build/run with ASan + UBSan"
-	@echo "  make valgrind     Memory leak check (valgrind)"
+	@echo "=== Pre-push Complete (tested: $(PRE_PUSH_COMPILERS)) ==="
+
+# Build and run with sanitizers
+sanitize: $(BUILD_DIR) $(SUITE_OBJS) $(LIB_OBJS)
+	@echo "=== AddressSanitizer ==="
+	$(CC) -fsanitize=address $(DBG_CFLAGS) -o $(TEST_BIN_ASAN) \
+		$(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
+	$(TEST_BIN_ASAN)
 	@echo ""
-	@echo "Info:"
-	@echo "  make info      Show build configuration"
-	@echo "  make help      This message"
+	@echo "=== UndefinedBehaviorSanitizer ==="
+	$(CC) -fsanitize=undefined $(DBG_CFLAGS) -o $(TEST_BIN_UBSAN) \
+		$(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
+	$(TEST_BIN_UBSAN)
 	@echo ""
-	@echo "Options:"
-	@echo "  CC=clang       Use Clang instead of GCC"
-	@echo ""
-	@echo "Compiler Support: GCC 4.6+ (full: 7+), Clang 6+"
+	@echo "=== Sanitizer Checks Complete ==="
+
+# Run all tests
+test: $(TEST_BIN)
+	@echo "=== Running Tests ==="
+	$(TEST_BIN)
+	@echo "=== All Tests Passed ==="
+
+# clang-tidy static analysis
+tidy:
+	@echo "=== clang-tidy ==="
+	@clang-tidy \
+		--checks=*,-altera-struct-pack-align,-altera-unroll-loops,-llvm-header-guard \
+		--fix-notes \
+		--fix-errors \
+		--format-style=llvm \
+		--header-filter=$(SRC_DIR)/.* \
+		--warnings-as-errors=* \
+		-p=./build/ \
+		$(PROJECT_C_FILES) \
+		-- \
+		-std=c17 \
+		-I$(SRC_DIR)
+	@echo "=== clang-tidy Complete ==="
+
+# Memory check with Valgrind
+valgrind: $(BUILD_DIR) $(SUITE_OBJS) $(LIB_OBJS)
+	@echo "=== Valgrind Memory Check ==="
+	$(CC) $(DBG_CFLAGS) -o $(TEST_BIN_VALGND) \
+		$(TEST_MAIN) $(SUITE_OBJS) $(LIB_OBJS)
+	valgrind \
+		--leak-check=full \
+		--error-exitcode=1 \
+		--show-leak-kinds=all \
+		--track-origins=yes \
+		$(TEST_BIN_VALGND)
+	@echo "=== Valgrind Complete ==="

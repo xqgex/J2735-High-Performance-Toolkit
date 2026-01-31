@@ -16,10 +16,9 @@ contributions from the community.
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-improvement`)
 3. Make your changes following our coding standards
-4. Ensure all tests pass (`make test`)
-5. Run quality checks (`make check`, `make sanitize`)
-6. Commit with a signed-off message (see DCO below)
-7. Submit a Pull Request to the `main` branch
+4. Run all checks (`make pre-push`)
+5. Commit with a signed-off message (see DCO below)
+6. Submit a Pull Request to the `main` branch
 
 ## Developer Certificate of Origin (DCO)
 
