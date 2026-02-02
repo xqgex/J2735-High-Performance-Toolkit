@@ -15,43 +15,90 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
 """
-TODO
+J2735 Data Element C Code Generator.
+
+Generates zero-copy C header files for J2735 Data Element types (BIT STRING,
+INTEGER, ENUMERATED, etc.). Data Elements use the DE_ prefix in J2735 as they
+represent atomic/primitive types.
+
+Example usage:
+    from tools.j2735_c_generator_data_element import generate_data_element
+    from tools.j2735_spec_parser import parse_spec_file
+
+    spec = parse_spec_file("J2735_202409_pdf_content.txt")
+
+    # BIT STRING types
+    code = generate_data_element("VehicleEventFlags", spec)
 """
 
 from .j2735_c_generator_jinja import create_jinja_env, get_template
 from .j2735_spec_constraints import BitStringConstraint
-from .j2735_spec_parser import J2735Specification
+from .j2735_spec_parser import ASN1TypeClass, ASN1TypeDefinition, J2735Specification
 
-_TEMPLATE_NAME = "assemble_de.j2"
+_BITSTRING_TEMPLATE_NAME = "assemble_de_bitstring.j2"
 
 
 def generate_data_element(type_name: str, spec: J2735Specification) -> str:
-    """Generate a complete C header file for a J2735 Data Element.
+    """Generate complete C header file for a Data Element.
+
+    This is the main entry point for Data Element code generation. Dispatches
+    to the appropriate internal generator based on the ASN.1 type class.
+
+    Supported types:
+        - BIT STRING: Fixed-size bit fields with named bits
 
     Args:
-        type_name: The ASN.1 type name (e.g., "VehicleEventFlags").
+        type_name: Name of the type (e.g., "VehicleEventFlags").
         spec: The parsed J2735 specification.
 
     Returns:
         Complete C header file content as a string.
 
     Raises:
-        TypeError: If the type is not a supported constraint type.
+        ValueError: If type_name is not found.
+        ValueError: If type is not a supported Data Element type.
     """
     typedef = spec.lookup_type(type_name)
     if typedef is None:
         raise ValueError(f"Type '{type_name}' not found in specification")
-    if not isinstance(typedef.constraint, BitStringConstraint):
+
+    if typedef.type_class == ASN1TypeClass.BIT_STRING:
+        return _generate_bitstring(typedef)
+    raise ValueError(
+        f"Type '{type_name}' is {typedef.type_class.name}, which is not a supported "
+        f"Data Element type. Supported types: BIT_STRING"
+    )
+
+
+def _generate_bitstring(typedef: ASN1TypeDefinition) -> str:
+    """Generate C code for a BIT STRING type.
+
+    Internal helper for generate_data_element().
+
+    Args:
+        typedef: The ASN.1 type definition for the BIT STRING.
+
+    Returns:
+        Complete C header file content as a string.
+
+    Raises:
+        TypeError: If constraint is not BitStringConstraint.
+
+    Examples:
+        >>> from tools.tests.conftest import SPEC_FILE_PATH
+        >>> from tools.j2735_spec_parser import parse_spec_file
+        >>> spec = parse_spec_file(SPEC_FILE_PATH)
+        >>> code = generate_data_element("VehicleEventFlags", spec)
+        >>> "J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_HAZARD_LIGHTS" in code
+        True
+    """
+    # Type narrowing for mypy - validate constraint type
+    bitstring = typedef.constraint
+    if not isinstance(bitstring, BitStringConstraint):
         raise TypeError(
-            f"generate_data_element currently only supports BitStringConstraint, "
-            f"got {type(typedef.constraint).__name__}"
+            f"Expected BitStringConstraint for BIT STRING type, got {type(bitstring).__name__}"
         )
 
-    # Create Jinja environment and add pow() global for mask calculations
-    env = create_jinja_env()
-    template = get_template(env, _TEMPLATE_NAME)
+    template = get_template(create_jinja_env(), _BITSTRING_TEMPLATE_NAME)
 
-    return template.render(
-        data_type=typedef.type_class.name.lower(),
-        typedef=typedef,
-    )
+    return template.render(typedef=typedef)
