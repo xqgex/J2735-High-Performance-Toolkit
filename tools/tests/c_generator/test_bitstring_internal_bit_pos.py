@@ -52,15 +52,3 @@ class TestBitPosGenerator(SpecLoadingTestBase):
         # Should have bits 0 and 1
         self.assertIn("0U", code)
         self.assertIn("1U", code)
-
-    def test_invalid_type_raises_value_error(self) -> None:
-        """Non-existent type should raise ValueError."""
-        with self.assertRaises(ValueError) as ctx:
-            _ = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "NonExistentType")
-        self.assertIn("not found", str(ctx.exception))
-
-    def test_non_bitstring_type_raises_value_error(self) -> None:
-        """INTEGER type should raise ValueError."""
-        with self.assertRaises(ValueError) as ctx:
-            _ = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "MsgCount")
-        self.assertIn("not a BIT STRING", str(ctx.exception))

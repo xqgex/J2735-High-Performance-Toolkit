@@ -17,20 +17,86 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-Template: assemble_de.j2
-Purpose: Generate C header file for a data element (DE).
+Template: assemble_de_bitstring.j2
+Purpose: Generate C header file for a BIT STRING data element (DE).
 
 Template Context (from generator):
   - typedef: The full typedef object containing the metadata
 -#}
+{%- set data_type = typedef.type_class.name | lower -%}
 {%- set is_extensible = typedef.constraint.is_extensible -%}
 {%- set named_bits = typedef.constraint.named_bits -%}
 {%- set typedef_name = typedef.name -%}
 {%- set typedef_name_upper = typedef_name | screaming_snake -%}
 {#- Banner line width: 100 chars total, content area is 92 chars -#}
 {%- set W = 92 -%}
-{%  include 'license.j2' %}
-{%  include 'file_header_de.j2' %}
+{#- Compute derived values for the header -#}
+{%- set ext_bits = typedef.constraint.ext_bits -%}
+{%- set read_bits = typedef.constraint.read_bits -%}
+{%- set root_size = typedef.constraint.root_size -%}
+{%- set root_wire_size = 1 + root_size -%}
+{%- set garbage_bits = read_bits - 1 - root_size -%}
+{%- set ext_bit_pos = read_bits - 1 -%}
+{#- Box column widths -#}
+{%- set COL1 = 5 -%}
+{%- set COL2_NONEXT = 52 -%}
+{%- set COL2_EXT = 18 -%}
+{%- set COL3_EXT = 31 -%}
+{% include 'license.j2' %}
+/**
+ * @file
+ * @author Yogev Neumann
+ * @brief J2735 {{ typedef_name }} Definition and Access Macros.
+ *
+ * {{ typedef_name }} ::= BIT STRING {
+{% for name, index in typedef.constraint.named_bits.items() | sort(attribute='1') %}
+ *     {{ name }} ({{ index }}){{ "," if not loop.last else "" }}
+{% endfor %}
+ * } (SIZE ({{ root_size }}{{ ", ..." if is_extensible else "" }}{{ ", " ~ ext_bits if is_extensible and ext_bits != root_size else "" }}))
+ *
+{% if is_extensible %}
+ * Extensible BIT STRING with root size {{ root_size }} and known extension size {{ ext_bits }}.
+ *
+ * Wire Format (non-extended, {{ root_wire_size }} bits total):
+ * ┌{{ "─" * (COL1 + 2) }}┬{{ "─" * (COL2_NONEXT + 2) }}┐
+ * │ {{ "%-*s"|format(COL1, "Bit 0") }} │ {{ "%-*s"|format(COL2_NONEXT, "Bits 1-" ~ root_size) }} │
+ * ├{{ "─" * (COL1 + 2) }}┼{{ "─" * (COL2_NONEXT + 2) }}┤
+ * │ {{ "%-*s"|format(COL1, "Ext=0") }} │ {{ "%-*s"|format(COL2_NONEXT, "flags[0.." ~ (root_size - 1) ~ "] (" ~ root_size ~ " bits)") }} │
+ * └{{ "─" * (COL1 + 2) }}┴{{ "─" * (COL2_NONEXT + 2) }}┘
+ *
+ * Wire Format (extended, {{ read_bits }} bits total):
+ * ┌{{ "─" * (COL1 + 2) }}┬{{ "─" * (COL2_EXT + 2) }}┬{{ "─" * (COL3_EXT + 2) }}┐
+ * │ {{ "%-*s"|format(COL1, "Bit 0") }} │ {{ "%-*s"|format(COL2_EXT, "Bits 1-7") }} │ {{ "%-*s"|format(COL3_EXT, "Bits 8-" ~ (read_bits - 1)) }} │
+ * ├{{ "─" * (COL1 + 2) }}┼{{ "─" * (COL2_EXT + 2) }}┼{{ "─" * (COL3_EXT + 2) }}┤
+ * │ {{ "%-*s"|format(COL1, "Ext=1") }} │ {{ "%-*s"|format(COL2_EXT, "nsnnwn=" ~ ext_bits ~ " (7 bits)") }} │ {{ "%-*s"|format(COL3_EXT, "flags[0.." ~ (ext_bits - 1) ~ "] (" ~ ext_bits ~ " bits)") }} │
+ * └{{ "─" * (COL1 + 2) }}┴{{ "─" * (COL2_EXT + 2) }}┴{{ "─" * (COL3_EXT + 2) }}┘
+{% else %}
+{%- set COL_FIXED = 60 %}
+ * Fixed BIT STRING with size {{ root_size }}.
+ *
+ * Wire Format ({{ root_wire_size }} bits total):
+ * ┌{{ "─" * (COL_FIXED + 2) }}┐
+ * │ {{ "%-*s"|format(COL_FIXED, "Bits 0-" ~ (root_size - 1)) }} │
+ * ├{{ "─" * (COL_FIXED + 2) }}┤
+ * │ {{ "%-*s"|format(COL_FIXED, "flags[0.." ~ (root_size - 1) ~ "] (" ~ root_size ~ " bits)") }} │
+ * └{{ "─" * (COL_FIXED + 2) }}┘
+{% endif %}
+ *
+ * Optimization: Single-Read Strategy
+ * ──────────────────────────────────────────────────────────────────────────────────────────
+ * Max wire size = {{ read_bits }} bits ≤ 56-bit READ_BITS limit.
+ * We read all {{ read_bits }} bits in ONE call, then use bit arithmetic to extract:
+ *   - Extension bit at position {{ ext_bit_pos }} (MSB of {{ read_bits }}-bit value)
+ *   - Flags at positions 0-{{ ext_bits - 1 }} (extended) or shifted for non-extended
+ *
+ * {{ read_bits }}-bit read layout (left-justified from bit 0):
+ *   Non-extended: [Ext=0][F0..F{{ root_size - 1 }}][{{ garbage_bits }} garbage bits]
+ *                  bit{{ ext_bit_pos }}  {{ ext_bit_pos - 1 }}..{{ garbage_bits }}     {{ garbage_bits - 1 }}..0
+ *   Extended:     [Ext=1][nsnnwn:7][F0..F{{ ext_bits - 1 }}]
+ *                  bit{{ ext_bit_pos }}  {{ ext_bit_pos - 1 }}..{{ ext_bits }}    {{ ext_bits - 1 }}..0
+ *
+ * @todo Update the Doxygen to indicate [in] and [out] parameters
+ */
 #ifndef J2735_INTERNAL_DE_{{ typedef_name | upper }}_H
 #define J2735_INTERNAL_DE_{{ typedef_name | upper }}_H
 
