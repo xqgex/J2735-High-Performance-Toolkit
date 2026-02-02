@@ -88,7 +88,8 @@ def _generate_bitstring(typedef: ASN1TypeDefinition) -> str:
         >>> from tools.tests.conftest import SPEC_FILE_PATH
         >>> from tools.j2735_spec_parser import parse_spec_file
         >>> spec = parse_spec_file(SPEC_FILE_PATH)
-        >>> code = generate_data_element("VehicleEventFlags", spec)
+        >>> typedef = spec.lookup_type("VehicleEventFlags")
+        >>> code = _generate_bitstring(typedef)
         >>> "J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_HAZARD_LIGHTS" in code
         True
     """
