@@ -23,7 +23,7 @@
  *        Access.
  * @note Optimized to use Packed-Casting (No memcpy call).
  * @section implementation_details
- * - Uses __attribute__((packed)) / #pragma pack(1) to define a safe unaligned type.
+ * - Uses __attribute__((packed)) / \#pragma pack(1) to define a safe unaligned type.
  * - Casts raw byte pointers to this type to force the compiler to emit safe
  *   unaligned load instructions (e.g. MOV/LDR).
  * - Performs Byte-Swapping (BSWAP) to handle Big-Endian UPER data on Little-Endian hosts.

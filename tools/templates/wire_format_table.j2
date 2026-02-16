@@ -1,0 +1,90 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 Wire Format Table Template
+
+  Renders a single wire format variant as a Unicode box-drawing table.
+  Works directly with WireVariant containing SequenceField objects.
+
+  Context variables:
+    - variant: WireVariant object (from j2735_c_generator_wire_format)
+    - opt_count: Number of optional fields (for bitmap width)
+
+  Output format:
+    * ┌─────────┬───────────────────────────────┬───────────────────────────────┐
+    * │ Bit 0   │ Bits 1-16                     │ Bits 17-24                    │
+    * ├─────────┼───────────────────────────────┼───────────────────────────────┤
+    * │ Ext=0   │ radiusOfCurve (16)            │ confidence (8)                │
+    * └─────────┴───────────────────────────────┴───────────────────────────────┘
+-#}
+{#- Build segments list with (header, content, width) tuples -#}
+{%- set segments = [] -%}
+{%- set bit_pos = namespace(val=0) -%}
+
+{#- Extension bit segment -#}
+{%- if variant.ext_bit is not none -%}
+{%-   set _ = segments.append(("Bit 0", "Ext=" ~ variant.ext_bit, 7)) -%}
+{%-   set bit_pos.val = 1 -%}
+{%- endif -%}
+
+{#- Optional bitmap segment -#}
+{%- if variant.opt_bitmap -%}
+{%-   set opt_end = bit_pos.val + opt_count - 1 -%}
+{%-   if bit_pos.val == opt_end -%}
+{%-     set header = "Bit " ~ bit_pos.val -%}
+{%-   else -%}
+{%-     set header = "Bits " ~ bit_pos.val ~ "-" ~ opt_end -%}
+{%-   endif -%}
+{%-   set _ = segments.append((header, "Opt=" ~ variant.opt_bitmap, 10)) -%}
+{%-   set bit_pos.val = opt_end + 1 -%}
+{%- endif -%}
+
+{#- Field segments -#}
+{%- for field in variant.fields -%}
+{%-   set bits = field.type.uper_bit_width or 0 -%}
+{%-   set end_bit = bit_pos.val + bits - 1 -%}
+{%-   if bit_pos.val == end_bit -%}
+{%-     set header = "Bit " ~ bit_pos.val -%}
+{%-   else -%}
+{%-     set header = "Bits " ~ bit_pos.val ~ "-" ~ end_bit -%}
+{%-   endif -%}
+{%-   set content = field.name ~ " (" ~ bits ~ ")" -%}
+{%-   set width = [12, field.name | length + 6] | max -%}
+{%-   set _ = segments.append((header, content, width)) -%}
+{%-   set bit_pos.val = bit_pos.val + bits -%}
+{%- endfor -%}
+
+{#- Extension data placeholder -#}
+{%- if variant.ext_bit == 1 -%}
+{%-   set _ = segments.append(("Bits " ~ bit_pos.val ~ "+", "(extension data)", 16)) -%}
+{%- endif -%}
+
+{#- Calculate column widths -#}
+{%- set widths = [] -%}
+{%- for seg in segments -%}
+{%-   set w = [seg[0] | length, seg[1] | length, seg[2]] | max -%}
+{%-   set _ = widths.append(w) -%}
+{%- endfor %}
+ * ┌{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┬{% endif %}{% endfor %}┐
+ * │{% for i in range(segments | length) %} {{ "%-*s" | format(widths[i], segments[i][0]) }} │{% endfor %}
+
+ * ├{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┼{% endif %}{% endfor %}┤
+ * │{% for i in range(segments | length) %} {{ "%-*s" | format(widths[i], segments[i][1]) }} │{% endfor %}
+
+ * └{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┴{% endif %}{% endfor %}┘

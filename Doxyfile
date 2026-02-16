@@ -1,0 +1,30 @@
+# Doxyfile 1.9.8
+
+CREATE_SUBDIRS         = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_METHODS  = YES
+HIDE_UNDOC_MEMBERS     = YES
+HIDE_UNDOC_CLASSES     = YES
+INTERNAL_DOCS          = YES
+WARN_AS_ERROR          = YES
+INPUT                  = ./src
+FILE_PATTERNS          = *.c \
+                         *.h \
+                         *.md
+RECURSIVE              = YES
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+STRIP_CODE_COMMENTS    = NO
+CLANG_ASSISTED_PARSING = YES
+GENERATE_TREEVIEW      = YES
+MACRO_EXPANSION        = YES
+PREDEFINED             = __GNUC__ \
+                         __clang__ \
+                         J2735_PACK_START= \
+                         J2735_PACK_END=
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+INTERACTIVE_SVG        = YES

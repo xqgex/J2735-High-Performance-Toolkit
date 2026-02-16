@@ -34,6 +34,10 @@
 #include "J2735_internal_DF_PathPrediction.h"
 #include "J2735_internal_DF_PathPrediction_test.h"
 
+/* ============================================================================================== */
+/*  Happy Path Tests                                                                              */
+/* ============================================================================================== */
+
 /**
  * @brief Test PathPrediction with NO extension (extension bit = 0).
  *
@@ -219,8 +223,223 @@ void test_path_prediction_signed_negative(void) {
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(150U, conf, "confidence should be 150");
 }
 
+/* ============================================================================================== */
+/*  Boundary Value Tests                                                                          */
+/* ============================================================================================== */
+
+/**
+ * @brief Test PathPrediction with minimum radiusOfCurve (-32767).
+ *
+ * @par ASN.1 Definition:
+ * @code
+ * PathPrediction ::= SEQUENCE {
+ *   radiusOfCurve  RadiusOfCurvature,  -- 16 bits (signed, -32767..32767)
+ *   confidence     Confidence,         --  8 bits (unsigned, 0..200)
+ *   ...                                -- Extensible
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - extension:     ABSENT
+ * - radiusOfCurve: -32767 (0x8001 in two's complement, minimum valid)
+ * - confidence:    0 (minimum)
+ *
+ * @par Wire Format (25 bits total):
+ * | Offset (bits) | Width | Field         | Value            |
+ * |---------------|-------|---------------|------------------|
+ * | 0             | 1     | extension     | 0 (not extended) |
+ * | 1             | 16    | radiusOfCurve | 1000000000000001 |
+ * | 17            | 8     | confidence    | 00000000         |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                       |
+ * |------|------|----------|------------------------------|
+ * | 0    | 0x40 | 01000000 | ext(0) + radiusOfCurve[15:9] |
+ * | 1    | 0x00 | 00000000 | radiusOfCurve[8:1]           |
+ * | 2    | 0x80 | 10000000 | radiusOfCurve[0] + conf[7:1] |
+ * | 3    | 0x00 | 00000000 | conf[0] + padding            |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_path_prediction_radius_boundary_min(void) {
+  static const uint8_t payload[] = {
+      0x40,                                          /* ext(0) + radiusOfCurve[15:9] = 1000000 */
+      0x00,                                          /* radiusOfCurve[8:1] = 00000000 */
+      0x80,                                          /* radiusOfCurve[0](1) + conf[7:1](0000000) */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
+  TEST_ASSERT_EQUAL_INT16_MESSAGE(-32767, radius, "radiusOfCurve should be -32767 (min)");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, conf, "confidence should be 0 (min)");
+}
+
+/**
+ * @brief Test PathPrediction with maximum radiusOfCurve (+32767).
+ *
+ * @par ASN.1 Definition:
+ * @code
+ * PathPrediction ::= SEQUENCE {
+ *   radiusOfCurve  RadiusOfCurvature,  -- 16 bits (signed, -32767..32767)
+ *   confidence     Confidence,         --  8 bits (unsigned, 0..200)
+ *   ...                                -- Extensible
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - extension:     ABSENT
+ * - radiusOfCurve: 32767 (0x7FFF, maximum valid)
+ * - confidence:    200 (0xC8, maximum valid)
+ *
+ * @par Wire Format (25 bits total):
+ * | Offset (bits) | Width | Field         | Value            |
+ * |---------------|-------|---------------|------------------|
+ * | 0             | 1     | extension     | 0 (not extended) |
+ * | 1             | 16    | radiusOfCurve | 0111111111111111 |
+ * | 17            | 8     | confidence    | 11001000 (200)   |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                       |
+ * |------|------|----------|------------------------------|
+ * | 0    | 0x3F | 00111111 | ext(0) + radiusOfCurve[15:9] |
+ * | 1    | 0xFF | 11111111 | radiusOfCurve[8:1]           |
+ * | 2    | 0xE4 | 11100100 | radiusOfCurve[0] + conf[7:1] |
+ * | 3    | 0x00 | 00000000 | conf[0] + padding            |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_path_prediction_radius_boundary_max(void) {
+  static const uint8_t payload[] = {
+      0x3F,                                          /* ext(0) + radiusOfCurve[15:9] = 0111111 */
+      0xFF,                                          /* radiusOfCurve[8:1] = 11111111 */
+      0xE4,                                          /* radiusOfCurve[0](1) + conf[7:1](1100100) */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
+  TEST_ASSERT_EQUAL_INT16_MESSAGE(32767, radius, "radiusOfCurve should be 32767 (max)");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(200U, conf, "confidence should be 200 (max valid)");
+}
+
+/**
+ * @brief Test PathPrediction with radiusOfCurve = 0 (straight ahead).
+ *
+ * @par ASN.1 Definition:
+ * @code
+ * PathPrediction ::= SEQUENCE {
+ *   radiusOfCurve  RadiusOfCurvature,  -- 16 bits (signed, -32767..32767)
+ *   confidence     Confidence,         --  8 bits (unsigned, 0..200)
+ *   ...                                -- Extensible
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - extension:     ABSENT
+ * - radiusOfCurve: 0 (straight ahead per J2735 spec)
+ * - confidence:    100
+ *
+ * @par Wire Format (25 bits total):
+ * | Offset (bits) | Width | Field         | Value            |
+ * |---------------|-------|---------------|------------------|
+ * | 0             | 1     | extension     | 0 (not extended) |
+ * | 1             | 16    | radiusOfCurve | 0000000000000000 |
+ * | 17            | 8     | confidence    | 01100100 (100)   |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                       |
+ * |------|------|----------|------------------------------|
+ * | 0    | 0x00 | 00000000 | ext(0) + radiusOfCurve[15:9] |
+ * | 1    | 0x00 | 00000000 | radiusOfCurve[8:1]           |
+ * | 2    | 0x32 | 00110010 | radiusOfCurve[0] + conf[7:1] |
+ * | 3    | 0x00 | 00000000 | conf[0] + padding            |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_path_prediction_radius_zero(void) {
+  static const uint8_t payload[] = {
+      0x00,                                          /* ext(0) + radiusOfCurve[15:9] = 0000000 */
+      0x00,                                          /* radiusOfCurve[8:1] = 00000000 */
+      0x32,                                          /* radiusOfCurve[0](0) + conf[7:1](0110010) */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
+  TEST_ASSERT_EQUAL_INT16_MESSAGE(0, radius, "radiusOfCurve should be 0 (straight)");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(100U, conf, "confidence should be 100");
+}
+
+/* ============================================================================================== */
+/*  Misalignment Tests                                                                            */
+/* ============================================================================================== */
+
+/**
+ * @brief Test PathPrediction with misaligned buffer access.
+ *
+ * Since this is an embedded library, we must verify correct operation when
+ * the buffer is not aligned to a natural boundary. This tests the packed-cast
+ * optimization used by J2735_READ_BITS.
+ *
+ * Uses the same test vector as test_path_prediction_no_extension
+ * but with a 1-byte offset to force misalignment.
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_path_prediction_misaligned_access(void) {
+  static const uint8_t payload[] = {
+      0xFF,                                          /* padding byte to force misalignment */
+      0x01,                                          /* ext(0) + radiusOfCurve[15:9] */
+      0xF4,                                          /* radiusOfCurve[8:1] */
+      0x32,                                          /* radiusOfCurve[0] + conf[7:1] */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+
+  /* Offset pointer by 1 byte to force misalignment */
+  const uint8_t *unaligned_ptr = &payload[1];
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent (misaligned)");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(unaligned_ptr);
+  TEST_ASSERT_EQUAL_INT16_MESSAGE(1000, radius, "radiusOfCurve should be 1000 (misaligned)");
+
+  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
+  uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(unaligned_ptr);
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(100U, conf, "confidence should be 100 (misaligned)");
+}
+
 void run_testsuite_path_prediction(void) {
+  /* Happy path tests */
   RUN_TEST(test_path_prediction_no_extension);
   RUN_TEST(test_path_prediction_with_extension);
   RUN_TEST(test_path_prediction_signed_negative);
+
+  /* Boundary value tests */
+  RUN_TEST(test_path_prediction_radius_boundary_min);
+  RUN_TEST(test_path_prediction_radius_boundary_max);
+  RUN_TEST(test_path_prediction_radius_zero);
+
+  /* Misalignment tests */
+  RUN_TEST(test_path_prediction_misaligned_access);
 }

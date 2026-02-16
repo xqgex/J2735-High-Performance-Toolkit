@@ -28,7 +28,8 @@
     - typedef: ASN1TypeDefinition for the SEQUENCE type with:
         - name: Original type name (e.g., "BSMcoreData")
         - uper_bit_width: Total bit-width of the SEQUENCE
-    - wire_format: Tuple of tuples of ByteSegment objects for wire format table
+    - variants: list[WireVariant] from get_sequence_variants()
+    - opt_count: Number of OPTIONAL fields (for bitmap width)
 
   Filters used:
     - bytes_from_bits: Converts bits to bytes using ceiling division
@@ -50,7 +51,7 @@
  * @brief Container for {{ typedef.name }} ({{ typedef.uper_bit_width | bytes_from_bits }} bytes / {{ typedef.uper_bit_width }} bits).
  *
  * @par {{ typedef.name }} Wire Format (UPER):
-{% include 'wire_format.j2' %}
+{% include 'wire_format_section.j2' %}
  */
 typedef struct J2735_{{ typedef.name }} J2735_{{ typedef.name }}_t; /* MISRA 8.4: Forward declaration */
 typedef struct J2735_{{ typedef.name }} {

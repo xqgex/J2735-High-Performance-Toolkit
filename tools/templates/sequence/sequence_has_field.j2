@@ -30,7 +30,7 @@
 
   Output format:
     #define J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf) \
-      J2735_INTERNAL_HAS_FIELD((buf), 0U, J2735_OPT_INTERSECTION_REFERENCE_ID_REGION)
+      J2735_INTERNAL_HAS_FIELD((buf), 0U, J2735_INTERNAL_OPT_INTERSECTION_REFERENCE_ID_REGION)
 -#}
 {%- set extension_bit = typedef.constraint.extension_bit -%}
 {%- set typedef_name = typedef.name -%}
@@ -44,7 +44,7 @@
  * @return 1 if present, 0 otherwise.
  */
 #define J2735_{{ typedef_name_upper }}_HAS_{{ field_name }}(buf) \
-  J2735_INTERNAL_HAS_FIELD((buf), {{ extension_bit }}U, J2735_OPT_{{ typedef_name_upper }}_{{ field_name }})
-{#      Force line break after define #}
-{%-   endif -%}
+  J2735_INTERNAL_HAS_FIELD((buf), {{ extension_bit }}U, J2735_INTERNAL_OPT_{{ typedef_name_upper }}_{{ field_name }})
+{%      if not loop.last %}{{ "" }}{% endif %}
+{%    endif -%}
 {%- endfor -%}

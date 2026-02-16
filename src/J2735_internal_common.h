@@ -184,7 +184,7 @@ typedef struct j2735_aligned_u64 j2735_aligned_u64_t;
  * Each OPTIONAL field requires 1 bit. This is an identity macro for clarity.
  *
  * @note This counts only the optional bitmap, NOT the extension bit.
- *       For total prefix bits, use J2735_PREFIX_BITS_<TYPE>.
+ *       For total prefix bits, use J2735_INTERNAL_PREFIX_BITS_<TYPE>.
  *
  * @param n Number of OPTIONAL fields in the SEQUENCE.
  * @return Number of optional bitmap bits (equals n).

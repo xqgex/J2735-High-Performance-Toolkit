@@ -19,24 +19,27 @@
 {#-
   J2735 Root Size Constants Template
 
-  Generates #define J2735_ROOT_SIZE_BITS_<SEQUENCE> for extensible SEQUENCE types.
+  Generates #define J2735_INTERNAL_ROOT_SIZE_BITS_<SEQUENCE> for extensible SEQUENCE types.
   Root size = prefix bits + all root field bits. Used to know where extensions start.
 
-  Uses symbolic expression (J2735_PREFIX_BITS_* + J2735_BW_* + ...) for clarity
+  Uses symbolic expression (J2735_INTERNAL_PREFIX_BITS_* + J2735_BW_* + ...) for clarity
   and maintainability. Compiler evaluates to constant at compile time.
 
   Context variables:
-    - field_type_names: List of field type names (e.g., ["RadiusOfCurvature", "Confidence"])
     - typedef: The full typedef object containing the metadata
 
   Filters used:
     - screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
 
   Output format:
-    #define J2735_ROOT_SIZE_BITS_PATH_PREDICTION \
-      (J2735_PREFIX_BITS_PATH_PREDICTION + J2735_BW_RADIUS_OF_CURVATURE + \
+    #define J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION \
+      (J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION + J2735_BW_RADIUS_OF_CURVATURE + \
        J2735_BW_CONFIDENCE) /* 25 bits */
 -#}
+{%- set field_type_names = [] -%}
+{%- for field in typedef.constraint.fields -%}
+{%-   set _ = field_type_names.append(field.type_name) -%}
+{%- endfor -%}
 {%- set root_uper_bit_width = typedef.constraint.root_uper_bit_width -%}
 {%- set typedef_name_upper = typedef.name | screaming_snake -%}
 /**
@@ -45,5 +48,5 @@
  *
  * Used to locate where extension data begins when extension bit is set.
  */
-#define J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }} \
-  (J2735_PREFIX_BITS_{{ typedef_name_upper }}{% for ft in field_type_names %} + J2735_BW_{{ ft | screaming_snake }}{% endfor %}) /* {{ root_uper_bit_width }} bits */
+#define J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name_upper }} \
+  (J2735_INTERNAL_PREFIX_BITS_{{ typedef_name_upper }}{% for ft in field_type_names %} + J2735_BW_{{ ft | screaming_snake }}{% endfor %}) /* {{ root_uper_bit_width }} bits */

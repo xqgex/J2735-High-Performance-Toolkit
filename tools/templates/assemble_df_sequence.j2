@@ -1,0 +1,108 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 Data Frame Assembly Template (SEQUENCE)
+
+  Main assembly template for SEQUENCE types. Generates a complete C header file
+  by including sub-templates from the sequence/ directory.
+
+  Template Context (from generator):
+    - typedef:   ASN1TypeDefinition for the SEQUENCE type
+    - variants:  list[WireVariant] from get_sequence_variants()
+    - opt_count: Number of OPTIONAL fields (for bitmap width)
+-#}
+{%- set has_optional = typedef.constraint.optional_count > 0 -%}
+{%- set typedef_name = typedef.name -%}
+{% include 'license.j2' %}
+/**
+ * @file
+ * @author Yogev Neumann
+ * @brief J2735 {{ typedef_name }} Definition and Access Macros.
+ *
+ * @par {{ typedef_name }} Wire Format (UPER):
+{% include 'wire_format_section.j2' %}
+ */
+#ifndef J2735_INTERNAL_DF_{{ typedef_name | upper }}_H
+#define J2735_INTERNAL_DF_{{ typedef_name | upper }}_H
+
+#include "J2735_internal_common.h"
+#include "J2735_internal_constants.h"
+{% if typedef.constraint.is_extensible %}
+#include "J2735_internal_inline.h"
+{% endif %}
+
+/* ============================================================================================== */
+/*  INTERNAL: Structure Metadata                                                                  */
+/* ============================================================================================== */
+{% include 'sequence/sequence_internal_prefix_bits.j2' %}
+
+{% if typedef.constraint.is_extensible %}
+{% include 'sequence/sequence_internal_root_size_bits.j2' %}
+
+{% endif %}
+{% if has_optional %}
+/* ============================================================================================== */
+/*  INTERNAL: Optional Field Indices                                                              */
+/*  (Bitmap position for each OPTIONAL field, 0-indexed from MSB)                                 */
+/* ============================================================================================== */
+{% include 'sequence/sequence_internal_opt.j2' %}
+
+{% endif %}
+{% if has_optional %}
+/* ============================================================================================== */
+/*  INTERNAL: Dynamic Widths                                                                      */
+/*  (Returns 0 if field absent, else J2735_BW_<FieldType> or computed width)                      */
+/* ============================================================================================== */
+{% include 'sequence/sequence_internal_width.j2' %}
+
+{% endif %}
+/* ============================================================================================== */
+/*  INTERNAL: Field Offsets                                                                       */
+/*  (Cumulative bit offset: prev_offset + prev_width)                                             */
+/* ============================================================================================== */
+{% include 'sequence/sequence_internal_off.j2' %}
+
+{% if has_optional %}
+/* ============================================================================================== */
+/*  PUBLIC API: Has-Checkers (OPTIONAL Fields)                                                    */
+/* ============================================================================================== */
+{% include 'sequence/sequence_has_field.j2' %}
+
+{% endif %}
+{% if typedef.constraint.is_extensible %}
+/* ============================================================================================== */
+/*  PUBLIC API: Has-Extension Checker                                                             */
+/* ============================================================================================== */
+{% include 'sequence/sequence_has_extension.j2' %}
+
+{% endif %}
+/* ============================================================================================== */
+/*  PUBLIC API: Field Getters                                                                     */
+/* ============================================================================================== */
+{% include 'sequence/sequence_get.j2' %}
+
+{% if typedef.constraint.is_extensible %}
+/* ============================================================================================== */
+/*  PUBLIC API: Size Function                                                                     */
+/* ============================================================================================== */
+{% include 'sequence/sequence_size.j2' %}
+
+{% endif %}
+#endif /* J2735_INTERNAL_DF_{{ typedef_name | upper }}_H */
+{# Blank Line #}

@@ -19,7 +19,7 @@
 {#-
   J2735 Sequence Prefix Bits Constants Template
 
-  Generates #define J2735_PREFIX_BITS_<SEQUENCE> constant for a SEQUENCE type.
+  Generates #define J2735_INTERNAL_PREFIX_BITS_<SEQUENCE> constant for a SEQUENCE type.
   PREFIX_BITS = extension_bit + optional_count (total bits before first field).
 
   Context variables:
@@ -29,9 +29,9 @@
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
 
   Output format:
-    #define J2735_PREFIX_BITS_BSM_CORE_DATA (0U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 0 ext + 0 opt = 0 bits (non-extensible, all required) */
-    #define J2735_PREFIX_BITS_INTERSECTION_REFERENCE_ID (0U + J2735_INTERNAL_PREAMBLE_BITS(1U)) /* 0 ext + 1 opt = 1 bit (non-extensible, 1 OPTIONAL) */
-    #define J2735_PREFIX_BITS_PATH_PREDICTION (1U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 1 ext + 0 opt = 1 bit (extensible, all required) */
+    #define J2735_INTERNAL_PREFIX_BITS_BSM_CORE_DATA (0U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 0 ext + 0 opt = 0 bits (non-extensible, all required) */
+    #define J2735_INTERNAL_PREFIX_BITS_INTERSECTION_REFERENCE_ID (0U + J2735_INTERNAL_PREAMBLE_BITS(1U)) /* 0 ext + 1 opt = 1 bit (non-extensible, 1 OPTIONAL) */
+    #define J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION (1U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 1 ext + 0 opt = 1 bit (extensible, all required) */
 -#}
 {%- set extension_bit = typedef.constraint.extension_bit -%}
 {%- set optional_count = typedef.constraint.optional_count -%}
@@ -52,7 +52,7 @@
  * @internal
  * @brief Number of prefix bits before first field (extension bit + optional preamble).
  *
- * @todo: Add calculation explanation: e.g., "0 ext + 2 opt = 2 bits">
+ * Calculation: {{ comment }}
  */
-#define J2735_PREFIX_BITS_{{ typedef_name_upper }} \
+#define J2735_INTERNAL_PREFIX_BITS_{{ typedef_name_upper }} \
   ({{ extension_bit }}U + J2735_INTERNAL_PREAMBLE_BITS({{ optional_count }}U)) /* {{ comment }} */
