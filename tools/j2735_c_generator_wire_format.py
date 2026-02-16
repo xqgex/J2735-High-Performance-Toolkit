@@ -15,242 +15,167 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
 """
-J2735 Doxygen Wire Format Generator.
+J2735 Wire Format Documentation Generator.
 
-Computes byte-by-byte wire format representation for UPER-encoded SEQUENCEs.
-Used to generate Doxygen documentation with visual wire format tables.
+Minimal implementation that passes ASN1TypeDefinition directly to templates.
+All complex formatting logic lives in Jinja templates + filters.
 """
 
 from dataclasses import dataclass
-from typing import Final
 
-from .j2735_spec_constraints import SequenceType
-from .j2735_spec_parser import ASN1TypeDefinition
+from .j2735_spec_constraints import SequenceField, SequenceType
 
 # =============================================================================
-# Constants
-# =============================================================================
-
-_BITS_PER_BYTE: Final[int] = 8  # 8 bits per byte/octet in OCTET STRING
-
-# Format prefixes for human-readable bit range descriptions in wire format
-# These must stay in sync with templates/wire_format.j2 which checks for "(B"
-_BIT_SINGLE: Final[str] = "(Bit {high_bit})"  # e.g., "(Bit 7)"
-_BIT_RANGE: Final[str] = "(Bits {high_bit}-{low_bit})"  # e.g., "(Bits 31-24)"
-
-
-# =============================================================================
-# Data Structures
+# Wire Variant Helper (the ONE thing that needs Python)
 # =============================================================================
 
 
-@dataclass(frozen=True, kw_only=True, slots=True)
-class ByteSegment:
-    """A segment of a field within a single byte (for wire format display).
+@dataclass(frozen=True, slots=True)
+class WireVariant:
+    """A wire format variant for rendering.
 
-    When a field spans multiple bytes, it produces multiple ByteSegments.
-
-    Attributes:
-        byte_offset: Byte index from start of SEQUENCE.
-        bit_start: Start bit within byte (0-7, 0 = MSB).
-        bit_count: Number of bits in this byte (1-8).
-        field_name: Name of the field this segment belongs to.
-        type_name: The ASN.1 type name (e.g., "TemporaryID").
-        field_bits: Human-readable bit range (e.g., "(Bits 31-24)" or "(7)").
-        is_first: True if this is the first segment of the field.
-        is_last: True if this is the last segment of the field.
+    For fixed types: single variant with all fields.
+    For OPTIONAL types: variant with fields to include.
+    For extensible types: variant with extension bit value.
     """
 
-    byte_offset: int
-    bit_start: int
-    bit_count: int
-    field_name: str
-    type_name: str
-    field_bits: str
-    is_first: bool
-    is_last: bool
+    name: str
+    fields: tuple[SequenceField, ...]
+    ext_bit: int | None  # None = no ext bit, 0/1 = ext bit value
+    opt_bitmap: str  # "" = no bitmap, "0" or "1" or "0..0" etc.
+    total_bits: int | str  # int for fixed, "variable" for ext=1
 
 
-# =============================================================================
-# Helper Functions
-# =============================================================================
-
-
-def _format_field_bits(
-    bit_width: int,
-    bits_remaining: int,
-    bits_in_this_byte: int,
-) -> str:
-    """Format human-readable bit range description for a segment.
+def _pluralize_bits(n: int) -> str:
+    """Format a bit count with correct singular/plural grammar.
 
     Args:
-        bit_width: Total bits in the field.
-        bits_remaining: Bits still to be processed (including this segment).
-        bits_in_this_byte: Bits in the current byte segment.
+        n: Number of bits.
 
     Returns:
-        Formatted string like "(Bits 31-24)", "(Bit 7)", "(8)", or "".
+        Formatted string: "1 bit" for singular, "N bits" for all other counts.
 
     Examples:
-        >>> _format_field_bits(1, 1, 1)  # Single bit field
-        ''
-        >>> _format_field_bits(8, 8, 8)  # Fits in one byte
-        '(8)'
-        >>> _format_field_bits(32, 32, 8)  # First byte of 32-bit
-        '(Bits 31-24)'
-        >>> _format_field_bits(32, 24, 8)  # Second byte of 32-bit
-        '(Bits 23-16)'
-        >>> _format_field_bits(32, 8, 8)  # Last byte of 32-bit
-        '(Bits 7-0)'
-        >>> _format_field_bits(9, 1, 1)  # Single bit at end
-        '(Bit 0)'
+        >>> _pluralize_bits(0)
+        '0 bits'
+        >>> _pluralize_bits(1)
+        '1 bit'
+        >>> _pluralize_bits(16)
+        '16 bits'
     """
-    if bit_width == 1:
-        return ""
-    if bit_width == bits_in_this_byte:  # Entire field fits in one segment
-        return f"({bit_width})"
-
-    bits_consumed = bit_width - bits_remaining
-    high_bit = bit_width - 1 - bits_consumed
-    low_bit = high_bit - bits_in_this_byte + 1
-
-    if high_bit == low_bit:
-        return _BIT_SINGLE.format(high_bit=high_bit)
-    return _BIT_RANGE.format(high_bit=high_bit, low_bit=low_bit)
+    return f"{n} bit" if n == 1 else f"{n} bits"
 
 
-def _generate_field_segments(
-    field_name: str,
-    type_name: str,
-    bit_width: int,
-    start_bit: int,
-) -> tuple[ByteSegment, ...]:
-    """Generate ByteSegments for a single field.
+def _sum_field_bits(fields: tuple[SequenceField, ...]) -> int:
+    """Sum the UPER bit widths of the given fields.
 
     Args:
-        field_name: Name of the field.
-        type_name: ASN.1 type name for display.
-        bit_width: Total bit width of the field.
-        start_bit: Starting bit position in the SEQUENCE.
+        fields: Tuple of SequenceField objects.
 
     Returns:
-        Tuple of ByteSegments spanning the field.
+        Total bit width (treating ``None`` widths as 0).
 
     Examples:
-        >>> segs = _generate_field_segments("id", "TemporaryID", 32, 0)
-        >>> len(segs)  # 32 bits = 4 bytes
-        4
-        >>> segs[0].byte_offset, segs[0].bit_count, segs[0].field_bits
-        (0, 8, '(Bits 31-24)')
-        >>> segs[3].byte_offset, segs[3].is_last, segs[3].field_bits
-        (3, True, '(Bits 7-0)')
-        >>> segs = _generate_field_segments("msgCnt", "MsgCount", 8, 0)
-        >>> len(segs)  # 8 bits = 1 byte
+        >>> _sum_field_bits(())
+        0
+    """
+    return sum(f.type.uper_bit_width or 0 for f in fields)
+
+
+def get_sequence_variants(constraint: SequenceType) -> list[WireVariant]:
+    """Generate wire format variants for a SEQUENCE.
+
+    Args:
+        constraint: The SequenceType constraint.
+
+    Returns:
+        List of WireVariant objects to render.
+
+    Examples:
+        >>> from tools.j2735_spec_constraints import SequenceType, SequenceField
+        >>> from tools.j2735_spec_constraints import IntegerConstraint
+        >>> seq = SequenceType(fields=(
+        ...     SequenceField(
+        ...         name="a", type_name="TypeA",
+        ...         type=IntegerConstraint(min_value=0, max_value=127),
+        ...         is_optional=False, section_comment="", inline_comment="",
+        ...     ),
+        ... ), is_extensible=False)
+        >>> variants = get_sequence_variants(seq)
+        >>> len(variants)
         1
-        >>> segs[0].is_first, segs[0].is_last, segs[0].field_bits
-        (True, True, '(8)')
-        >>> segs = _generate_field_segments("flag", "BOOLEAN", 1, 7)
-        >>> segs[0].byte_offset, segs[0].bit_start, segs[0].field_bits
-        (0, 7, '')
+        >>> variants[0].name
+        '7 bits'
     """
-    segments: list[ByteSegment] = []
-    bit_pos = start_bit
-    bits_remaining = bit_width
-    is_first = True
+    is_ext = constraint.is_extensible
+    opt_count = constraint.optional_count
+    all_fields = constraint.fields
+    required_fields = tuple(f for f in all_fields if not f.is_optional)
+    optional_names = [f.name for f in all_fields if f.is_optional]
 
-    while bits_remaining > 0:
-        byte_idx = bit_pos // _BITS_PER_BYTE
-        bit_in_byte = bit_pos % _BITS_PER_BYTE
-        bits_in_this_byte = min(_BITS_PER_BYTE - bit_in_byte, bits_remaining)
-        is_last = bits_remaining == bits_in_this_byte
-
-        field_bits = _format_field_bits(bit_width, bits_remaining, bits_in_this_byte)
-
-        segments.append(
-            ByteSegment(
-                byte_offset=byte_idx,
-                bit_start=bit_in_byte,
-                bit_count=bits_in_this_byte,
-                field_name=field_name,
-                type_name=type_name,
-                field_bits=field_bits,
-                is_first=is_first,
-                is_last=is_last,
+    # Case 1: Fixed SEQUENCE (no OPTIONAL, not extensible)
+    if not is_ext and opt_count == 0:
+        total = _sum_field_bits(all_fields)
+        return [
+            WireVariant(
+                name=_pluralize_bits(total),
+                fields=all_fields,
+                ext_bit=None,
+                opt_bitmap="",
+                total_bits=total,
             )
-        )
+        ]
 
-        bit_pos += bits_in_this_byte
-        bits_remaining -= bits_in_this_byte
-        is_first = False
+    # Case 2: Extensible SEQUENCE with no OPTIONAL
+    if is_ext and opt_count == 0:
+        total_no_ext = 1 + _sum_field_bits(all_fields)  # 1 for ext bit
+        return [
+            WireVariant(
+                name=f"no extensions, {_pluralize_bits(total_no_ext)}",
+                fields=all_fields,
+                ext_bit=0,
+                opt_bitmap="",
+                total_bits=total_no_ext,
+            ),
+            WireVariant(
+                name="with extensions, variable",
+                fields=all_fields,
+                ext_bit=1,
+                opt_bitmap="",
+                total_bits="variable",
+            ),
+        ]
 
-    return tuple(segments)
+    # Case 3: SEQUENCE with OPTIONAL fields (may also be extensible)
+    ext_prefix = 1 if is_ext else 0
 
+    # Variant: all optional ABSENT
+    absent_bits = ext_prefix + opt_count + _sum_field_bits(required_fields)
+    absent_opt = "0" if opt_count == 1 else f"0..0 ({opt_count})"
+    absent_name = (
+        f"{optional_names[0]} ABSENT" if len(optional_names) == 1 else "all optional ABSENT"
+    )
 
-# =============================================================================
-# Core Functions
-# =============================================================================
+    # Variant: all optional PRESENT
+    present_bits = ext_prefix + opt_count + _sum_field_bits(all_fields)
+    present_opt = "1" if opt_count == 1 else f"1..1 ({opt_count})"
+    present_name = (
+        f"{optional_names[0]} PRESENT" if len(optional_names) == 1 else "all optional PRESENT"
+    )
 
-
-def compute_wire_format(typedef: ASN1TypeDefinition) -> tuple[tuple[ByteSegment, ...], ...]:
-    """Compute byte-by-byte wire format representation of a SEQUENCE.
-
-    For each byte, produces a tuple of ByteSegments showing which fields
-    occupy which bits. Computes bit offsets inline without intermediate structures.
-
-    Args:
-        typedef: The SEQUENCE type definition.
-
-    Returns:
-        Tuple of tuples, one per byte. Empty if any field has unknown width.
-
-    Examples:
-        >>> from tools.tests.conftest import SPEC_FILE_PATH
-        >>> from tools.j2735_spec_parser import parse_spec_file
-        >>> spec = parse_spec_file(SPEC_FILE_PATH)
-        >>> bsm = spec.lookup_type("BSMcoreData")
-        >>> wire = compute_wire_format(bsm)
-        >>> len(wire)  # 37 bytes
-        37
-        >>> wire[0][0].type_name
-        'MsgCount'
-    """
-    # Must be a SEQUENCE with resolved fields
-    if not isinstance(typedef.constraint, SequenceType):
-        return ()
-
-    fields = typedef.constraint.fields
-
-    # First pass: compute total bits and validate all fields
-    total_bits = 0
-    field_widths: list[int] = []
-
-    for field in fields:
-        if field.is_optional:
-            return ()  # Can't compute for OPTIONAL fields
-        # Use the resolved field type's bit-width directly
-        width = field.type.uper_bit_width if field.type else None
-        if width is None:
-            return ()
-        field_widths.append(width)
-        total_bits += width
-
-    if total_bits == 0:
-        return ()
-
-    # Second pass: generate ByteSegments
-    total_bytes = (total_bits + _BITS_PER_BYTE - 1) // _BITS_PER_BYTE
-    result: list[list[ByteSegment]] = [[] for _ in range(total_bytes)]
-    current_bit = 0
-
-    for field, bit_width in zip(fields, field_widths, strict=True):
-        segments = _generate_field_segments(
-            field_name=field.name,
-            type_name=field.type_name,
-            bit_width=bit_width,
-            start_bit=current_bit,
-        )
-        for segment in segments:
-            result[segment.byte_offset].append(segment)
-        current_bit += bit_width
-
-    return tuple(tuple(byte_segments) for byte_segments in result)
+    return [
+        WireVariant(
+            name=f"{absent_name}, {_pluralize_bits(absent_bits)}",
+            fields=required_fields,
+            ext_bit=0 if is_ext else None,
+            opt_bitmap=absent_opt,
+            total_bits=absent_bits,
+        ),
+        WireVariant(
+            name=f"{present_name}, {_pluralize_bits(present_bits)}",
+            fields=all_fields,
+            ext_bit=0 if is_ext else None,
+            opt_bitmap=present_opt,
+            total_bits=present_bits,
+        ),
+    ]

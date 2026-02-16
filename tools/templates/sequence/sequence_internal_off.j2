@@ -19,11 +19,11 @@
 {#-
   J2735 Sequence Offset Macros Template
 
-  Generates #define J2735_OFF_<SEQUENCE>_<FIELD>(buf) macros for a SEQUENCE type's fields.
+  Generates #define J2735_INTERNAL_OFF_<SEQUENCE>_<FIELD>(buf) macros for a SEQUENCE type's fields.
   All offsets take (buf) parameter for uniformity, even when not strictly needed.
-  - First field: starts at J2735_PREFIX_BITS_<SEQUENCE>
+  - First field: starts at J2735_INTERNAL_PREFIX_BITS_<SEQUENCE>
   - After mandatory field: uses J2735_BW_<TYPE> (compile-time constant)
-  - After OPTIONAL field: uses J2735_WIDTH_<SEQUENCE>_<FIELD>(buf) (runtime)
+  - After OPTIONAL field: uses J2735_INTERNAL_WIDTH_<SEQUENCE>_<FIELD>(buf) (runtime)
 
   Context variables:
     - typedef: The full typedef object containing the metadata
@@ -32,16 +32,16 @@
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
 
   Output format (fixed-frame):
-    #define J2735_OFF_BSM_CORE_DATA_MSG_CNT(buf) J2735_PREFIX_BITS_BSM_CORE_DATA /*   0 */
-    #define J2735_OFF_BSM_CORE_DATA_ID(buf) (J2735_OFF_BSM_CORE_DATA_MSG_CNT(buf) + J2735_BW_MSG_COUNT) /*   7 */
+    #define J2735_INTERNAL_OFF_BSM_CORE_DATA_MSG_CNT(buf) J2735_INTERNAL_PREFIX_BITS_BSM_CORE_DATA /*   0 */
+    #define J2735_INTERNAL_OFF_BSM_CORE_DATA_ID(buf) (J2735_INTERNAL_OFF_BSM_CORE_DATA_MSG_CNT(buf) + J2735_BW_MSG_COUNT) /*   7 */
 
   Output format (with OPTIONAL):
-    #define J2735_OFF_INTERSECTION_REFERENCE_ID_REGION(buf) J2735_PREFIX_BITS_INTERSECTION_REFERENCE_ID
-    #define J2735_OFF_INTERSECTION_REFERENCE_ID_ID(buf) (J2735_OFF_INTERSECTION_REFERENCE_ID_REGION(buf) + J2735_WIDTH_INTERSECTION_REFERENCE_ID_REGION(buf))
+    #define J2735_INTERNAL_OFF_INTERSECTION_REFERENCE_ID_REGION(buf) J2735_INTERNAL_PREFIX_BITS_INTERSECTION_REFERENCE_ID
+    #define J2735_INTERNAL_OFF_INTERSECTION_REFERENCE_ID_ID(buf) (J2735_INTERNAL_OFF_INTERSECTION_REFERENCE_ID_REGION(buf) + J2735_INTERNAL_WIDTH_INTERSECTION_REFERENCE_ID_REGION(buf))
 
   Output format (with extension):
-    #define J2735_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf) J2735_PREFIX_BITS_PATH_PREDICTION /*   1 */
-    #define J2735_OFF_PATH_PREDICTION_CONFIDENCE(buf) (J2735_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf) + J2735_BW_RADIUS_OF_CURVATURE) /*  17 */
+    #define J2735_INTERNAL_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf) J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION /*   1 */
+    #define J2735_INTERNAL_OFF_PATH_PREDICTION_CONFIDENCE(buf) (J2735_INTERNAL_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf) + J2735_BW_RADIUS_OF_CURVATURE) /*  17 */
 -#}
 {%- set typedef_name = typedef.name -%}
 {%- set typedef_name_upper = typedef_name | screaming_snake -%}
@@ -52,21 +52,20 @@
  * @internal
  * @brief Bit offset of field '{{ field.name }}' within {{ typedef_name }}.
  */
-{%-   if loop.first -%}
-#define J2735_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf) J2735_PREFIX_BITS_{{ typedef_name_upper }} /* {{ "%3d"|format(ns.offset) }} */
-{#      Force line break after define #}
+{%    if loop.first -%}
+#define J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf) J2735_INTERNAL_PREFIX_BITS_{{ typedef_name_upper }} /* {{ "%3d"|format(ns.offset) }} */
 {%-     set ns.offset = ns.offset + field.type.uper_bit_width -%}
 {%-   else -%}
 {%-     set prev = typedef.constraint.fields[loop.index0 - 1] -%}
 {%-     set prev_name = prev.name | screaming_snake -%}
 {%-     if prev.is_optional -%}
-#define J2735_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf) (J2735_OFF_{{ typedef_name_upper }}_{{ prev_name }}(buf) + J2735_WIDTH_{{ typedef_name_upper }}_{{ prev_name }}(buf))
-{#        Force line break after define #}
+#define J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf) (J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ prev_name }}(buf) + J2735_INTERNAL_WIDTH_{{ typedef_name_upper }}_{{ prev_name }}(buf))
 {%-     else -%}
 {%-       set prev_type_name = prev.type_name | screaming_snake -%}
-#define J2735_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf) (J2735_OFF_{{ typedef_name_upper }}_{{ prev_name }}(buf) + J2735_BW_{{ prev_type_name }}) /* {{ "%3d"|format(ns.offset) }} */
-{#        Force line break after define #}
+#define J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf) (J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ prev_name }}(buf) + J2735_BW_{{ prev_type_name }}) /* {{ "%3d"|format(ns.offset) }} */
 {%-       set ns.offset = ns.offset + field.type.uper_bit_width -%}
 {%-     endif -%}
 {%-   endif -%}
-{%- endfor -%}
+{{ "" }}{# Intentionally two blank lines #}
+{{ "" }}{# Intentionally two blank lines #}
+{%  endfor -%}

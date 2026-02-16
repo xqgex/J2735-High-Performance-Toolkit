@@ -27,8 +27,17 @@
 #ifndef J2735_INTERNAL_DF_INTERSECTIONREFERENCEID_TEST_H
 #define J2735_INTERNAL_DF_INTERSECTIONREFERENCEID_TEST_H
 
+/* Happy path tests */
 void test_intersection_reference_id_optional_field_absent(void);
 void test_intersection_reference_id_optional_field_present(void);
+
+/* Boundary value tests */
+void test_intersection_reference_id_boundary_min(void);
+void test_intersection_reference_id_boundary_max(void);
+void test_intersection_reference_id_absent_region_max_id(void);
+
+/* Misalignment tests */
+void test_intersection_reference_id_misaligned_access(void);
 
 void run_testsuite_intersection_reference_id(void);
 

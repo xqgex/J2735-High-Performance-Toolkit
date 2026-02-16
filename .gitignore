@@ -21,6 +21,10 @@
 # Build directory (all build artifacts go here)
 /build/
 
+# Doxygen output
+/html/
+/latex/
+
 # Editor/IDE
 .vscode/
 

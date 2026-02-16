@@ -21,7 +21,10 @@ Tests cover generate_sequence_has_extension function for extensible SEQUENCE typ
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import create_jinja_env, get_template
+from tools.j2735_c_generator_jinja import (
+    create_jinja_env,
+    get_template,
+)
 from tools.j2735_spec_constraints import SequenceType
 from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
@@ -70,7 +73,7 @@ class TestHasExtensionGeneration(TestCase):
             " * @param buf Pointer to the PathPrediction encoding.\n"
             " * @return 1 if extensions are present, 0 otherwise.\n"
             " */\n"
-            "#define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)"
+            "#define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)\n"
         )
         self.assertEqual(code, expected)
 
@@ -113,7 +116,7 @@ class TestHasExtensionWithRealSpec(SpecLoadingTestBase):
             " * @param buf Pointer to the PathPrediction encoding.\n"
             " * @return 1 if extensions are present, 0 otherwise.\n"
             " */\n"
-            "#define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)"
+            "#define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)\n"
         )
         self.assertEqual(code, expected)
 

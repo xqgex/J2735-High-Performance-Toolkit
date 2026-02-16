@@ -27,9 +27,18 @@
 #ifndef J2735_INTERNAL_DF_PATHPREDICTION_TEST_H
 #define J2735_INTERNAL_DF_PATHPREDICTION_TEST_H
 
+/* Happy path tests */
 void test_path_prediction_no_extension(void);
 void test_path_prediction_with_extension(void);
 void test_path_prediction_signed_negative(void);
+
+/* Boundary value tests */
+void test_path_prediction_radius_boundary_min(void);
+void test_path_prediction_radius_boundary_max(void);
+void test_path_prediction_radius_zero(void);
+
+/* Misalignment tests */
+void test_path_prediction_misaligned_access(void);
 
 void run_testsuite_path_prediction(void);
 

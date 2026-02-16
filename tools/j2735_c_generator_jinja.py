@@ -25,6 +25,8 @@ from re import sub
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
+from .j2735_spec_constraints import SequenceField
+
 # =============================================================================
 # Constants
 # =============================================================================
@@ -32,6 +34,8 @@ from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 _FILTER_BYTES_FROM_BITS = "bytes_from_bits"
 _FILTER_C_TYPE = "c_type"
+_FILTER_FORMAT_RANGE = "format_range"
+_FILTER_IS_SIGNED = "is_signed"
 _FILTER_SCREAMING_SNAKE = "screaming_snake"
 _FILTER_SNAKE_CASE = "snake_case"
 _TEMPLATES_DIR: Path = Path(__file__).parent / "templates"
@@ -42,7 +46,7 @@ _TEMPLATES_DIR: Path = Path(__file__).parent / "templates"
 # =============================================================================
 
 
-def bytes_from_bits(bits: int) -> int:
+def filter_bytes_from_bits(bits: int) -> int:
     """Convert bit count to byte count using ceiling division.
 
     This is registered as a Jinja filter for use in templates.
@@ -55,19 +59,19 @@ def bytes_from_bits(bits: int) -> int:
         The number of bytes needed (ceiling of bits/8).
 
     Examples:
-        >>> bytes_from_bits(7)
+        >>> filter_bytes_from_bits(7)
         1
-        >>> bytes_from_bits(8)
+        >>> filter_bytes_from_bits(8)
         1
-        >>> bytes_from_bits(9)
+        >>> filter_bytes_from_bits(9)
         2
-        >>> bytes_from_bits(290)
+        >>> filter_bytes_from_bits(290)
         37
     """
     return (bits + 7) // 8
 
 
-def c_type(bits: int, is_signed: bool = False) -> str:
+def filter_c_type(bits: int, is_signed: bool = False) -> str:
     """Return the smallest C integer type that can hold the given bit-width.
 
     This is registered as a Jinja filter for use in templates.
@@ -80,17 +84,17 @@ def c_type(bits: int, is_signed: bool = False) -> str:
         C type string (e.g., "uint8_t", "int32_t").
 
     Examples:
-        >>> c_type(7)
+        >>> filter_c_type(7)
         'uint8_t'
-        >>> c_type(7, False)
+        >>> filter_c_type(7, False)
         'uint8_t'
-        >>> c_type(16, True)
+        >>> filter_c_type(16, True)
         'int16_t'
-        >>> c_type(31, True)
+        >>> filter_c_type(31, True)
         'int32_t'
-        >>> c_type(32, False)
+        >>> filter_c_type(32, False)
         'uint32_t'
-        >>> c_type(48, False)
+        >>> filter_c_type(48, False)
         'uint64_t'
     """
     # TODO: Verify the function with unit tests for the edge cases
@@ -104,7 +108,63 @@ def c_type(bits: int, is_signed: bool = False) -> str:
     return f"{prefix}64_t"
 
 
-def screaming_snake(name: str) -> str:
+def filter_format_range(field: SequenceField) -> str:
+    """Format the value range for a field (e.g., "0..127").
+
+    This is registered as a Jinja filter for use in templates.
+
+    Args:
+        field: The SequenceField to format.
+
+    Returns:
+        Range string like "0..127" or "" if no range available.
+
+    Examples:
+        >>> from tools.j2735_spec_constraints import SequenceField, IntegerConstraint
+        >>> f = SequenceField(
+        ...     name="lat", type_name="Latitude",
+        ...     type=IntegerConstraint(min_value=-900000000, max_value=900000001),
+        ...     is_optional=False, section_comment="", inline_comment="",
+        ... )
+        >>> filter_format_range(f)
+        '-900000000..900000001'
+    """
+    if hasattr(field.type, "min_value") and hasattr(field.type, "max_value"):
+        min_val = getattr(field.type, "min_value", None)
+        max_val = getattr(field.type, "max_value", None)
+        if min_val is not None and max_val is not None:
+            return f"{min_val}..{max_val}"
+    return ""
+
+
+def filter_is_signed(field: SequenceField) -> bool:
+    """Check if a field's type is signed (min_value < 0).
+
+    This is registered as a Jinja filter for use in templates.
+
+    Args:
+        field: The SequenceField to check.
+
+    Returns:
+        True if the field's type has min_value < 0.
+
+    Examples:
+        >>> from tools.j2735_spec_constraints import SequenceField, IntegerConstraint
+        >>> f = SequenceField(
+        ...     name="lat", type_name="Latitude",
+        ...     type=IntegerConstraint(min_value=-900000000, max_value=900000001),
+        ...     is_optional=False, section_comment="", inline_comment="",
+        ... )
+        >>> filter_is_signed(f)
+        True
+    """
+    if hasattr(field.type, "min_value"):
+        min_val = getattr(field.type, "min_value", None)
+        return min_val is not None and min_val < 0
+    return False
+
+
+def filter_screaming_snake(name: str) -> str:
     """Convert CamelCase or mixedCase name to SCREAMING_SNAKE_CASE.
 
     Handles abbreviations correctly: when 2+ uppercase letters are followed
@@ -119,13 +179,13 @@ def screaming_snake(name: str) -> str:
         SCREAMING_SNAKE_CASE version of the name.
 
     Examples:
-        >>> screaming_snake("msgCnt")
+        >>> filter_screaming_snake("msgCnt")
         'MSG_CNT'
-        >>> screaming_snake("MsgCount")
+        >>> filter_screaming_snake("MsgCount")
         'MSG_COUNT'
-        >>> screaming_snake("BSMcoreData")
+        >>> filter_screaming_snake("BSMcoreData")
         'BSM_CORE_DATA'
-        >>> screaming_snake("AccelerationSet4Way")
+        >>> filter_screaming_snake("AccelerationSet4Way")
         'ACCELERATION_SET_4_WAY'
     """
     # Step 1: Insert underscore after abbreviation (2+ uppercase) before lowercase
@@ -139,10 +199,10 @@ def screaming_snake(name: str) -> str:
     return result.upper()
 
 
-def snake_case(name: str) -> str:
+def filter_snake_case(name: str) -> str:
     """Convert CamelCase or mixedCase name to snake_case (lowercase).
 
-    Uses the same logic as screaming_snake but returns lowercase.
+    Uses the same logic as filter_screaming_snake but returns lowercase.
 
     This is registered as a Jinja filter for use in templates.
 
@@ -153,16 +213,16 @@ def snake_case(name: str) -> str:
         snake_case version of the name.
 
     Examples:
-        >>> snake_case("msgCnt")
+        >>> filter_snake_case("msgCnt")
         'msg_cnt'
-        >>> snake_case("MsgCount")
+        >>> filter_snake_case("MsgCount")
         'msg_count'
-        >>> snake_case("BSMcoreData")
+        >>> filter_snake_case("BSMcoreData")
         'bsm_core_data'
-        >>> snake_case("AccelerationSet4Way")
+        >>> filter_snake_case("AccelerationSet4Way")
         'acceleration_set_4_way'
     """
-    return screaming_snake(name).lower()
+    return filter_screaming_snake(name).lower()
 
 
 # =============================================================================
@@ -180,10 +240,12 @@ def create_jinja_env() -> Environment:
         keep_trailing_newline=True,
     )
     # TODO: Fix pylance `Type of "filters" is partially unknown`
-    env.filters[_FILTER_BYTES_FROM_BITS] = bytes_from_bits
-    env.filters[_FILTER_C_TYPE] = c_type
-    env.filters[_FILTER_SCREAMING_SNAKE] = screaming_snake
-    env.filters[_FILTER_SNAKE_CASE] = snake_case
+    env.filters[_FILTER_BYTES_FROM_BITS] = filter_bytes_from_bits
+    env.filters[_FILTER_C_TYPE] = filter_c_type
+    env.filters[_FILTER_FORMAT_RANGE] = filter_format_range
+    env.filters[_FILTER_IS_SIGNED] = filter_is_signed
+    env.filters[_FILTER_SCREAMING_SNAKE] = filter_screaming_snake
+    env.filters[_FILTER_SNAKE_CASE] = filter_snake_case
     return env
 
 

@@ -1,0 +1,69 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 ASN.1 Definition Block Template
+
+  Renders the ASN.1 type definition in Doxygen comment format.
+  Works directly with ASN1TypeDefinition - no intermediate data structures.
+
+  Context variables:
+    - typedef: ASN1TypeDefinition object
+
+  Required filters:
+    - is_signed(field): Returns True if field.type.min_value < 0
+    - format_range(field): Returns "min..max" or ""
+
+  Output format:
+    * BSMcoreData ::= SEQUENCE {
+    *     msgCnt        MsgCount,             -- 7 bits (unsigned, 0..127)
+    *     ...
+    * }
+-#}
+{#- Compute column widths for alignment -#}
+{%- set name_width = namespace(val=14) -%}
+{%- set type_width = namespace(val=22) -%}
+{%- for field in typedef.constraint.fields -%}
+{%-   if field.name | length > name_width.val - 2 -%}
+{%-     set name_width.val = field.name | length + 2 -%}
+{%-   endif -%}
+{%-   set type_len = field.type_name | length + (9 if field.is_optional else 0) + 1 -%}
+{%-   if type_len > type_width.val - 2 -%}
+{%-     set type_width.val = type_len + 2 -%}
+{%-   endif -%}
+{%- endfor %}
+ * {{ typedef.name }} ::= SEQUENCE {
+{% for field in typedef.constraint.fields %}
+{%-   set optional_marker = " OPTIONAL" if field.is_optional else "" -%}
+{%-   set is_last = loop.last and not typedef.constraint.is_extensible -%}
+{%-   set comma = "" if is_last else "," -%}
+{%-   set type_part = field.type_name ~ optional_marker ~ comma -%}
+{%-   set sign_str = "signed" if field | is_signed else "unsigned" -%}
+{%-   set range_str = field | format_range -%}
+{%-   set bits = field.type.uper_bit_width or 0 -%}
+{%-   if range_str -%}
+{%-     set comment = "-- " ~ "%2d" | format(bits) ~ " bits (" ~ sign_str ~ ", " ~ range_str ~ ")" -%}
+{%-   else -%}
+{%-     set comment = "-- " ~ "%2d" | format(bits) ~ " bits" -%}
+{%-   endif %}
+ *     {{ "%-*s" | format(name_width.val, field.name) }}{{ "%-*s" | format(type_width.val, type_part) }}{{ comment }}
+{%  endfor %}
+{%- if typedef.constraint.is_extensible %}
+ *     ...
+{%  endif %}
+ * }

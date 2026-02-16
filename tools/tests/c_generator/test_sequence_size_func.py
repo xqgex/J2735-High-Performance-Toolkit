@@ -21,7 +21,10 @@ Tests cover generate_sequence_size_func function for extensible SEQUENCE types.
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import create_jinja_env, get_template
+from tools.j2735_c_generator_jinja import (
+    create_jinja_env,
+    get_template,
+)
 from tools.j2735_spec_constraints import SequenceType
 from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
@@ -31,7 +34,7 @@ from tools.tests.conftest import (
     make_nested_mock_spec,
 )
 
-_TEMPLATE_NAME = "sequence/sequence_size_func.j2"
+_TEMPLATE_NAME = "sequence/sequence_size.j2"
 
 
 def generate_sequence_size_func(type_name: str, spec: J2735Specification) -> str:
@@ -74,7 +77,7 @@ class TestSizeFuncGeneration(TestCase):
         spec = make_extensible_mock_spec()
         code = generate_sequence_size_func("PathPrediction", spec)
 
-        self.assertIn("J2735_ROOT_SIZE_BITS_PATH_PREDICTION", code)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION", code)
 
     def test_extensible_sequence_uses_has_extension_macro(self) -> None:
         """Generated function uses HAS_EXTENSION macro."""
@@ -140,7 +143,7 @@ class TestSizeFuncWithRealSpec(SpecLoadingTestBase):
         code = generate_sequence_size_func("PathPrediction", self.spec)
 
         # Should reference 25-bit root size
-        self.assertIn("J2735_ROOT_SIZE_BITS_PATH_PREDICTION", code)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION", code)
 
     def test_real_bsm_core_data_returns_empty(self) -> None:
         """Real BSMcoreData (non-extensible) returns empty string."""

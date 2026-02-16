@@ -33,7 +33,8 @@ tools/
 **Each test file tests ONE class or ONE closely-related function group.**
 
 - `IntegerConstraint` → `tests/spec/test_integer_constraint.py`
-- `compute_wire_format()` → `tests/c_generator/test_wire_format.py`
+- `get_sequence_variants()` → `tests/c_generator/test_wire_format_variants.py`
+- Wire format templates → `tests/c_generator/test_wire_format_templates.py`
 - New class added? → New test file created.
 
 This ensures files can remain in the target of ~300-500 lines.

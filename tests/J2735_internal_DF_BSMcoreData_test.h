@@ -27,7 +27,17 @@
 #ifndef J2735_INTERNAL_DF_BSMCOREDATA_TEST_H
 #define J2735_INTERNAL_DF_BSMCOREDATA_TEST_H
 
+/* Happy path tests */
 void test_bsm_core_data_fixed_data(void);
+
+/* Boundary value tests - signed fields */
+void test_bsm_core_data_latitude_negative_min(void);
+void test_bsm_core_data_latitude_positive_max(void);
+void test_bsm_core_data_steering_angle_negative(void);
+void test_bsm_core_data_steering_angle_positive_max(void);
+
+/* Misalignment tests */
+void test_bsm_core_data_misaligned_access(void);
 
 void run_testsuite_bsm_core_data(void);
 

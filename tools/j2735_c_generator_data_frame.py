@@ -21,30 +21,41 @@ Generates zero-copy C header files for J2735 Data Frame types (SEQUENCE).
 Both type classes use the DF_ prefix in J2735 as they represent composite structures.
 
 Example usage:
-    from tools.j2735_c_generator_dataframe import generate_dataframe
+    from tools.j2735_c_generator_data_frame import generate_data_frame
     from tools.j2735_spec_parser import parse_spec_file
 
     spec = parse_spec_file("J2735_202409_pdf_content.txt")
 
     # SEQUENCE types
-    code = generate_dataframe("BSMcoreData", spec)
+    code = generate_data_frame("BSMcoreData", spec)
 """
 
-from .j2735_c_generator_jinja import create_jinja_env, get_template
-from .j2735_c_generator_wire_format import compute_wire_format
+from .j2735_c_generator_jinja import (
+    create_jinja_env,
+    get_template,
+)
+from .j2735_c_generator_wire_format import get_sequence_variants
 from .j2735_spec_constraints import SequenceType
-from .j2735_spec_parser import ASN1TypeClass, ASN1TypeDefinition, J2735Specification
+from .j2735_spec_parser import (
+    ASN1TypeClass,
+    ASN1TypeDefinition,
+    J2735Specification,
+)
 
-_SEQUENCE_TEMPLATE_NAME = "assemble_df.j2"
+_SEQUENCE_TEMPLATE_NAME = "assemble_df_sequence.j2"
 
 # Maximum wire bits for single I/O pattern (J2735_READ_BITS limit at worst alignment)
 _MAX_SINGLE_IO_BITS = 57
 
 
-def generate_dataframe(type_name: str, spec: J2735Specification) -> str:
-    """Generate complete C header file for a Data Frame (SEQUENCE).
+def generate_data_frame(type_name: str, spec: J2735Specification) -> str:
+    """Generate complete C header file for a Data Frame.
 
-    For SEQUENCE types: Generates struct container with field access macros.
+    This is the main entry point for Data Element code generation. Dispatches
+    to the appropriate internal generator based on the ASN.1 type class.
+
+    Supported types:
+        - SEQUENCE: Struct container with field access macros.
 
     Args:
         type_name: Name of the type (e.g., "BSMcoreData", "ApproachOrLane").
@@ -55,7 +66,7 @@ def generate_dataframe(type_name: str, spec: J2735Specification) -> str:
 
     Raises:
         ValueError: If type_name is not found.
-        ValueError: If type is not SEQUENCE.
+        ValueError: If type is not a supported Data Frame type.
     """
     typedef = spec.lookup_type(type_name)
     if typedef is None:
@@ -63,54 +74,51 @@ def generate_dataframe(type_name: str, spec: J2735Specification) -> str:
 
     if typedef.type_class == ASN1TypeClass.SEQUENCE:
         return _generate_sequence(typedef)
-    raise ValueError(f"Type '{type_name}' is {typedef.type_class}, not SEQUENCE")
+    raise ValueError(
+        f"Type '{type_name}' is {typedef.type_class.name}, which is not a supported "
+        f"Data Frame type. Supported types: SEQUENCE"
+    )
 
 
 def _generate_sequence(typedef: ASN1TypeDefinition) -> str:
     """Generate C code for a SEQUENCE type.
 
-    Internal helper for generate_dataframe().
+    Internal helper for generate_data_frame().
 
     Args:
         typedef: The ASN.1 type definition for the SEQUENCE.
+
+    Returns:
+        Complete C header file content as a string.
+
+    Raises:
+        TypeError: If constraint is not SequenceType.
 
     Examples:
         >>> from tools.tests.conftest import SPEC_FILE_PATH
         >>> from tools.j2735_spec_parser import parse_spec_file
         >>> spec = parse_spec_file(SPEC_FILE_PATH)
-        >>> code = generate_dataframe("BSMcoreData", spec)
-        >>> "J2735_PREFIX_BITS_BSM_CORE_DATA" in code
+        >>> typedef = spec.lookup_type("BSMcoreData")
+        >>> code = _generate_sequence(typedef)
+        >>> "J2735_INTERNAL_PREFIX_BITS_BSM_CORE_DATA" in code
         True
         >>> "J2735_BSM_CORE_DATA_GET_MSG_CNT" in code
         True
     """
-    # Wire format is empty for types with OPTIONAL fields (variable bit-width)
-    wire_format = compute_wire_format(typedef)
+    # Type narrowing for mypy - validate constraint type
+    sequence = typedef.constraint
+    if not isinstance(sequence, SequenceType):
+        raise TypeError(
+            f"Expected SequenceType for SEQUENCE type, " f"got {type(sequence).__name__}"
+        )
 
-    # Type narrowing for mypy - we know it's SequenceType because generate_dataframe checked
-    constraint = typedef.constraint
-    if not isinstance(constraint, SequenceType):
-        raise TypeError(f"Expected SequenceType, got {type(constraint).__name__}")
+    # Wire format variants for documentation tables
+    variants = get_sequence_variants(sequence)
 
-    # Compute additional context for sub-templates that expect direct variables
-    # (sequence_has_extension.j2, sequence_root_size.j2, sequence_size_func.j2)
-    root_size_bits = constraint.preamble_bits
-    field_type_names: list[str] = []
-    for field in constraint.fields:
-        field_bits = field.type.uper_bit_width
-        if field_bits is None:
-            raise ValueError(f"Field '{field.name}' has variable bit-width")
-        root_size_bits += field_bits
-        field_type_names.append(field.type_name)
-
-    env = create_jinja_env()
-    template = get_template(env, _SEQUENCE_TEMPLATE_NAME)
+    template = get_template(create_jinja_env(), _SEQUENCE_TEMPLATE_NAME)
 
     return template.render(
         typedef=typedef,
-        wire_format=wire_format,
-        # Additional context for sub-templates that expect direct variables
-        type_name=typedef.name,
-        root_size_bits=root_size_bits,
-        field_type_names=field_type_names,
+        variants=variants,
+        opt_count=sequence.optional_count,
     )

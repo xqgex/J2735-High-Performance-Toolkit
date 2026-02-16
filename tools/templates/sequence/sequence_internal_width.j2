@@ -17,11 +17,11 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-  J2735 Sequence Optional Field Indices Template
+  J2735 Sequence Width Macros Template
 
-  Generates #define J2735_OPT_<SEQUENCE>_<FIELD> constants for OPTIONAL fields.
-  The index is the 0-based position in the optional bitmap.
-  Use with J2735_INTERNAL_HAS_FIELD(buf, opt_offset, index) where opt_offset is 0 or 1.
+  Generates #define J2735_INTERNAL_WIDTH_<SEQUENCE>_<FIELD>(buf) macros for OPTIONAL fields.
+  Returns 0 if field absent, or J2735_BW_<TYPE> if field present.
+  This enables proper offset chaining: OFF_N = OFF_{N-1} + WIDTH_{N-1}.
 
   Context variables:
     - typedef: The full typedef object containing the metadata
@@ -30,15 +30,21 @@
     - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
 
   Output format:
-    #define J2735_OPT_INTERSECTION_REFERENCE_ID_REGION 0U /* optional bitmap bit 0 */
+    #define J2735_INTERNAL_WIDTH_INTERSECTION_REFERENCE_ID_REGION(buf) \
+      (J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf) ? J2735_BW_ROAD_REGULATOR_ID : 0U)
 -#}
 {%- set typedef_name_upper = typedef.name | screaming_snake -%}
-{%- set ns = namespace(opt_idx=0) -%}
 {%- for field in typedef.constraint.fields -%}
 {%-   if field.is_optional -%}
 {%-     set field_name = field.name | screaming_snake -%}
-#define J2735_OPT_{{ typedef_name_upper }}_{{ field_name }} {{ ns.opt_idx }}U /* optional bitmap bit {{ ns.opt_idx }} */
-{#      Force line break after define #}
-{%-     set ns.opt_idx = ns.opt_idx + 1 -%}
-{%-   endif -%}
+{%-     set field_type_name = field.type_name | screaming_snake -%}
+/**
+ * @internal
+ * @brief Dynamic width of OPTIONAL field '{{ field.name }}'.
+ * @param buf Pointer to the {{ typedef.name }} encoding.
+ * @return J2735_BW_{{ field_type_name }} if present, 0 otherwise.
+ */
+#define J2735_INTERNAL_WIDTH_{{ typedef_name_upper }}_{{ field_name }}(buf) (J2735_{{ typedef_name_upper }}_HAS_{{ field_name }}(buf) ? J2735_BW_{{ field_type_name }} : 0U)
+{%      if not loop.last %}{{ "" }}{% endif %}
+{%    endif -%}
 {%- endfor -%}

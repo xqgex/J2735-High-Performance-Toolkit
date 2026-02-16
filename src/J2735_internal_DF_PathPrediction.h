@@ -21,23 +21,32 @@
  * @author Yogev Neumann
  * @brief J2735 PathPrediction Definition and Access Macros.
  *
+ * @par PathPrediction Wire Format (UPER):
+ * @code
  * PathPrediction ::= SEQUENCE {
- *     radiusOfCurve  RadiusOfCurvature,  -- 16 bits (signed, -32767..32767)
- *     confidence     Confidence,         -- 8 bits (unsigned, 0..200)
- *     ...                                -- Extensible (extension bit at position 0)
+ *     radiusOfCurve  RadiusOfCurvature,    -- 16 bits (signed, -32767..32767)
+ *     confidence     Confidence,           --  8 bits (unsigned, 0..200)
+ *     ...
  * }
+ * @endcode
  *
- * Wire Format (no extensions):
- * | Bit 0 | Bits 1-16           | Bits 17-24    |
- * |-------|---------------------|---------------|
- * | Ext=0 | radiusOfCurve (16)  | confidence(8) |
+ * @par Wire Format (no extensions, 25 bits):
+ * @code
+ * ┌─────────┬─────────────────────┬──────────────────┐
+ * │ Bit 0   │ Bits 1-16           │ Bits 17-24       │
+ * ├─────────┼─────────────────────┼──────────────────┤
+ * │ Ext=0   │ radiusOfCurve (16)  │ confidence (8)   │
+ * └─────────┴─────────────────────┴──────────────────┘
+ * @endcode
  *
- * Wire Format (with extensions):
- * | Bit 0 | Bits 1-16           | Bits 17-24    | Extension Data...
- * |-------|---------------------|---------------|------------------
- * | Ext=1 | radiusOfCurve (16)  | confidence(8) | (variable)
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
+ * @par Wire Format (with extensions, variable):
+ * @code
+ * ┌─────────┬─────────────────────┬──────────────────┬──────────────────┐
+ * │ Bit 0   │ Bits 1-16           │ Bits 17-24       │ Bits 25+         │
+ * ├─────────┼─────────────────────┼──────────────────┼──────────────────┤
+ * │ Ext=1   │ radiusOfCurve (16)  │ confidence (8)   │ (extension data) │
+ * └─────────┴─────────────────────┴──────────────────┴──────────────────┘
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DF_PATHPREDICTION_H
 #define J2735_INTERNAL_DF_PATHPREDICTION_H
@@ -46,25 +55,50 @@
 #include "J2735_internal_constants.h"
 #include "J2735_internal_inline.h"
 
-/* Internal - Structure metadata */
-#define J2735_PREFIX_BITS_PATH_PREDICTION                                                          \
+/* ============================================================================================== */
+/*  INTERNAL: Structure Metadata                                                                  */
+/* ============================================================================================== */
+/**
+ * @internal
+ * @brief Number of prefix bits before first field (extension bit + optional preamble).
+ *
+ * Calculation: 1 ext + 0 opt = 1 bit (extensible, all required)
+ */
+#define J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION                                                 \
   (1U + J2735_INTERNAL_PREAMBLE_BITS(0U)) /* 1 ext + 0 opt = 1 bit (extensible, all required) */
 
-/* Internal - Root component size (for calculating where extensions start) */
-#define J2735_ROOT_SIZE_BITS_PATH_PREDICTION                                                       \
-  (J2735_PREFIX_BITS_PATH_PREDICTION + J2735_BW_RADIUS_OF_CURVATURE +                              \
+/**
+ * @internal
+ * @brief Total size of root component in bits (prefix + all root fields).
+ *
+ * Used to locate where extension data begins when extension bit is set.
+ */
+#define J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION                                              \
+  (J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION + J2735_BW_RADIUS_OF_CURVATURE +                     \
    J2735_BW_CONFIDENCE) /* 25 bits */
 
-/* Internal - Optional field indices (bitmap index, not bit offset) */
+/* ============================================================================================== */
+/*  INTERNAL: Field Offsets                                                                       */
+/*  (Cumulative bit offset: prev_offset + prev_width)                                             */
+/* ============================================================================================== */
+/**
+ * @internal
+ * @brief Bit offset of field 'radiusOfCurve' within PathPrediction.
+ */
+#define J2735_INTERNAL_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf)                                    \
+  J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION /*   1 */
 
-/* Internal - Widths */
+/**
+ * @internal
+ * @brief Bit offset of field 'confidence' within PathPrediction.
+ */
+#define J2735_INTERNAL_OFF_PATH_PREDICTION_CONFIDENCE(buf)                                         \
+  (J2735_INTERNAL_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf) + J2735_BW_RADIUS_OF_CURVATURE) /*  17  \
+                                                                                            */
 
-/* Internal - Offsets */
-#define J2735_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf) J2735_PREFIX_BITS_PATH_PREDICTION /*   1 */
-#define J2735_OFF_PATH_PREDICTION_CONFIDENCE(buf)                                                  \
-  (J2735_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf) + J2735_BW_RADIUS_OF_CURVATURE) /*  17 */
-
-/* Has-checkers */
+/* ============================================================================================== */
+/*  PUBLIC API: Has-Extension Checker                                                             */
+/* ============================================================================================== */
 /**
  * @brief Check if PathPrediction has extension additions present.
  * @param buf Pointer to the PathPrediction encoding.
@@ -72,26 +106,32 @@
  */
 #define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)
 
-/* Getters */
+/* ============================================================================================== */
+/*  PUBLIC API: Field Getters                                                                     */
+/* ============================================================================================== */
 /**
  * @brief Get 'radiusOfCurve' (RadiusOfCurvature, signed 16 bits).
  * @param buf Pointer to the PathPrediction encoding.
  * @return RadiusOfCurvature value (int16_t, range -32767..32767).
  */
 #define J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(buf)                                             \
-  J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf),                                                \
-                                             J2735_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf),       \
-                                             J2735_BW_RADIUS_OF_CURVATURE),                        \
-                             J2735_BW_RADIUS_OF_CURVATURE, int16_t)
+  J2735_INTERNAL_SIGN_EXTEND(                                                                      \
+      J2735_READ_BITS((buf), J2735_INTERNAL_OFF_PATH_PREDICTION_RADIUS_OF_CURVE(buf),              \
+                      J2735_BW_RADIUS_OF_CURVATURE),                                               \
+      J2735_BW_RADIUS_OF_CURVATURE, int16_t)
+
 /**
  * @brief Get 'confidence' (Confidence, unsigned 8 bits).
  * @param buf Pointer to the PathPrediction encoding.
  * @return Confidence value (uint8_t, range 0..200).
  */
 #define J2735_PATH_PREDICTION_GET_CONFIDENCE(buf)                                                  \
-  ((uint8_t)J2735_READ_BITS((buf), J2735_OFF_PATH_PREDICTION_CONFIDENCE(buf), J2735_BW_CONFIDENCE))
+  ((uint8_t)J2735_READ_BITS((buf), J2735_INTERNAL_OFF_PATH_PREDICTION_CONFIDENCE(buf),             \
+                            J2735_BW_CONFIDENCE))
 
-/* Inline Functions */
+/* ============================================================================================== */
+/*  PUBLIC API: Size Function                                                                     */
+/* ============================================================================================== */
 /**
  * @brief Calculate total size in bits of a PathPrediction encoding.
  *
@@ -106,25 +146,24 @@ static inline int j2735_inline_path_prediction_size(uint8_t const *const buf,
                                                     uint32_t *const out_size_bits) {
   int result = 0;
 
-  /* TODO: Investigate all those suppressions */
   /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy architecture requires packed-struct cast */
   /* cppcheck-suppress misra-c2012-17.3 ; cppcheck false positive: v is struct member, not function
    */
   /* cppcheck-suppress misra-config ; cppcheck cannot resolve struct member v through macro
    * expansion */
   if (J2735_PATH_PREDICTION_HAS_EXTENSION(buf) == 0U) {
-    *out_size_bits = J2735_ROOT_SIZE_BITS_PATH_PREDICTION;
+    *out_size_bits = J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION;
     result = 0;
   } else {
     /* Extensions present - parse them to find total size */
     uint32_t ext_bits = 0U;
-    int const parse_result =
-        j2735_internal_inline_skip_extensions(buf, J2735_ROOT_SIZE_BITS_PATH_PREDICTION, &ext_bits);
+    int const parse_result = j2735_internal_inline_skip_extensions(
+        buf, J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION, &ext_bits);
     if (0 != parse_result) {
       *out_size_bits = 0U;
       result = parse_result;
     } else {
-      *out_size_bits = J2735_ROOT_SIZE_BITS_PATH_PREDICTION + ext_bits;
+      *out_size_bits = J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION + ext_bits;
       result = 0;
     }
   }

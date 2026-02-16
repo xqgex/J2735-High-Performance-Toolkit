@@ -21,7 +21,10 @@ Tests cover generate_sequence_root_size function for extensible SEQUENCE types.
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import create_jinja_env, get_template
+from tools.j2735_c_generator_jinja import (
+    create_jinja_env,
+    get_template,
+)
 from tools.j2735_spec_constraints import SequenceType
 from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
@@ -31,7 +34,7 @@ from tools.tests.conftest import (
     make_nested_mock_spec,
 )
 
-_TEMPLATE_NAME = "sequence/sequence_root_size.j2"
+_TEMPLATE_NAME = "sequence/sequence_internal_root_size_bits.j2"
 
 
 def generate_sequence_root_size(type_name: str, spec: J2735Specification) -> str:
@@ -77,8 +80,8 @@ class TestRootSizeGeneration(TestCase):
 
         # PathPrediction: 1 preamble + 16 radius + 8 confidence = 25 bits
         # Uses symbolic expression for clarity (clang-format handles line breaking)
-        self.assertIn("#define J2735_ROOT_SIZE_BITS_PATH_PREDICTION", code)
-        self.assertIn("J2735_PREFIX_BITS_PATH_PREDICTION", code)
+        self.assertIn("#define J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION", code)
+        self.assertIn("J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION", code)
         self.assertIn("J2735_BW_RADIUS_OF_CURVATURE", code)
         self.assertIn("J2735_BW_CONFIDENCE", code)
         self.assertIn("25 bits", code)
@@ -117,8 +120,8 @@ class TestRootSizeWithRealSpec(SpecLoadingTestBase):
         code = generate_sequence_root_size("PathPrediction", self.spec)
 
         # Uses symbolic expression for clarity (clang-format handles line breaking)
-        self.assertIn("#define J2735_ROOT_SIZE_BITS_PATH_PREDICTION", code)
-        self.assertIn("J2735_PREFIX_BITS_PATH_PREDICTION", code)
+        self.assertIn("#define J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION", code)
+        self.assertIn("J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION", code)
         self.assertIn("J2735_BW_RADIUS_OF_CURVATURE", code)
         self.assertIn("J2735_BW_CONFIDENCE", code)
         self.assertIn("25 bits", code)

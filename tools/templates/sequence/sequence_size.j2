@@ -33,7 +33,7 @@
     static inline int j2735_inline_path_prediction_size(...) { ... }
 
   Dependencies:
-    - J2735_ROOT_SIZE_BITS_<SEQUENCE> (from root_size generator)
+    - J2735_INTERNAL_ROOT_SIZE_BITS_<SEQUENCE> (from root_size generator)
     - J2735_<SEQUENCE>_HAS_EXTENSION (from has_extension generator)
     - j2735_internal_inline_skip_extensions() (from J2735_macros.h)
 -#}
@@ -58,19 +58,20 @@ static inline int j2735_inline_{{ typedef_name_lower }}_size(uint8_t const *cons
   /* cppcheck-suppress misra-c2012-17.3 ; cppcheck false positive: v is struct member, not function */
   /* cppcheck-suppress misra-config ; cppcheck cannot resolve struct member v through macro expansion */
   if (J2735_{{ typedef_name_upper }}_HAS_EXTENSION(buf) == 0U) {
-    *out_size_bits = J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }};
+    *out_size_bits = J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name_upper }};
     result = 0;
   } else {
     /* Extensions present - parse them to find total size */
     uint32_t ext_bits = 0U;
-    int const parse_result = j2735_internal_inline_skip_extensions(buf, J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }}, &ext_bits);
+    int const parse_result = j2735_internal_inline_skip_extensions(buf, J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name_upper }}, &ext_bits);
     if (0 != parse_result) {
       *out_size_bits = 0U;
       result = parse_result;
     } else {
-      *out_size_bits = J2735_ROOT_SIZE_BITS_{{ typedef_name_upper }} + ext_bits;
+      *out_size_bits = J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name_upper }} + ext_bits;
       result = 0;
     }
   }
   return result;
 }
+{# Blank Line #}

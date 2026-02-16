@@ -21,7 +21,7 @@
 
   Generates #define J2735_<SEQUENCE>_GET_<FIELD>(buf) macros for a SEQUENCE type.
   These macros provide O(1) field access using the offset and bit-width constants.
-  Uses J2735_OFF_<SEQUENCE>_<FIELD>(buf) which handles both fixed and dynamic offsets.
+  Uses J2735_INTERNAL_OFF_<SEQUENCE>_<FIELD>(buf) which handles both fixed and dynamic offsets.
 
   Context variables:
   - typedef: The full typedef object containing the metadata
@@ -32,11 +32,11 @@
 
   Output format (unsigned):
     #define J2735_BSM_CORE_DATA_GET_MSG_CNT(buf) \
-      ((uint8_t)J2735_READ_BITS((buf), J2735_OFF_BSM_CORE_DATA_MSG_CNT(buf), J2735_BW_MSG_COUNT))
+      ((uint8_t)J2735_READ_BITS((buf), J2735_INTERNAL_OFF_BSM_CORE_DATA_MSG_CNT(buf), J2735_BW_MSG_COUNT))
 
   Output format (signed):
     #define J2735_BSM_CORE_DATA_GET_LAT(buf) \
-      J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf), J2735_OFF_BSM_CORE_DATA_LAT(buf), J2735_BW_LATITUDE), J2735_BW_LATITUDE, int32_t)
+      J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf), J2735_INTERNAL_OFF_BSM_CORE_DATA_LAT(buf), J2735_BW_LATITUDE), J2735_BW_LATITUDE, int32_t)
 -#}
 {%- set typedef_name = typedef.name -%}
 {%- set typedef_name_upper = typedef_name | screaming_snake -%}
@@ -60,11 +60,11 @@
  */
 {%    if is_signed -%}
 #define J2735_{{ typedef_name_upper }}_GET_{{ field_name }}(buf) \
-  J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf), J2735_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}), J2735_BW_{{ field_type_name }}, {{ return_type }})
-{#      Force line break after define #}
+  J2735_INTERNAL_SIGN_EXTEND(J2735_READ_BITS((buf), J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}), J2735_BW_{{ field_type_name }}, {{ return_type }})
 {%-   else -%}
 #define J2735_{{ typedef_name_upper }}_GET_{{ field_name }}(buf) \
-  (({{ return_type }})J2735_READ_BITS((buf), J2735_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}))
-{#      Force line break after define #}
+  (({{ return_type }})J2735_READ_BITS((buf), J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}))
 {%-   endif -%}
-{%- endfor -%}
+{{ "" }}{# Intentionally two blank lines #}
+{{ "" }}{# Intentionally two blank lines #}
+{%  endfor -%}
