@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.LINTERS_PAT }}
 
       - name: Install clang-format
         run: |
@@ -150,6 +150,7 @@ jobs:
           call "%VSDIR%\VC\Auxiliary\Build\vcvars64.bat"
           cl /std:c11 /W4 /WX /O2 /Isrc /Fe:build\J2735_run_tests.exe ^
             tests\J2735_internal_DE_VehicleEventFlags_test.c ^
+            tests\J2735_internal_DF_ApproachOrLane_test.c ^
             tests\J2735_internal_DF_BSMcoreData_test.c ^
             tests\J2735_internal_DF_IntersectionReferenceID_test.c ^
             tests\J2735_internal_DF_PathPrediction_test.c ^

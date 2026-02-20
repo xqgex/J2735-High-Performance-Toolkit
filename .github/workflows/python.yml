@@ -90,7 +90,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.LINTERS_PAT }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -216,6 +216,10 @@ jobs:
           # Build report
           lines = []
           lines.append(f"## Coverage: {total_pct:.0f}%\n")
+          lines.append("")
+          lines.append("<details>")
+          lines.append(f"<summary>Per-file coverage ({len(modules)} modules)</summary>")
+          lines.append("")
           lines.append("| Module | Cover |")
           lines.append("|--------|-------|")
 
@@ -228,6 +232,8 @@ jobs:
                   icon = "❌"
               lines.append(f"| {name} | {pct:.0f}% {icon} |")
 
+          lines.append("")
+          lines.append("</details>")
           lines.append("")
           lines.append("<details>")
           lines.append(f"<summary>Details ({total_stmts} statements, {total_miss} missed)</summary>")

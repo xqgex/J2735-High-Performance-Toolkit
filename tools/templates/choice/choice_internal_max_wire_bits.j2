@@ -1,0 +1,57 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  CHOICE Max Wire Bits Template
+
+  Generates C constant for the maximum wire size of a CHOICE type.
+
+  Context variables:
+    - typedef: ASN1TypeDefinition for the CHOICE type
+    - alternatives: List of dicts with name, type_ref, bit_width, index
+
+  Filters used:
+    - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
+
+  Output format:
+    #define J2735_INTERNAL_MAX_WIRE_BITS_APPROACH_OR_LANE \
+      (J2735_INTERNAL_CHOICE_INDEX_BITS_APPROACH_OR_LANE + J2735_BW_LANE_ID)
+-#}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
+{%- set index_bits = typedef.constraint.uper_bit_width -%}
+{%- set max_alternative = alternatives | selectattr('bit_width', 'eq', (alternatives | map(attribute='bit_width') | max)) | first -%}
+{%- set max_wire_bits = index_bits + max_alternative.bit_width -%}
+{%- set max_type_upper = max_alternative.type_ref | screaming_snake -%}
+/**
+ * @internal
+ * @brief Maximum wire size in bits for {{ typedef_name }} encoding.
+ *
+ * This is the larger of the alternatives: {{ index_bits }} (index) + {{ max_alternative.bit_width }} ({{ max_alternative.name }}) = {{ max_wire_bits }} bits.
+ *
+ * We always read MAX bits ({{ max_wire_bits }}) unconditionally rather than reading the index first
+ * then conditionally reading the value bits. Assembly-level analysis:
+ *
+ *   Single I/O (read max):  ~9-10 instructions, 1 memory load, 0 branches
+ *   Two-Step (conditional): ~13-14 instructions, 2 memory loads, 1 branch
+ *
+ * The "garbage" bits when a smaller alternative is selected cost nothing - they're already
+ * loaded into the register and simply get shifted/masked away.
+ */
+#define J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }}                                              \
+  (J2735_INTERNAL_CHOICE_INDEX_BITS_{{ typedef_name_upper }} + J2735_BW_{{ max_type_upper }})

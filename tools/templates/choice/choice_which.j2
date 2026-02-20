@@ -1,0 +1,50 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  CHOICE Which Template
+
+  Generates C macro for extracting the choice index from the raw value.
+
+  Context variables:
+    - typedef: ASN1TypeDefinition for the CHOICE type
+    - alternatives: List of dicts with name, type_ref, bit_width, index
+
+  Filters used:
+    - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
+
+  Output format:
+    #define J2735_APPROACH_OR_LANE_WHICH(raw9) \
+      ((uint8_t)((((uint32_t)(raw9)) >> (J2735_INTERNAL_MAX_WIRE_BITS_APPROACH_OR_LANE - 1U)) & ...))
+-#}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
+{%- set index_bits = typedef.constraint.uper_bit_width -%}
+{%- set max_wire_bits = index_bits + (alternatives | map(attribute='bit_width') | max) -%}
+/**
+ * @brief Get the CHOICE alternative index ({{ index_bits }} bit{{ "s" if index_bits != 1 else "" }}) from pre-read raw value.
+ *
+ * Extracts the index bits from the MSB position of the raw value.
+ *
+ * @param[in] raw{{ max_wire_bits }} {{ max_wire_bits }}-bit value previously returned by J2735_{{ typedef_name_upper }}_RAW_READ().
+ * @return uint8_t: Alternative index (0-{{ (2 ** index_bits) - 1 }}).
+ *         Use J2735_CHOICE_{{ typedef_name_upper }}_* constants for comparison in switch statements.
+ */
+#define J2735_{{ typedef_name_upper }}_WHICH(raw{{ max_wire_bits }}) \
+  ((uint8_t)((((uint32_t)(raw{{ max_wire_bits }})) >> (J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} - {{ index_bits }}U)) & \
+             ((1U << J2735_INTERNAL_CHOICE_INDEX_BITS_{{ typedef_name_upper }}) - 1U)))

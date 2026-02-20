@@ -21,10 +21,10 @@
 
   Renders a wire format variant as a compact row-based table.
   Used for large types (>6 fields) where column layout is too wide.
-  Works directly with WireVariant containing SequenceField objects.
+  Works directly with SequenceWireVariant containing SequenceField objects.
 
   Context variables:
-    - variant: WireVariant object (from j2735_c_generator_wire_format)
+    - variant: SequenceWireVariant object (from j2735_c_generator_wire_format)
     - opt_count: Number of optional fields (for bitmap width)
 
   Output format (row-based):

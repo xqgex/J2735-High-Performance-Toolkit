@@ -30,6 +30,7 @@
 
 #include "J2735_UPER_test.h"
 #include "J2735_internal_DE_VehicleEventFlags_test.h"
+#include "J2735_internal_DF_ApproachOrLane_test.h"
 #include "J2735_internal_DF_BSMcoreData_test.h"
 #include "J2735_internal_DF_IntersectionReferenceID_test.h"
 #include "J2735_internal_DF_PathPrediction_test.h"
@@ -42,6 +43,7 @@ void tearDown(void) {}
 
 int main(void) {
   UNITY_BEGIN();
+  run_testsuite_approach_or_lane();
   run_testsuite_bsm_core_data();
   run_testsuite_intersection_reference_id();
   run_testsuite_path_prediction();

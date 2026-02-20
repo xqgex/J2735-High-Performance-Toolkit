@@ -1,0 +1,122 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  CHOICE Type Assembly Template
+
+  Assembles all sub-templates into a complete C header file for a CHOICE type.
+
+  Template Context (from generator):
+    - typedef: ASN1TypeDefinition for the CHOICE type
+    - alternatives: List of dicts with name, type_ref, bit_width, index, shift, needs_shift
+
+  Filters used:
+    - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE
+    - c_type: bit-width to C type
+-#}
+{%- set typedef_name = typedef.name -%}
+{%- set typedef_name_upper = typedef_name | screaming_snake -%}
+{%- set index_bits = typedef.constraint.uper_bit_width -%}
+{%- set max_wire_bits = index_bits + (alternatives | map(attribute='bit_width') | max) -%}
+{%- set raw_type = max_wire_bits | c_type -%}
+{%- set min_alt_wire = index_bits + (alternatives | map(attribute='bit_width') | min) -%}
+{%- set max_alt_wire = index_bits + (alternatives | map(attribute='bit_width') | max) -%}
+{% include 'license.j2' %}
+/**
+ * @file
+ * @author Yogev Neumann
+ * @brief J2735 {{ typedef_name }} Definition and Access Macros.
+ *
+ * @par {{ typedef_name }} Wire Format (UPER):
+ * @code
+ * {{ typedef_name }} ::= CHOICE {
+{% for alt in alternatives %}
+ *     {{ alt.name }}  {{ alt.type_ref }}{{ "," if not loop.last else "" }}  -- {{ alt.bit_width }} bits (J2735_BW_{{ alt.type_ref | screaming_snake }})
+{% endfor %}
+ * }
+ * @endcode
+ *
+ * This is a {{ "extensible" if typedef.constraint.is_extensible else "non-extensible" }} CHOICE with {{ alternatives | length }} alternatives.
+ * Per ITU-T X.691 §23, the choice index uses ceil(log2({{ alternatives | length }})) = {{ index_bits }} bit{{ "s" if index_bits != 1 else "" }}.
+{% include 'wire_format_choice_section.j2' %}
+ *
+ * Performance Rationale (Single I/O Pattern):
+ * Reading {{ max_wire_bits }} bits unconditionally (even when smaller alternatives use less) is faster than
+ * reading the index first, then conditionally reading the value bits:
+ *   - Single I/O: ~9-10 instructions, 1 memory load, 0 branches
+ *   - Two-Step:   ~13-14 instructions, 2 memory loads, 1 branch (misprediction risk)
+ * The "garbage" bits (when smaller alternative selected) cost nothing - already in register.
+ * This pattern applies when max_variant ≤ 56 bits (J2735_READ_BITS limit).
+ *
+ * Usage Pattern (single I/O, O(1)):
+ * @code
+ * {{ raw_type }} const raw{{ max_wire_bits }} = J2735_{{ typedef_name_upper }}_RAW_READ(buf); [{{ max_wire_bits }} bits in {{ raw_type }}]
+ *
+ * switch (J2735_{{ typedef_name_upper }}_WHICH(raw{{ max_wire_bits }})) {
+{% for alt in alternatives %}
+ * case J2735_CHOICE_{{ typedef_name_upper }}_{{ alt.name | screaming_snake }}:
+ *     use(J2735_{{ typedef_name_upper }}_GET_{{ alt.name | screaming_snake }}(raw{{ max_wire_bits }})); [{{ alt.bit_width | c_type }}: {{ alt.bit_width }} bits]
+ *     break;
+{% endfor %}
+ * }
+ *
+ * buf += J2735_BIT_TO_BYTE(J2735_{{ typedef_name_upper }}_SIZE(raw{{ max_wire_bits }})); [uint8_t: {{ min_alt_wire }}{% if min_alt_wire != max_alt_wire %} or {{ max_alt_wire }}{% endif %}]
+ * @endcode
+ */
+#ifndef J2735_INTERNAL_DF_{{ typedef_name | upper }}_H
+#define J2735_INTERNAL_DF_{{ typedef_name | upper }}_H
+
+#include "J2735_internal_common.h"
+#include "J2735_internal_constants.h"
+
+/* ============================================================================================== */
+/*  INTERNAL: CHOICE Index Bits                                                                   */
+/* ============================================================================================== */
+{% include 'choice/choice_internal_choice_index_bits.j2' %}
+
+/* ============================================================================================== */
+/*  INTERNAL: Structure Metadata                                                                  */
+/* ============================================================================================== */
+{% include 'choice/choice_internal_max_wire_bits.j2' %}
+
+/* ============================================================================================== */
+/*  PUBLIC API: Alternative Indices                                                               */
+/* ============================================================================================== */
+{% include 'choice/choice_alt_indices.j2' %}
+
+/* ============================================================================================== */
+/*  PUBLIC API: Raw Read (Single I/O)                                                             */
+/* ============================================================================================== */
+{% include 'choice/choice_raw_read.j2' %}
+
+/* ============================================================================================== */
+/*  PUBLIC API: Which-Checker (Pure Computation on Raw Value)                                     */
+/* ============================================================================================== */
+{% include 'choice/choice_which.j2' %}
+
+/* ============================================================================================== */
+/*  PUBLIC API: Getters (Pure Computation on Raw Value)                                           */
+/* ============================================================================================== */
+{% include 'choice/choice_get.j2' %}
+
+/* ============================================================================================== */
+/*  PUBLIC API: Size Calculation (Pure Computation on Raw Value)                                  */
+/* ============================================================================================== */
+{% include 'choice/choice_size.j2' %}
+
+#endif /* J2735_INTERNAL_DF_{{ typedef_name | upper }}_H */

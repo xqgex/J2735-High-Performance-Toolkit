@@ -1,0 +1,83 @@
+{#-
+  Copyright 2026 Yogev Neumann
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  SPDX-License-Identifier: Apache-2.0
+  SPDX-FileCopyrightText: 2026 Yogev Neumann
+-#}
+{#-
+  J2735 CHOICE Wire Format Documentation Section (Partial Template)
+
+  Renders wire format tables for all CHOICE alternatives.
+  Builds segments from domain data in ChoiceWireVariant, mirroring
+  how wire_format_table.j2 builds segments from SequenceWireVariant.fields.
+
+  Context variables:
+    - choice_variants: list[ChoiceWireVariant] from get_choice_variants()
+
+  Each ChoiceWireVariant carries domain data:
+    - index:      alternative index value
+    - index_bits: number of bits for the CHOICE index
+    - type_ref:   type reference name (e.g., "ApproachID")
+    - value_bits: value bit width
+
+  Output (rendered inside an existing Doxygen comment block):
+    * @par Wire Format (approach selected, 5 bits):
+    * @code
+    * ┌──────────┬──────────────────────────────┐
+    * │ Bit 0    │ Bits 1-4                     │
+    * ├──────────┼──────────────────────────────┤
+    * │ Index = 0│ ApproachID value (4 bits)    │
+    * └──────────┴──────────────────────────────┘
+    * @endcode
+-#}
+{% for variant in choice_variants %}
+ *
+ * @par Wire Format ({{ variant.name }}):
+ * @code
+{#  Build segments from domain data (header, content, min_width) -#}
+{%- set segments = [] -%}
+{#- Index segment -#}
+{%- if variant.index_bits == 1 -%}
+{%-   set idx_header = "Bit 0" -%}
+{%- else -%}
+{%-   set idx_header = "Bits 0-" ~ (variant.index_bits - 1) -%}
+{%- endif -%}
+{%- set idx_content = "Index = " ~ variant.index -%}
+{%- set _ = segments.append((idx_header, idx_content, [idx_header | length, idx_content | length, 7] | max)) -%}
+{#- Value segment -#}
+{%- set val_start = variant.index_bits -%}
+{%- set val_end = variant.index_bits + variant.value_bits - 1 -%}
+{%- if val_start == val_end -%}
+{%-   set val_header = "Bit " ~ val_start -%}
+{%- else -%}
+{%-   set val_header = "Bits " ~ val_start ~ "-" ~ val_end -%}
+{%- endif -%}
+{%- set val_content = variant.type_ref ~ " value (" ~ variant.value_bits ~ " bits)" -%}
+{%- set _ = segments.append((val_header, val_content, [val_header | length, val_content | length, 12] | max)) -%}
+{#- Calculate column widths -#}
+{%- set widths = [] -%}
+{%- for seg in segments -%}
+{%-   set w = [seg[0] | length, seg[1] | length, seg[2]] | max -%}
+{%-   set _ = widths.append(w) -%}
+{%- endfor %}
+ * ┌{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┬{% endif %}{% endfor %}┐
+ * │{% for i in range(segments | length) %} {{ "%-*s" | format(widths[i], segments[i][0]) }} │{% endfor %}
+
+ * ├{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┼{% endif %}{% endfor %}┤
+ * │{% for i in range(segments | length) %} {{ "%-*s" | format(widths[i], segments[i][1]) }} │{% endfor %}
+
+ * └{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┴{% endif %}{% endfor %}┘
+ * @endcode
+{% endfor %}

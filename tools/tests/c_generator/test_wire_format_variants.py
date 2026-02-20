@@ -19,13 +19,13 @@
 Tests cover:
     - _pluralize_bits(): singular/plural grammar for bit counts
     - get_sequence_variants(): all 4 SEQUENCE cases + edge cases
-    - WireVariant: dataclass field correctness
+    - SequenceWireVariant: dataclass field correctness
 """
 
 from unittest import TestCase
 
 from tools.j2735_c_generator_wire_format import (
-    WireVariant,
+    SequenceWireVariant,
     _pluralize_bits,  # pyright: ignore[reportPrivateUsage]
     get_sequence_variants,
 )
@@ -42,7 +42,7 @@ from tools.tests.conftest import (
 )
 
 
-def _get_variants(type_name: str, spec: J2735Specification) -> list[WireVariant]:
+def _get_variants(type_name: str, spec: J2735Specification) -> list[SequenceWireVariant]:
     """Look up a SEQUENCE type and return its wire format variants.
 
     Args:
@@ -50,7 +50,7 @@ def _get_variants(type_name: str, spec: J2735Specification) -> list[WireVariant]
         spec: The parsed J2735 specification.
 
     Returns:
-        List of WireVariant objects for the type.
+        List of SequenceWireVariant objects for the type.
 
     Raises:
         ValueError: If type_name is not found or not a SEQUENCE.
@@ -500,12 +500,12 @@ class TestBitWidthAccumulation(TestCase):
         self.assertEqual(variants[0].total_bits, 21)
 
 
-class TestWireVariantImmutability(TestCase):
-    """WireVariant is a frozen dataclass — verify immutability."""
+class TestSequenceWireVariantImmutability(TestCase):
+    """SequenceWireVariant is a frozen dataclass — verify immutability."""
 
     def test_frozen(self) -> None:
-        """WireVariant raises on attribute assignment."""
-        variant = WireVariant(
+        """SequenceWireVariant raises on attribute assignment."""
+        variant = SequenceWireVariant(
             name="test",
             fields=(),
             ext_bit=None,
