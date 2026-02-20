@@ -24,7 +24,7 @@
 
   Template Context (from generator):
     - typedef:   ASN1TypeDefinition for the SEQUENCE type
-    - variants:  list[WireVariant] from get_sequence_variants()
+    - sequence_variants: list[SequenceWireVariant] from get_sequence_variants()
     - opt_count: Number of OPTIONAL fields (for bitmap width)
 -#}
 {%- set has_optional = typedef.constraint.optional_count > 0 -%}
@@ -36,7 +36,7 @@
  * @brief J2735 {{ typedef_name }} Definition and Access Macros.
  *
  * @par {{ typedef_name }} Wire Format (UPER):
-{% include 'wire_format_section.j2' %}
+{% include 'wire_format_sequence_section.j2' %}
  */
 #ifndef J2735_INTERNAL_DF_{{ typedef_name | upper }}_H
 #define J2735_INTERNAL_DF_{{ typedef_name | upper }}_H

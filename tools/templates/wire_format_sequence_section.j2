@@ -25,7 +25,7 @@
 
   Context variables:
     - typedef:   ASN1TypeDefinition object
-    - variants:  list[WireVariant] from get_sequence_variants()
+    - sequence_variants: list[SequenceWireVariant] from get_sequence_variants()
     - opt_count: Number of OPTIONAL fields (for bitmap width)
 
   Required filters (registered in create_jinja_env):
@@ -42,7 +42,7 @@
  * @code
 {%  include 'asn1_definition.j2' %}
  * @endcode
-{%  for variant in variants %}
+{%  for variant in sequence_variants %}
  *
  * @par Wire Format ({{ variant.name }}):
  * @code

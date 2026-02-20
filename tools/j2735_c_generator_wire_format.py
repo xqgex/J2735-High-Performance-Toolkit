@@ -21,18 +21,20 @@ Minimal implementation that passes ASN1TypeDefinition directly to templates.
 All complex formatting logic lives in Jinja templates + filters.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import TypedDict
 
 from .j2735_spec_constraints import SequenceField, SequenceType
 
 # =============================================================================
-# Wire Variant Helper (the ONE thing that needs Python)
+# SEQUENCE Wire Format
 # =============================================================================
 
 
 @dataclass(frozen=True, slots=True)
-class WireVariant:
-    """A wire format variant for rendering.
+class SequenceWireVariant:
+    """A wire format variant for a SEQUENCE type.
 
     For fixed types: single variant with all fields.
     For OPTIONAL types: variant with fields to include.
@@ -82,14 +84,14 @@ def _sum_field_bits(fields: tuple[SequenceField, ...]) -> int:
     return sum(f.type.uper_bit_width or 0 for f in fields)
 
 
-def get_sequence_variants(constraint: SequenceType) -> list[WireVariant]:
+def get_sequence_variants(constraint: SequenceType) -> list[SequenceWireVariant]:
     """Generate wire format variants for a SEQUENCE.
 
     Args:
         constraint: The SequenceType constraint.
 
     Returns:
-        List of WireVariant objects to render.
+        List of SequenceWireVariant objects to render.
 
     Examples:
         >>> from tools.j2735_spec_constraints import SequenceType, SequenceField
@@ -117,7 +119,7 @@ def get_sequence_variants(constraint: SequenceType) -> list[WireVariant]:
     if not is_ext and opt_count == 0:
         total = _sum_field_bits(all_fields)
         return [
-            WireVariant(
+            SequenceWireVariant(
                 name=_pluralize_bits(total),
                 fields=all_fields,
                 ext_bit=None,
@@ -130,14 +132,14 @@ def get_sequence_variants(constraint: SequenceType) -> list[WireVariant]:
     if is_ext and opt_count == 0:
         total_no_ext = 1 + _sum_field_bits(all_fields)  # 1 for ext bit
         return [
-            WireVariant(
+            SequenceWireVariant(
                 name=f"no extensions, {_pluralize_bits(total_no_ext)}",
                 fields=all_fields,
                 ext_bit=0,
                 opt_bitmap="",
                 total_bits=total_no_ext,
             ),
-            WireVariant(
+            SequenceWireVariant(
                 name="with extensions, variable",
                 fields=all_fields,
                 ext_bit=1,
@@ -164,18 +166,99 @@ def get_sequence_variants(constraint: SequenceType) -> list[WireVariant]:
     )
 
     return [
-        WireVariant(
+        SequenceWireVariant(
             name=f"{absent_name}, {_pluralize_bits(absent_bits)}",
             fields=required_fields,
             ext_bit=0 if is_ext else None,
             opt_bitmap=absent_opt,
             total_bits=absent_bits,
         ),
-        WireVariant(
+        SequenceWireVariant(
             name=f"{present_name}, {_pluralize_bits(present_bits)}",
             fields=all_fields,
             ext_bit=0 if is_ext else None,
             opt_bitmap=present_opt,
             total_bits=present_bits,
         ),
+    ]
+
+
+# =============================================================================
+# CHOICE Wire Format
+# =============================================================================
+
+
+class ChoiceAlternativeDict(TypedDict):
+    """Type definition for alternative entries in CHOICE generation."""
+
+    name: str
+    type_ref: str
+    bit_width: int
+    index: int
+    shift: int
+    needs_shift: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ChoiceWireVariant:
+    """A wire format variant for a CHOICE alternative.
+
+    Each variant represents one possible alternative selection.
+    """
+
+    name: str
+    index: int
+    index_bits: int
+    type_ref: str
+    value_bits: int
+    total_bits: int
+
+
+def get_choice_variants(
+    alternatives: Sequence[ChoiceAlternativeDict],
+    index_bits: int,
+) -> list[ChoiceWireVariant]:
+    """Generate wire format variants for a CHOICE type.
+
+    Produces one variant per alternative, carrying domain data for the
+    template to render (parallel to ``get_sequence_variants``).
+
+    Args:
+        alternatives: List of alternative dicts with keys ``name``,
+            ``type_ref``, ``bit_width``, and ``index``.
+        index_bits: Number of bits for the CHOICE index.
+
+    Returns:
+        List of ChoiceWireVariant objects, one per alternative.
+
+    Examples:
+        >>> alts = [
+        ...     {"name": "a", "type_ref": "TypeA", "bit_width": 4, "index": 0},
+        ...     {"name": "b", "type_ref": "TypeB", "bit_width": 8, "index": 1},
+        ... ]
+        >>> variants = get_choice_variants(alts, index_bits=1)
+        >>> len(variants)
+        2
+        >>> variants[0].name
+        'a selected, 5 bits total'
+        >>> variants[0].total_bits
+        5
+        >>> variants[0].index
+        0
+        >>> variants[0].type_ref
+        'TypeA'
+        >>> variants[0].value_bits
+        4
+    """
+    return [
+        ChoiceWireVariant(
+            name=f"{alt['name']} selected, "
+            f"{_pluralize_bits(index_bits + alt['bit_width'])} total",
+            index=alt["index"],
+            index_bits=index_bits,
+            type_ref=alt["type_ref"],
+            value_bits=alt["bit_width"],
+            total_bits=index_bits + alt["bit_width"],
+        )
+        for alt in alternatives
     ]

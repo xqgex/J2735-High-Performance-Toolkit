@@ -28,7 +28,7 @@ from unittest import TestCase
 
 from tools.j2735_c_generator_jinja import create_jinja_env, get_template
 from tools.j2735_c_generator_wire_format import (
-    WireVariant,
+    SequenceWireVariant,
     get_sequence_variants,
 )
 from tools.j2735_spec_constraints import (
@@ -76,7 +76,7 @@ def _render_asn1(typedef: ASN1TypeDefinition) -> str:
 
 
 def _render_wire_format(
-    variant: WireVariant,
+    variant: SequenceWireVariant,
     opt_count: int,
     *,
     compact: bool = False,
@@ -84,7 +84,7 @@ def _render_wire_format(
     """Render a wire format table template.
 
     Args:
-        variant: The WireVariant to render.
+        variant: The SequenceWireVariant to render.
         opt_count: Number of optional fields.
         compact: If True, use compact (row-based) template.
 
@@ -382,11 +382,11 @@ class TestASN1DefinitionTemplate(TestCase):
 class TestWireFormatTableTemplate(TestCase):
     """Tests for wire_format_table.j2 rendering."""
 
-    def _make_fixed_variant(self) -> tuple[WireVariant, int]:
+    def _make_fixed_variant(self) -> tuple[SequenceWireVariant, int]:
         """Create a simple 2-field fixed variant for testing.
 
         Returns:
-            Tuple of (WireVariant, opt_count).
+            Tuple of (SequenceWireVariant, opt_count).
         """
         seq = make_sequence(
             fields=(
@@ -541,11 +541,11 @@ class TestWireFormatTableTemplate(TestCase):
 class TestWireFormatCompactTemplate(TestCase):
     """Tests for wire_format_compact.j2 rendering."""
 
-    def _make_large_variant(self) -> tuple[WireVariant, int]:
+    def _make_large_variant(self) -> tuple[SequenceWireVariant, int]:
         """Create a 10-field variant (triggers compact mode).
 
         Returns:
-            Tuple of (WireVariant, opt_count).
+            Tuple of (SequenceWireVariant, opt_count).
         """
         fields = tuple(make_integer_field(f"field{i}", f"Type{i}", 0, 255) for i in range(10))
         seq = make_sequence(fields=fields)
