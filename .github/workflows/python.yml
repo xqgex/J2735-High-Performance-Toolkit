@@ -62,19 +62,20 @@ permissions:
 env:
   PYTHON_VERSION: "3.12"
   # Coverage thresholds
+  COVERAGE_MAX_MISSING_LINES: "10"  # Max lines to show before truncating
   COVERAGE_THRESHOLD_GOOD: "90"  # ✅ Green: >= 90%
   COVERAGE_THRESHOLD_WARN: "70"  # ⚠️ Yellow: >= 70%
-  COVERAGE_MAX_MISSING_LINES: "10"  # Max lines to show before truncating
   # File paths
-  COVERAGE_SOURCE: "tools"
   COVERAGE_JSON_FILE: "coverage.json"
   COVERAGE_OUTPUT_FILE: "coverage_output.txt"
-  TEST_OUTPUT_FILE: "test_output.txt"
+  COVERAGE_RCFILE: "tools/pyproject.toml"
+  COVERAGE_SOURCE: "tools"
   STATIC_ANALYSIS_OUTPUT_FILE: "static_analysis_summary.txt"
+  TEST_OUTPUT_FILE: "test_output.txt"
   # Artifact names
-  ARTIFACT_TEST_RESULTS: "test-results"
   ARTIFACT_COVERAGE_RESULTS: "coverage-results"
   ARTIFACT_STATIC_ANALYSIS: "python-static-analysis-results"
+  ARTIFACT_TEST_RESULTS: "test-results"
 
 jobs:
   # ===========================================================================

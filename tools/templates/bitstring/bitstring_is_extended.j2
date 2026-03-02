@@ -58,5 +58,5 @@ Example output (is_extensible=True):
  * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_{{ typedef_name_upper }}_IS_EXTENDED(buf) (0)
+#define J2735_{{ typedef_name_upper }}_IS_EXTENDED(buf) ((void)(buf), 0)
 {%  endif %}

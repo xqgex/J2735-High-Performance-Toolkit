@@ -31,7 +31,7 @@
  *
  * Fixed BIT STRING with size 5.
  *
- * Wire Format (6 bits total):
+ * Wire Format (5 bits total):
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-4                                                     │
  * ├──────────────────────────────────────────────────────────────┤
@@ -42,14 +42,10 @@
  * ──────────────────────────────────────────────────────────────────────────────────────────
  * Max wire size = 5 bits ≤ 56-bit READ_BITS limit.
  * We read all 5 bits in ONE call, then use bit arithmetic to extract:
- *   - Extension bit at position 4 (MSB of 5-bit value)
- *   - Flags at positions 0-4 (extended) or shifted for non-extended
+ *   - Flags at positions 0-4
  *
  * 5-bit read layout (left-justified from bit 0):
- *   Non-extended: [Ext=0][F0..F4][-1 garbage bits]
- *                  bit4  3..-1     -2..0
- *   Extended:     [Ext=1][nsnnwn:7][F0..F4]
- *                  bit4  3..5    4..0
+ *   [F0..F4] (5 flag bits, no extension marker)
  *
  * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
@@ -101,7 +97,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_VERTICAL_ACCELERATION_THRESHOLD(buf)                               \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_VERTICAL_ACCELERATION_THRESHOLD)
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_VERTICAL_ACCELERATION_THRESHOLD)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -162,7 +158,7 @@
  * uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_VERTICAL_ACCELERATION_THRESHOLD_IS_EXTENDED(buf) (0)
+#define J2735_VERTICAL_ACCELERATION_THRESHOLD_IS_EXTENDED(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of VerticalAccelerationThreshold in bits.
@@ -174,7 +170,7 @@
  * @return Always 5U.
  */
 #define J2735_VERTICAL_ACCELERATION_THRESHOLD_SIZE(buf)                                            \
-  (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_VERTICAL_ACCELERATION_THRESHOLD)
+  ((void)(buf), J2735_INTERNAL_ROOT_SIZE_VERTICAL_ACCELERATION_THRESHOLD)
 
 /**
  * @brief Get all VerticalAccelerationThreshold as a single uint8_t value.

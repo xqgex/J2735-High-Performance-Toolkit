@@ -179,15 +179,17 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
  * @return Right-aligned flag bits as uint16_t:
  *         - 9 significant bits (0x0000-0x01FF) if non-extended
  *         - 9 significant bits (0x0000-0x01FF) if extended
+ * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
+ *       The compiler optimizes the truncation to uint16_t.
  * @note Internal use only. Use J2735_EXTERIOR_LIGHTS_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_EXTERIOR_LIGHTS(raw17)                                              \
   (J2735_INTERNAL_IS_EXTENSION_EXTERIOR_LIGHTS(raw17) ? /* Extended: low 9 bits */                 \
-       ((uint16_t)((raw17) & ((1U << J2735_INTERNAL_EXT_SIZE_EXTERIOR_LIGHTS) - 1U)))              \
+       ((uint16_t)((raw17) & ((1ULL << J2735_INTERNAL_EXT_SIZE_EXTERIOR_LIGHTS) - 1ULL)))          \
                                                       : /* Non-ext: bits 15..7 = 9 bits */         \
        ((uint16_t)(((raw17) >> (J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS - 1U -                \
                                 J2735_INTERNAL_ROOT_SIZE_EXTERIOR_LIGHTS)) &                       \
-                   ((1U << J2735_INTERNAL_ROOT_SIZE_EXTERIOR_LIGHTS) - 1U))))
+                   ((1ULL << J2735_INTERNAL_ROOT_SIZE_EXTERIOR_LIGHTS) - 1ULL))))
 
 /**
  * @internal

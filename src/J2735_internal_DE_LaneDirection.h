@@ -28,7 +28,7 @@
  *
  * Fixed BIT STRING with size 2.
  *
- * Wire Format (3 bits total):
+ * Wire Format (2 bits total):
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-1                                                     │
  * ├──────────────────────────────────────────────────────────────┤
@@ -39,14 +39,10 @@
  * ──────────────────────────────────────────────────────────────────────────────────────────
  * Max wire size = 2 bits ≤ 56-bit READ_BITS limit.
  * We read all 2 bits in ONE call, then use bit arithmetic to extract:
- *   - Extension bit at position 1 (MSB of 2-bit value)
- *   - Flags at positions 0-1 (extended) or shifted for non-extended
+ *   - Flags at positions 0-1
  *
  * 2-bit read layout (left-justified from bit 0):
- *   Non-extended: [Ext=0][F0..F1][-1 garbage bits]
- *                  bit1  0..-1     -2..0
- *   Extended:     [Ext=1][nsnnwn:7][F0..F1]
- *                  bit1  0..2    1..0
+ *   [F0..F1] (2 flag bits, no extension marker)
  *
  * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
@@ -93,7 +89,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_LANE_DIRECTION(buf)                                                \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_LANE_DIRECTION)
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -149,7 +145,7 @@
  * @param[in] buf Pointer to the start of the LaneDirection UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_LANE_DIRECTION_IS_EXTENDED(buf) (0)
+#define J2735_LANE_DIRECTION_IS_EXTENDED(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of LaneDirection in bits.
@@ -159,8 +155,7 @@
  * @param[in] buf Pointer to the start of the LaneDirection UPER encoding (const uint8_t*).
  * @return Always 2U.
  */
-#define J2735_LANE_DIRECTION_SIZE(buf)                                                             \
-  (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION)
+#define J2735_LANE_DIRECTION_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION)
 
 /**
  * @brief Get all LaneDirection as a single uint8_t value.

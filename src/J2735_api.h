@@ -24,13 +24,30 @@
 #ifndef J2735_API_H
 #define J2735_API_H
 
+#include "J2735_internal_DE_AllowedManeuvers.h"
+#include "J2735_internal_DE_BrakeAppliedStatus.h"
+#include "J2735_internal_DE_ExteriorLights.h"
+#include "J2735_internal_DE_GNSSstatus.h"
+#include "J2735_internal_DE_LaneDirection.h"
+#include "J2735_internal_DE_LaneSharing.h"
+#include "J2735_internal_DE_PersonalAssistive.h"
+#include "J2735_internal_DE_PersonalDeviceUsageState.h"
+#include "J2735_internal_DE_PublicSafetyAndRoadWorkerActivity.h"
+#include "J2735_internal_DE_PublicSafetyDirectingTrafficSubType.h"
+#include "J2735_internal_DE_TrafficLightOperationStatus.h"
+#include "J2735_internal_DE_TransitStatus.h"
+#include "J2735_internal_DE_UserSizeAndBehaviour.h"
 #include "J2735_internal_DE_VehicleEventFlags.h"
+#include "J2735_internal_DE_VerticalAccelerationThreshold.h"
+#include "J2735_internal_DF_ApproachOrLane.h"
 #include "J2735_internal_DF_BSMcoreData.h"
 #include "J2735_internal_DF_IntersectionReferenceID.h"
 #include "J2735_internal_DF_PathPrediction.h"
+
 #include "J2735_internal_common.h"
 #include "J2735_internal_constants.h"
 #include "J2735_internal_inline.h"
+
 #include "J2735_toolkit.h"
 
 #endif /* J2735_API_H */

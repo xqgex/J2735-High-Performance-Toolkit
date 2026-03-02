@@ -59,4 +59,8 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}(buf) \
+{% if is_extensible %}
   J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }})
+{% else %}
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }})
+{% endif %}

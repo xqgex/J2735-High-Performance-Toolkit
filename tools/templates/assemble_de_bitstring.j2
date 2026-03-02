@@ -34,9 +34,13 @@ Template Context (from generator):
 {%- set ext_bits = typedef.constraint.ext_bits -%}
 {%- set read_bits = typedef.constraint.read_bits -%}
 {%- set root_size = typedef.constraint.root_size -%}
+{%- if is_extensible -%}
 {%- set root_wire_size = 1 + root_size -%}
 {%- set garbage_bits = read_bits - 1 - root_size -%}
 {%- set ext_bit_pos = read_bits - 1 -%}
+{%- else -%}
+{%- set root_wire_size = root_size -%}
+{%- endif -%}
 {#- Box column widths -#}
 {%- set COL1 = 5 -%}
 {%- set COL2_NONEXT = 52 -%}
@@ -86,6 +90,7 @@ Template Context (from generator):
  * ──────────────────────────────────────────────────────────────────────────────────────────
  * Max wire size = {{ read_bits }} bits ≤ 56-bit READ_BITS limit.
  * We read all {{ read_bits }} bits in ONE call, then use bit arithmetic to extract:
+{% if is_extensible %}
  *   - Extension bit at position {{ ext_bit_pos }} (MSB of {{ read_bits }}-bit value)
  *   - Flags at positions 0-{{ ext_bits - 1 }} (extended) or shifted for non-extended
  *
@@ -94,6 +99,12 @@ Template Context (from generator):
  *                  bit{{ ext_bit_pos }}  {{ ext_bit_pos - 1 }}..{{ garbage_bits }}     {{ garbage_bits - 1 }}..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F{{ ext_bits - 1 }}]
  *                  bit{{ ext_bit_pos }}  {{ ext_bit_pos - 1 }}..{{ ext_bits }}    {{ ext_bits - 1 }}..0
+{% else %}
+ *   - Flags at positions 0-{{ root_size - 1 }}
+ *
+ * {{ read_bits }}-bit read layout (left-justified from bit 0):
+ *   [F0..F{{ root_size - 1 }}] ({{ root_size }} flag bits, no extension marker)
+{% endif %}
  *
  * @todo Update the Doxygen to indicate [in] and [out] parameters
  */

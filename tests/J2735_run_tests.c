@@ -29,7 +29,21 @@
 #include "unity_internals.h"
 
 #include "J2735_UPER_test.h"
+#include "J2735_internal_DE_AllowedManeuvers_test.h"
+#include "J2735_internal_DE_BrakeAppliedStatus_test.h"
+#include "J2735_internal_DE_ExteriorLights_test.h"
+#include "J2735_internal_DE_GNSSstatus_test.h"
+#include "J2735_internal_DE_LaneDirection_test.h"
+#include "J2735_internal_DE_LaneSharing_test.h"
+#include "J2735_internal_DE_PersonalAssistive_test.h"
+#include "J2735_internal_DE_PersonalDeviceUsageState_test.h"
+#include "J2735_internal_DE_PublicSafetyAndRoadWorkerActivity_test.h"
+#include "J2735_internal_DE_PublicSafetyDirectingTrafficSubType_test.h"
+#include "J2735_internal_DE_TrafficLightOperationStatus_test.h"
+#include "J2735_internal_DE_TransitStatus_test.h"
+#include "J2735_internal_DE_UserSizeAndBehaviour_test.h"
 #include "J2735_internal_DE_VehicleEventFlags_test.h"
+#include "J2735_internal_DE_VerticalAccelerationThreshold_test.h"
 #include "J2735_internal_DF_ApproachOrLane_test.h"
 #include "J2735_internal_DF_BSMcoreData_test.h"
 #include "J2735_internal_DF_IntersectionReferenceID_test.h"
@@ -43,11 +57,26 @@ void tearDown(void) {}
 
 int main(void) {
   UNITY_BEGIN();
+  run_testsuite_allowed_maneuvers();
   run_testsuite_approach_or_lane();
+  run_testsuite_brake_applied_status();
   run_testsuite_bsm_core_data();
+  run_testsuite_exterior_lights();
+  run_testsuite_gnss_status();
   run_testsuite_intersection_reference_id();
+  run_testsuite_lane_direction();
+  run_testsuite_lane_sharing();
   run_testsuite_path_prediction();
+  run_testsuite_personal_assistive();
+  run_testsuite_personal_device_usage_state();
+  run_testsuite_public_safety_and_road_worker_activity();
+  run_testsuite_public_safety_directing_traffic_sub_type();
+  run_testsuite_traffic_light_operation_status();
+  run_testsuite_transit_status();
   run_testsuite_uper();
+  run_testsuite_user_size_and_behaviour();
   run_testsuite_vehicle_event_flags();
+  run_testsuite_vertical_acceleration_threshold();
+
   return UNITY_END();
 }

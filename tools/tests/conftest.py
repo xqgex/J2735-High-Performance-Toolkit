@@ -42,13 +42,28 @@ from tools.j2735_spec_parser import (
 )
 
 # =============================================================================
-# Path Constants
+# Constants
 # =============================================================================
 
 
 # Path to the J2735 specification file (relative to repository root)
 _REPOSITORY_ROOT: Path = Path(__file__).parent.parent.parent
 SPEC_FILE_PATH: Path = _REPOSITORY_ROOT / "J2735_202409_pdf_content.txt"
+
+
+# BIT STRING Data Element types that have no UPER extension marker on the wire.
+# These types take a different template code path than extensible types: no
+# extension bit, no nsnnwn length field, and SIZE == ROOT_SIZE (not 1+ROOT_SIZE).
+# Each tuple is (ASN.1 type name, C macro prefix).
+NON_EXTENSIBLE_BITSTRING_TYPES: list[tuple[str, str]] = [
+    ("LaneDirection", "LANE_DIRECTION"),
+    ("GNSSstatus", "GNSS_STATUS"),
+    ("AllowedManeuvers", "ALLOWED_MANEUVERS"),
+    ("BrakeAppliedStatus", "BRAKE_APPLIED_STATUS"),
+    ("TransitStatus", "TRANSIT_STATUS"),
+    ("LaneSharing", "LANE_SHARING"),
+    ("VerticalAccelerationThreshold", "VERTICAL_ACCELERATION_THRESHOLD"),
+]
 
 
 # =============================================================================

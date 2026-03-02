@@ -180,17 +180,19 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  * @return Right-aligned flag bits as uint8_t:
  *         - 8 significant bits (0x0000-0x00FF) if non-extended
  *         - 8 significant bits (0x0000-0x00FF) if extended
+ * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
+ *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_TRAFFIC_LIGHT_OPERATION_STATUS(raw16)                               \
   (J2735_INTERNAL_IS_EXTENSION_TRAFFIC_LIGHT_OPERATION_STATUS(raw16)                               \
        ? /* Extended: low 8 bits */                                                                \
        ((uint8_t)((raw16) &                                                                        \
-                  ((1U << J2735_INTERNAL_EXT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS) - 1U)))          \
+                  ((1ULL << J2735_INTERNAL_EXT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS) - 1ULL)))      \
        : /* Non-ext: bits 14..7 = 8 bits */                                                        \
        ((uint8_t)(((raw16) >> (J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS - 1U -  \
                                J2735_INTERNAL_ROOT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS)) &         \
-                  ((1U << J2735_INTERNAL_ROOT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS) - 1U))))
+                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS) - 1ULL))))
 
 /**
  * @internal

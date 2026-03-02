@@ -36,7 +36,7 @@
  *
  * Fixed BIT STRING with size 10.
  *
- * Wire Format (11 bits total):
+ * Wire Format (10 bits total):
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-9                                                     │
  * ├──────────────────────────────────────────────────────────────┤
@@ -47,14 +47,10 @@
  * ──────────────────────────────────────────────────────────────────────────────────────────
  * Max wire size = 10 bits ≤ 56-bit READ_BITS limit.
  * We read all 10 bits in ONE call, then use bit arithmetic to extract:
- *   - Extension bit at position 9 (MSB of 10-bit value)
- *   - Flags at positions 0-9 (extended) or shifted for non-extended
+ *   - Flags at positions 0-9
  *
  * 10-bit read layout (left-justified from bit 0):
- *   Non-extended: [Ext=0][F0..F9][-1 garbage bits]
- *                  bit9  8..-1     -2..0
- *   Extended:     [Ext=1][nsnnwn:7][F0..F9]
- *                  bit9  8..10    9..0
+ *   [F0..F9] (10 flag bits, no extension marker)
  *
  * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
@@ -109,7 +105,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_LANE_SHARING(buf)                                                  \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_LANE_SHARING)
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_LANE_SHARING)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -165,7 +161,7 @@
  * @param[in] buf Pointer to the start of the LaneSharing UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_LANE_SHARING_IS_EXTENDED(buf) (0)
+#define J2735_LANE_SHARING_IS_EXTENDED(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of LaneSharing in bits.
@@ -175,8 +171,7 @@
  * @param[in] buf Pointer to the start of the LaneSharing UPER encoding (const uint8_t*).
  * @return Always 10U.
  */
-#define J2735_LANE_SHARING_SIZE(buf)                                                               \
-  (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_LANE_SHARING)
+#define J2735_LANE_SHARING_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_LANE_SHARING)
 
 /**
  * @brief Get all LaneSharing as a single uint16_t value.
