@@ -58,7 +58,7 @@ check-hidden = true
 
 [tool.coverage.run]
 source = ["tools"]
-omit = ["tools/tests/*", "tools/__pycache__/*"]
+omit = ["*/tools/tests/*", "*/run_tests.py", "*/__pycache__/*"]
 
 [tool.coverage.report]
 exclude_lines = [

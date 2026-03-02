@@ -20,7 +20,11 @@ Tests cover generate_bitstring_internal_raw_read which generates
 J2735_INTERNAL_RAW_READ_<TYPE> macros that read all bits from buffer.
 """
 
-from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+from tools.tests.conftest import (
+    NON_EXTENSIBLE_BITSTRING_TYPES,
+    SpecLoadingTestBase,
+    generate_bitstring_code,
+)
 
 _TEMPLATE_NAME = "bitstring/bitstring_internal_raw_read.j2"
 
@@ -54,15 +58,7 @@ class TestRawReadGenerator(SpecLoadingTestBase):
         bitstring_internal_max_wire_bits.j2, conditionally included). Referencing it
         from a non-extensible header produces an undefined symbol at compile time.
         """
-        for type_name, prefix in [
-            ("LaneDirection", "LANE_DIRECTION"),
-            ("GNSSstatus", "GNSS_STATUS"),
-            ("AllowedManeuvers", "ALLOWED_MANEUVERS"),
-            ("BrakeAppliedStatus", "BRAKE_APPLIED_STATUS"),
-            ("TransitStatus", "TRANSIT_STATUS"),
-            ("LaneSharing", "LANE_SHARING"),
-            ("VerticalAccelerationThreshold", "VERTICAL_ACCELERATION_THRESHOLD"),
-        ]:
+        for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
                 code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, type_name)
                 self.assertNotIn(
@@ -73,11 +69,7 @@ class TestRawReadGenerator(SpecLoadingTestBase):
 
     def test_non_extensible_raw_read_uses_root_size(self) -> None:
         """Non-extensible RAW_READ should read ROOT_SIZE bits, not MAX_WIRE_BITS."""
-        for type_name, prefix in [
-            ("LaneDirection", "LANE_DIRECTION"),
-            ("GNSSstatus", "GNSS_STATUS"),
-            ("AllowedManeuvers", "ALLOWED_MANEUVERS"),
-        ]:
+        for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
                 code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, type_name)
                 self.assertIn(

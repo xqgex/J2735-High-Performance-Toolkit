@@ -149,7 +149,21 @@ jobs:
           for /f "delims=" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath') do set VSDIR=%%i
           call "%VSDIR%\VC\Auxiliary\Build\vcvars64.bat"
           cl /std:c11 /W4 /WX /O2 /Isrc /Fe:build\J2735_run_tests.exe ^
+            tests\J2735_internal_DE_AllowedManeuvers_test.c ^
+            tests\J2735_internal_DE_BrakeAppliedStatus_test.c ^
+            tests\J2735_internal_DE_ExteriorLights_test.c ^
+            tests\J2735_internal_DE_GNSSstatus_test.c ^
+            tests\J2735_internal_DE_LaneDirection_test.c ^
+            tests\J2735_internal_DE_LaneSharing_test.c ^
+            tests\J2735_internal_DE_PersonalAssistive_test.c ^
+            tests\J2735_internal_DE_PersonalDeviceUsageState_test.c ^
+            tests\J2735_internal_DE_PublicSafetyAndRoadWorkerActivity_test.c ^
+            tests\J2735_internal_DE_PublicSafetyDirectingTrafficSubType_test.c ^
+            tests\J2735_internal_DE_TrafficLightOperationStatus_test.c ^
+            tests\J2735_internal_DE_TransitStatus_test.c ^
+            tests\J2735_internal_DE_UserSizeAndBehaviour_test.c ^
             tests\J2735_internal_DE_VehicleEventFlags_test.c ^
+            tests\J2735_internal_DE_VerticalAccelerationThreshold_test.c ^
             tests\J2735_internal_DF_ApproachOrLane_test.c ^
             tests\J2735_internal_DF_BSMcoreData_test.c ^
             tests\J2735_internal_DF_IntersectionReferenceID_test.c ^

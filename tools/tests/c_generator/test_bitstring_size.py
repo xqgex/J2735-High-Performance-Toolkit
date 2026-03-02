@@ -20,7 +20,11 @@ Tests cover generate_bitstring_size which generates
 J2735_<TYPE>_SIZE macros returning bit count.
 """
 
-from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
+from tools.tests.conftest import (
+    NON_EXTENSIBLE_BITSTRING_TYPES,
+    SpecLoadingTestBase,
+    generate_bitstring_code,
+)
 
 _TEMPLATE_NAME = "bitstring/bitstring_size.j2"
 
@@ -62,15 +66,7 @@ class TestSizeGenerator(SpecLoadingTestBase):
         SIZE should be exactly ROOT_SIZE, not EXTENSION_MARKER_BITS + ROOT_SIZE.
         Example: LaneDirection SIZE should be 2, not 1+2=3.
         """
-        for type_name, prefix in [
-            ("LaneDirection", "LANE_DIRECTION"),
-            ("GNSSstatus", "GNSS_STATUS"),
-            ("AllowedManeuvers", "ALLOWED_MANEUVERS"),
-            ("BrakeAppliedStatus", "BRAKE_APPLIED_STATUS"),
-            ("TransitStatus", "TRANSIT_STATUS"),
-            ("LaneSharing", "LANE_SHARING"),
-            ("VerticalAccelerationThreshold", "VERTICAL_ACCELERATION_THRESHOLD"),
-        ]:
+        for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
                 code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, type_name)
                 # Extract the #define line for SIZE
@@ -88,11 +84,7 @@ class TestSizeGenerator(SpecLoadingTestBase):
 
         The #define line for SIZE must reference ROOT_SIZE and nothing else.
         """
-        for type_name, prefix in [
-            ("LaneDirection", "LANE_DIRECTION"),
-            ("GNSSstatus", "GNSS_STATUS"),
-            ("AllowedManeuvers", "ALLOWED_MANEUVERS"),
-        ]:
+        for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
                 code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, type_name)
                 # Find the #define SIZE line specifically
