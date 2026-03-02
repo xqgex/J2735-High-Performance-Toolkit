@@ -38,7 +38,7 @@
  *
  * Fixed BIT STRING with size 12.
  *
- * Wire Format (13 bits total):
+ * Wire Format (12 bits total):
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-11                                                    │
  * ├──────────────────────────────────────────────────────────────┤
@@ -49,14 +49,10 @@
  * ──────────────────────────────────────────────────────────────────────────────────────────
  * Max wire size = 12 bits ≤ 56-bit READ_BITS limit.
  * We read all 12 bits in ONE call, then use bit arithmetic to extract:
- *   - Extension bit at position 11 (MSB of 12-bit value)
- *   - Flags at positions 0-11 (extended) or shifted for non-extended
+ *   - Flags at positions 0-11
  *
  * 12-bit read layout (left-justified from bit 0):
- *   Non-extended: [Ext=0][F0..F11][-1 garbage bits]
- *                  bit11  10..-1     -2..0
- *   Extended:     [Ext=1][nsnnwn:7][F0..F11]
- *                  bit11  10..12    11..0
+ *   [F0..F11] (12 flag bits, no extension marker)
  *
  * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
@@ -113,7 +109,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_ALLOWED_MANEUVERS(buf)                                             \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_ALLOWED_MANEUVERS)
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_ALLOWED_MANEUVERS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -169,7 +165,7 @@
  * @param[in] buf Pointer to the start of the AllowedManeuvers UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_ALLOWED_MANEUVERS_IS_EXTENDED(buf) (0)
+#define J2735_ALLOWED_MANEUVERS_IS_EXTENDED(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of AllowedManeuvers in bits.
@@ -179,8 +175,7 @@
  * @param[in] buf Pointer to the start of the AllowedManeuvers UPER encoding (const uint8_t*).
  * @return Always 12U.
  */
-#define J2735_ALLOWED_MANEUVERS_SIZE(buf)                                                          \
-  (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_ALLOWED_MANEUVERS)
+#define J2735_ALLOWED_MANEUVERS_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_ALLOWED_MANEUVERS)
 
 /**
  * @brief Get all AllowedManeuvers as a single uint16_t value.

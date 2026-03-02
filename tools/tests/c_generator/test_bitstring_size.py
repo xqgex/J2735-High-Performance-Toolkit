@@ -54,3 +54,66 @@ class TestSizeGenerator(SpecLoadingTestBase):
         code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "LaneDirection")
         self.assertIn("J2735_LANE_DIRECTION_SIZE", code)
         self.assertIn("2U", code)
+
+    def test_non_extensible_size_must_not_include_extension_marker_bits(self) -> None:
+        """Non-extensible SIZE must not add J2735_INTERNAL_EXTENSION_MARKER_BITS.
+
+        Non-extensible BIT STRING has no extension marker on the wire.
+        SIZE should be exactly ROOT_SIZE, not EXTENSION_MARKER_BITS + ROOT_SIZE.
+        Example: LaneDirection SIZE should be 2, not 1+2=3.
+        """
+        for type_name, prefix in [
+            ("LaneDirection", "LANE_DIRECTION"),
+            ("GNSSstatus", "GNSS_STATUS"),
+            ("AllowedManeuvers", "ALLOWED_MANEUVERS"),
+            ("BrakeAppliedStatus", "BRAKE_APPLIED_STATUS"),
+            ("TransitStatus", "TRANSIT_STATUS"),
+            ("LaneSharing", "LANE_SHARING"),
+            ("VerticalAccelerationThreshold", "VERTICAL_ACCELERATION_THRESHOLD"),
+        ]:
+            with self.subTest(type_name=type_name):
+                code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, type_name)
+                # Extract the #define line for SIZE
+                size_macro_name = f"J2735_{prefix}_SIZE"
+                self.assertIn(size_macro_name, code)
+                self.assertNotIn(
+                    "J2735_INTERNAL_EXTENSION_MARKER_BITS",
+                    code,
+                    f"{type_name} SIZE must not reference EXTENSION_MARKER_BITS "
+                    f"(non-extensible types have no extension marker on wire)",
+                )
+
+    def test_non_extensible_size_evaluates_to_root_size(self) -> None:
+        """Non-extensible SIZE #define should expand to just ROOT_SIZE.
+
+        The #define line for SIZE must reference ROOT_SIZE and nothing else.
+        """
+        for type_name, prefix in [
+            ("LaneDirection", "LANE_DIRECTION"),
+            ("GNSSstatus", "GNSS_STATUS"),
+            ("AllowedManeuvers", "ALLOWED_MANEUVERS"),
+        ]:
+            with self.subTest(type_name=type_name):
+                code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, type_name)
+                # Find the #define SIZE line specifically
+                size_defines = [
+                    line
+                    for line in code.splitlines()
+                    if line.strip().startswith("#define") and f"J2735_{prefix}_SIZE" in line
+                ]
+                self.assertTrue(
+                    size_defines,
+                    f"{type_name}: SIZE #define not found",
+                )
+                for line in size_defines:
+                    self.assertIn(
+                        f"J2735_INTERNAL_ROOT_SIZE_{prefix}",
+                        line,
+                        f"{type_name} SIZE #define should reference ROOT_SIZE: {line}",
+                    )
+                    self.assertNotIn(
+                        "EXTENSION_MARKER_BITS",
+                        line,
+                        f"{type_name} SIZE #define must not reference EXTENSION_MARKER_BITS: "
+                        f"{line}",
+                    )

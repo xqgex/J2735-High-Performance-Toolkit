@@ -32,7 +32,7 @@
  *
  * Fixed BIT STRING with size 6.
  *
- * Wire Format (7 bits total):
+ * Wire Format (6 bits total):
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-5                                                     │
  * ├──────────────────────────────────────────────────────────────┤
@@ -43,14 +43,10 @@
  * ──────────────────────────────────────────────────────────────────────────────────────────
  * Max wire size = 6 bits ≤ 56-bit READ_BITS limit.
  * We read all 6 bits in ONE call, then use bit arithmetic to extract:
- *   - Extension bit at position 5 (MSB of 6-bit value)
- *   - Flags at positions 0-5 (extended) or shifted for non-extended
+ *   - Flags at positions 0-5
  *
  * 6-bit read layout (left-justified from bit 0):
- *   Non-extended: [Ext=0][F0..F5][-1 garbage bits]
- *                  bit5  4..-1     -2..0
- *   Extended:     [Ext=1][nsnnwn:7][F0..F5]
- *                  bit5  4..6    5..0
+ *   [F0..F5] (6 flag bits, no extension marker)
  *
  * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
@@ -101,7 +97,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_TRANSIT_STATUS(buf)                                                \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_TRANSIT_STATUS)
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -157,7 +153,7 @@
  * @param[in] buf Pointer to the start of the TransitStatus UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_TRANSIT_STATUS_IS_EXTENDED(buf) (0)
+#define J2735_TRANSIT_STATUS_IS_EXTENDED(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of TransitStatus in bits.
@@ -167,8 +163,7 @@
  * @param[in] buf Pointer to the start of the TransitStatus UPER encoding (const uint8_t*).
  * @return Always 6U.
  */
-#define J2735_TRANSIT_STATUS_SIZE(buf)                                                             \
-  (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS)
+#define J2735_TRANSIT_STATUS_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS)
 
 /**
  * @brief Get all TransitStatus as a single uint8_t value.

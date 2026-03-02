@@ -34,7 +34,7 @@
  *
  * Fixed BIT STRING with size 8.
  *
- * Wire Format (9 bits total):
+ * Wire Format (8 bits total):
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-7                                                     │
  * ├──────────────────────────────────────────────────────────────┤
@@ -45,14 +45,10 @@
  * ──────────────────────────────────────────────────────────────────────────────────────────
  * Max wire size = 8 bits ≤ 56-bit READ_BITS limit.
  * We read all 8 bits in ONE call, then use bit arithmetic to extract:
- *   - Extension bit at position 7 (MSB of 8-bit value)
- *   - Flags at positions 0-7 (extended) or shifted for non-extended
+ *   - Flags at positions 0-7
  *
  * 8-bit read layout (left-justified from bit 0):
- *   Non-extended: [Ext=0][F0..F7][-1 garbage bits]
- *                  bit7  6..-1     -2..0
- *   Extended:     [Ext=1][nsnnwn:7][F0..F7]
- *                  bit7  6..8    7..0
+ *   [F0..F7] (8 flag bits, no extension marker)
  *
  * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
@@ -105,7 +101,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_GNSS_STATUS(buf)                                                   \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_MAX_WIRE_BITS_GNSS_STATUS)
+  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_GNSS_STATUS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -161,7 +157,7 @@
  * @param[in] buf Pointer to the start of the GNSSstatus UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_GNSS_STATUS_IS_EXTENDED(buf) (0)
+#define J2735_GNSS_STATUS_IS_EXTENDED(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of GNSSstatus in bits.
@@ -171,8 +167,7 @@
  * @param[in] buf Pointer to the start of the GNSSstatus UPER encoding (const uint8_t*).
  * @return Always 8U.
  */
-#define J2735_GNSS_STATUS_SIZE(buf)                                                                \
-  (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_GNSS_STATUS)
+#define J2735_GNSS_STATUS_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_GNSS_STATUS)
 
 /**
  * @brief Get all GNSSstatus as a single uint8_t value.

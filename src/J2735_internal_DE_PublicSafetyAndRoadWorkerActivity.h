@@ -178,19 +178,22 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
  * @return Right-aligned flag bits as uint8_t:
  *         - 6 significant bits (0x0000-0x003F) if non-extended
  *         - 6 significant bits (0x0000-0x003F) if extended
+ * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
+ *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY(raw14)                       \
   (J2735_INTERNAL_IS_EXTENSION_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY(raw14)                       \
        ? /* Extended: low 6 bits */                                                                \
        ((uint8_t)((raw14) &                                                                        \
-                  ((1U << J2735_INTERNAL_EXT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY) - 1U)))  \
+                  ((1ULL << J2735_INTERNAL_EXT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY) -      \
+                   1ULL)))                                                                         \
        : /* Non-ext: bits 12..7 = 6 bits */                                                        \
        ((uint8_t)(((raw14) >>                                                                      \
                    (J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY - 1U -     \
                     J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY)) &            \
-                  ((1U << J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY) -       \
-                   1U))))
+                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY) -     \
+                   1ULL))))
 
 /**
  * @internal

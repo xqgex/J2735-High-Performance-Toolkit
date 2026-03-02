@@ -172,15 +172,17 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  * @return Right-aligned flag bits as uint8_t:
  *         - 5 significant bits (0x0000-0x001F) if non-extended
  *         - 5 significant bits (0x0000-0x001F) if extended
+ * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
+ *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_USER_SIZE_AND_BEHAVIOUR_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_USER_SIZE_AND_BEHAVIOUR(raw13)                                      \
   (J2735_INTERNAL_IS_EXTENSION_USER_SIZE_AND_BEHAVIOUR(raw13) ? /* Extended: low 5 bits */         \
-       ((uint8_t)((raw13) & ((1U << J2735_INTERNAL_EXT_SIZE_USER_SIZE_AND_BEHAVIOUR) - 1U)))       \
+       ((uint8_t)((raw13) & ((1ULL << J2735_INTERNAL_EXT_SIZE_USER_SIZE_AND_BEHAVIOUR) - 1ULL)))   \
                                                               : /* Non-ext: bits 11..7 = 5 bits */ \
        ((uint8_t)(((raw13) >> (J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR - 1U -         \
                                J2735_INTERNAL_ROOT_SIZE_USER_SIZE_AND_BEHAVIOUR)) &                \
-                  ((1U << J2735_INTERNAL_ROOT_SIZE_USER_SIZE_AND_BEHAVIOUR) - 1U))))
+                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_USER_SIZE_AND_BEHAVIOUR) - 1ULL))))
 
 /**
  * @internal

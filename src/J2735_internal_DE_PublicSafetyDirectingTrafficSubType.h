@@ -183,20 +183,22 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
  * @return Right-aligned flag bits as uint8_t:
  *         - 7 significant bits (0x0000-0x007F) if non-extended
  *         - 7 significant bits (0x0000-0x007F) if extended
+ * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
+ *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE(raw15)                     \
   (J2735_INTERNAL_IS_EXTENSION_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE(raw15)                     \
        ? /* Extended: low 7 bits */                                                                \
        ((uint8_t)((raw15) &                                                                        \
-                  ((1U << J2735_INTERNAL_EXT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE) -      \
-                   1U)))                                                                           \
+                  ((1ULL << J2735_INTERNAL_EXT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE) -    \
+                   1ULL)))                                                                         \
        : /* Non-ext: bits 13..7 = 7 bits */                                                        \
        ((uint8_t)(((raw15) >>                                                                      \
                    (J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE - 1U -   \
                     J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE)) &          \
-                  ((1U << J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE) -     \
-                   1U))))
+                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE) -   \
+                   1ULL))))
 
 /**
  * @internal
