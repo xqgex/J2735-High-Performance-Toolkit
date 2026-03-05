@@ -32,6 +32,10 @@ on:
       - reopened
       - synchronize
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # Security: Minimal permissions - read PR, write status checks
 permissions:
   pull-requests: read
