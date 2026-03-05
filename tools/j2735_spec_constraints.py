@@ -571,9 +571,7 @@ class ChoiceType(UPERConstraint):
             type_ref = alt_match.group(2).strip()
             # Skip J2735 regional extension fields (SEQUENCE OF RegionalExtension)
             # These are variable-length and would break fixed bit-width calculation
-            if name != _J2735_REGIONAL_FIELD_NAME or not type_ref.startswith(
-                ASN1_SEQUENCE_KEYWORD
-            ):
+            if name != _J2735_REGIONAL_FIELD_NAME or not type_ref.startswith(ASN1_SEQUENCE_KEYWORD):
                 alternatives[name] = type_ref
 
         if not alternatives:
