@@ -33,6 +33,11 @@ from re import DOTALL, MULTILINE, Pattern
 from re import compile as re_compile
 from typing import Final, Self
 
+from .j2735_asn1_constants import (
+    ASN1_COMMENT_PREFIX,
+    ASN1_TYPE_DEF_DOTALL_PATTERN,
+    ASN1_TYPE_DEF_PATTERN,
+)
 from .j2735_spec_constraints import (
     BitStringConstraint,
     BooleanType,
@@ -51,9 +56,6 @@ from .j2735_spec_constraints import (
 # Constants - ASN.1 Language Elements
 # =============================================================================
 
-# ASN.1 syntax tokens
-_ASN1_COMMENT_PREFIX: Final[str] = "--"
-
 # Parser constants
 _COMMENT_BIT_KEYWORD: Final[str] = "bit"
 _COMMENT_SIZE_KEYWORD: Final[str] = "size"
@@ -65,11 +67,6 @@ _DEFAULT_VERSION: Final[str] = "unknown"
 
 # Section marker pattern (e.g., "<MARK_BEGINNING_SECTION_5>")
 _SECTION_MARKER_PATTERN: Final[Pattern[str]] = re_compile(r"^<MARK_BEGINNING_SECTION_(\d+)>$")
-
-# ASN.1 type definition patterns
-# Note: [\w-]+ allows hyphens in type names (e.g., Offset-B10, OffsetLL-B12)
-_ASN1_TYPE_DEF_PATTERN: Final[Pattern[str]] = re_compile(r"^([\w-]+)\s*::=\s*(.+)$", MULTILINE)
-_ASN1_TYPE_DEF_DOTALL_PATTERN: Final[Pattern[str]] = re_compile(r"([\w-]+)\s*::=\s*(.+)", DOTALL)
 
 # SEQUENCE OF pattern
 _SEQUENCE_OF_PATTERN: Final[Pattern[str]] = re_compile(
@@ -344,6 +341,128 @@ class SpecEntry:
     remarks: str  # TODO: Inspect if still unused
     line_number: int | None  # TODO: Inspect if still unused
 
+    # -----------------------------------------------------------------
+    # Block Parsing Helpers
+    # -----------------------------------------------------------------
+
+    @staticmethod
+    def _extract_block_sections(block: str) -> tuple[str, str, str]:
+        """Extract Use, ASN.1 text, and Remarks from a spec block.
+
+        Each specification block (Message, Data Frame, Data Element) contains
+        the same three optional sections. This helper applies the shared
+        regex extraction once, returning empty strings for missing sections.
+
+        Args:
+            block: The raw text block for one specification entry.
+
+        Returns:
+            A tuple of ``(use_description, asn1_text, remarks)``.
+
+        >>> SpecEntry._extract_block_sections(
+        ...     "Use: A simple counter.\\n"
+        ...     "ASN.1 Representation:\\n"
+        ...     "MsgCount ::= INTEGER (0..127)\\n"
+        ...     "Remarks: Wraps at 127."
+        ... )
+        ('A simple counter.', 'MsgCount ::= INTEGER (0..127)', 'Wraps at 127.')
+        >>> SpecEntry._extract_block_sections("No sections here.")
+        ('', '', '')
+        """
+        use_match = _USE_BLOCK_PATTERN.search(block)
+        use_description = use_match.group(1).strip() if use_match else ""
+
+        asn1_match = _ASN1_REPR_BLOCK_PATTERN.search(block)
+        asn1_text = asn1_match.group(1).strip() if asn1_match else ""
+
+        remarks_match = _REMARKS_BLOCK_PATTERN.search(block)
+        remarks = remarks_match.group(1).strip() if remarks_match else ""
+
+        return use_description, asn1_text, remarks
+
+    @staticmethod
+    def _parse_asn1_multiline(
+        asn1_text: str, section_number: str, use_description: str
+    ) -> ASN1TypeDefinition | None:
+        """Parse ASN.1 text using multiline strategy (for Data Elements).
+
+        Data Element definitions are single-line with optional continuation
+        lines. This strategy matches the first ``name ::= definition`` line,
+        then walks subsequent lines, appending non-comment content and
+        comments that contain encoding info (bit/size keywords).
+
+        Args:
+            asn1_text: The raw ASN.1 representation text.
+            section_number: The spec section (e.g., "7.99").
+            use_description: The Use: description for this entry.
+
+        Returns:
+            The parsed type definition, or None if parsing fails.
+        """
+        if not asn1_text:
+            return None
+
+        type_def_match = ASN1_TYPE_DEF_PATTERN.search(asn1_text)
+        if not type_def_match:
+            return None
+
+        type_body = type_def_match.group(2)
+        continuation_text = asn1_text[type_def_match.end() :]  # noqa: E203  # Black VS flake8
+
+        for line in continuation_text.splitlines():
+            stripped = line.strip()
+            if stripped and not stripped.startswith(ASN1_COMMENT_PREFIX):
+                type_body += " " + stripped
+            elif stripped.startswith(ASN1_COMMENT_PREFIX):
+                if (
+                    _COMMENT_BIT_KEYWORD in stripped.lower()
+                    or _COMMENT_SIZE_KEYWORD in stripped.lower()
+                ):
+                    type_body += " " + stripped
+
+        return ASN1TypeDefinition.from_asn1(
+            type_def_match.group(1),
+            type_body,
+            spec_section=section_number,
+            description=use_description,
+        )
+
+    @staticmethod
+    def _parse_asn1_dotall(
+        asn1_text: str, section_number: str, use_description: str
+    ) -> ASN1TypeDefinition | None:
+        """Parse ASN.1 text using DOTALL strategy (for Data Frames/Messages).
+
+        Frame and Message definitions span multiple lines with nested braces.
+        This strategy captures the full definition including newlines in a
+        single regex match.
+
+        Args:
+            asn1_text: The raw ASN.1 representation text.
+            section_number: The spec section (e.g., "6.10").
+            use_description: The Use: description for this entry.
+
+        Returns:
+            The parsed type definition, or None if parsing fails.
+        """
+        if not asn1_text:
+            return None
+
+        type_def_match = ASN1_TYPE_DEF_DOTALL_PATTERN.search(asn1_text)
+        if not type_def_match:
+            return None
+
+        return ASN1TypeDefinition.from_asn1(
+            type_def_match.group(1),
+            type_def_match.group(2).strip(),
+            spec_section=section_number,
+            description=use_description,
+        )
+
+    # -----------------------------------------------------------------
+    # Classmethod Constructors
+    # -----------------------------------------------------------------
+
     @classmethod
     def from_data_element_block(cls, block: str, line_offset: int) -> Self | None:
         """Parse a single Data Element block from section 7.
@@ -360,47 +479,7 @@ class SpecEntry:
             return None
 
         section_number = header_match.group(1)
-
-        # Extract Use: description
-        use_match = _USE_BLOCK_PATTERN.search(block)
-        use_description = use_match.group(1).strip() if use_match else ""
-
-        # Extract ASN.1 Representation
-        asn1_match = _ASN1_REPR_BLOCK_PATTERN.search(block)
-
-        # Extract Remarks
-        remarks_match = _REMARKS_BLOCK_PATTERN.search(block)
-
-        # Parse the ASN.1 definition
-        asn1_def = None
-        if asn1_text := asn1_match.group(1).strip() if asn1_match else "":
-            # Find the main type definition line
-            type_def_match = _ASN1_TYPE_DEF_PATTERN.search(asn1_text)
-            if type_def_match:
-                type_body = type_def_match.group(2)
-
-                # For multi-line definitions, capture everything until comment-only lines
-                # Add continuation lines (those that aren't just comments)
-                for line in asn1_text[
-                    type_def_match.end() :  # noqa: E203  # Black VS flake8
-                ].splitlines():
-                    stripped = line.strip()
-                    if stripped and not stripped.startswith(_ASN1_COMMENT_PREFIX):
-                        type_body += " " + stripped
-                    elif stripped.startswith(_ASN1_COMMENT_PREFIX):
-                        # Keep comments that contain encoding info
-                        if (
-                            _COMMENT_BIT_KEYWORD in stripped.lower()
-                            or _COMMENT_SIZE_KEYWORD in stripped.lower()
-                        ):
-                            type_body += " " + stripped
-
-                asn1_def = ASN1TypeDefinition.from_asn1(
-                    type_def_match.group(1),
-                    type_body,
-                    spec_section=section_number,
-                    description=use_description,
-                )
+        use_description, asn1_text, remarks = cls._extract_block_sections(block)
 
         return cls(
             section_number=section_number,
@@ -408,8 +487,8 @@ class SpecEntry:
             name=header_match.group(2),
             abbreviation="",
             use_description=use_description,
-            asn1_definition=asn1_def,
-            remarks=remarks_match.group(1).strip() if remarks_match else "",
+            asn1_definition=cls._parse_asn1_multiline(asn1_text, section_number, use_description),
+            remarks=remarks,
             line_number=line_offset,
         )
 
@@ -429,39 +508,15 @@ class SpecEntry:
             return None
 
         section_number = header_match.group(1)
-        name = header_match.group(2)
-
-        # Extract Use: description
-        use_match = _USE_BLOCK_PATTERN.search(block)
-        use_description = use_match.group(1).strip() if use_match else ""
-
-        # Extract ASN.1 Representation
-        asn1_match = _ASN1_REPR_BLOCK_PATTERN.search(block)
-        asn1_text = asn1_match.group(1).strip() if asn1_match else ""
-
-        # Extract Remarks
-        remarks_match = _REMARKS_BLOCK_PATTERN.search(block)
-        remarks = remarks_match.group(1).strip() if remarks_match else ""
-
-        # Parse the ASN.1 definition
-        asn1_def = None
-        if asn1_text:
-            type_def_match = _ASN1_TYPE_DEF_DOTALL_PATTERN.search(asn1_text)
-            if type_def_match:
-                asn1_def = ASN1TypeDefinition.from_asn1(
-                    type_def_match.group(1),
-                    type_def_match.group(2).strip(),
-                    spec_section=section_number,
-                    description=use_description,
-                )
+        use_description, asn1_text, remarks = cls._extract_block_sections(block)
 
         return cls(
             section_number=section_number,
             entry_type=J2735EntryKind.DATA_FRAMES,
-            name=name,
+            name=header_match.group(2),
             abbreviation="",
             use_description=use_description,
-            asn1_definition=asn1_def,
+            asn1_definition=cls._parse_asn1_dotall(asn1_text, section_number, use_description),
             remarks=remarks,
             line_number=line_offset,
         )
@@ -482,40 +537,15 @@ class SpecEntry:
             return None
 
         section_number = header_match.group(1)
-        name = header_match.group(2)
-        abbreviation = header_match.group(3) if header_match.group(3) else ""
-
-        # Extract Use: description
-        use_match = _USE_BLOCK_PATTERN.search(block)
-        use_description = use_match.group(1).strip() if use_match else ""
-
-        # Extract ASN.1 Representation
-        asn1_match = _ASN1_REPR_BLOCK_PATTERN.search(block)
-        asn1_text = asn1_match.group(1).strip() if asn1_match else ""
-
-        # Extract Remarks
-        remarks_match = _REMARKS_BLOCK_PATTERN.search(block)
-        remarks = remarks_match.group(1).strip() if remarks_match else ""
-
-        # Parse the ASN.1 definition
-        asn1_def = None
-        if asn1_text:
-            type_def_match = _ASN1_TYPE_DEF_DOTALL_PATTERN.search(asn1_text)
-            if type_def_match:
-                asn1_def = ASN1TypeDefinition.from_asn1(
-                    type_def_match.group(1),
-                    type_def_match.group(2).strip(),
-                    spec_section=section_number,
-                    description=use_description,
-                )
+        use_description, asn1_text, remarks = cls._extract_block_sections(block)
 
         return cls(
             section_number=section_number,
             entry_type=J2735EntryKind.MESSAGES,
-            name=name,
-            abbreviation=abbreviation,
+            name=header_match.group(2),
+            abbreviation=header_match.group(3) or "",
             use_description=use_description,
-            asn1_definition=asn1_def,
+            asn1_definition=cls._parse_asn1_dotall(asn1_text, section_number, use_description),
             remarks=remarks,
             line_number=line_offset,
         )
@@ -644,6 +674,42 @@ class J2735Specification:
     data_frames: tuple[SpecEntry, ...]
     data_elements: tuple[SpecEntry, ...]
     type_registry: Mapping[str, ASN1TypeDefinition]
+
+    def collect_fixed_width_types(
+        self,
+    ) -> tuple[list[ASN1TypeDefinition], int]:
+        """Collect all types with deterministic UPER bit-widths.
+
+        Iterates ``type_registry`` in alphabetical order and partitions
+        types into those with a known fixed bit-width and those without.
+
+        Returns:
+            A tuple of ``(fixed_types, variable_count)`` where *fixed_types*
+            is a sorted list of type definitions whose ``uper_bit_width`` is
+            not ``None``, and *variable_count* is the number of skipped
+            variable-width types.  Returns ``([], 0)`` when the registry
+            is empty.
+
+        Examples:
+            >>> from tools.tests.conftest import SPEC_FILE_PATH
+            >>> from tools.j2735_spec_parser import parse_spec_file
+            >>> spec = parse_spec_file(SPEC_FILE_PATH)
+            >>> fixed, variable = spec.collect_fixed_width_types()
+            >>> all(t.uper_bit_width is not None for t in fixed)
+            True
+            >>> variable >= 0
+            True
+        """
+        fixed_types: list[ASN1TypeDefinition] = []
+        variable_count = 0
+
+        for _, typedef in sorted(self.type_registry.items()):
+            if typedef.uper_bit_width is not None:
+                fixed_types.append(typedef)
+            else:
+                variable_count += 1
+
+        return fixed_types, variable_count
 
     def lookup_type(self, name: str) -> ASN1TypeDefinition | None:
         """Look up a type definition by name.
