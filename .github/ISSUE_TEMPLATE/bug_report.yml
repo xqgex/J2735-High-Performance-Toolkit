@@ -53,7 +53,7 @@ body:
       description: Provide a minimal C code example that demonstrates the issue
       render: c
       placeholder: |
-        #include "J2735_macros.h"
+        #include "J2735_api.h"
 
         int main(void) {
             uint8_t buf[] = { 0x15, 0xBD, ... };

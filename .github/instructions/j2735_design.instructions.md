@@ -18,7 +18,7 @@ The library splits the concept of a "Message" into two layers to map high-level 
   - Use "Container Structs" (byte arrays) only for pointer sizing, not for member access.
   - **Anti-Pattern**: Do not define standard C structs with members for data access.
 
-### 2. The Access Layer (`J2735_macros.h`)
+### 2. The Access Layer (`J2735_internal_common.h`)
 
 - **Concept**: Acts as the optical lens to read the data.
 - **Usage**:

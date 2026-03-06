@@ -38,17 +38,19 @@ from re import DOTALL, Pattern
 from re import compile as re_compile
 from typing import Annotated, ClassVar, Final, Self
 
+from .j2735_asn1_constants import (
+    ASN1_COMMENT_PREFIX,
+    ASN1_EXTENSION_MARKER,
+    ASN1_FIELD_SEPARATOR,
+    ASN1_OPTIONAL_KEYWORD,
+    ASN1_SEQUENCE_KEYWORD,
+)
+
 # These type aliases document constraints that are validated at runtime
 # via __post_init__. They help communicate intent to readers and tools.
 _PositiveInt = Annotated[int, "Value must be >= 1"]
 _NonNegativeInt = Annotated[int, "Value must be >= 0"]
 
-# ASN.1 parsing constants
-_ASN1_COMMENT_PREFIX: Final[str] = "--"
-_ASN1_EXTENSION_MARKER: Final[str] = "..."
-_ASN1_FIELD_SEPARATOR: Final[str] = ","
-_ASN1_OPTIONAL_KEYWORD: Final[str] = "OPTIONAL"
-_ASN1_SEQUENCE_KEYWORD: Final[str] = "SEQUENCE"
 _BITS_PER_BYTE: Final[int] = 8  # 8 bits per byte/octet in OCTET STRING
 
 # J2735-specific constants
@@ -560,7 +562,7 @@ class ChoiceType(UPERConstraint):
             return None
 
         body = match.group(1)
-        is_extensible = _ASN1_EXTENSION_MARKER in body
+        is_extensible = ASN1_EXTENSION_MARKER in body
 
         # Parse individual alternatives
         alternatives: dict[str, str] = {}
@@ -569,9 +571,7 @@ class ChoiceType(UPERConstraint):
             type_ref = alt_match.group(2).strip()
             # Skip J2735 regional extension fields (SEQUENCE OF RegionalExtension)
             # These are variable-length and would break fixed bit-width calculation
-            if name != _J2735_REGIONAL_FIELD_NAME or not type_ref.startswith(
-                _ASN1_SEQUENCE_KEYWORD
-            ):
+            if name != _J2735_REGIONAL_FIELD_NAME or not type_ref.startswith(ASN1_SEQUENCE_KEYWORD):
                 alternatives[name] = type_ref
 
         if not alternatives:
@@ -836,7 +836,7 @@ class EnumeratedType(UPERConstraint):
         # Assign values in document order
         values = cls._assign_values(all_items)
 
-        return cls(values=values, is_extensible=_ASN1_EXTENSION_MARKER in body)
+        return cls(values=values, is_extensible=ASN1_EXTENSION_MARKER in body)
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
@@ -1293,28 +1293,28 @@ class SequenceField:
                 continue
 
             # Check if this is a standalone comment line (starts with --)
-            if line.startswith(_ASN1_COMMENT_PREFIX):
+            if line.startswith(ASN1_COMMENT_PREFIX):
                 pending_section_comment = line[
-                    len(_ASN1_COMMENT_PREFIX) :  # noqa: E203  # Black VS flake8
+                    len(ASN1_COMMENT_PREFIX) :  # noqa: E203  # Black VS flake8
                 ].strip()
                 continue
 
             # Extract inline comment from end of line
             line_inline_comment: str = ""
-            comment_pos = line.find(_ASN1_COMMENT_PREFIX)
+            comment_pos = line.find(ASN1_COMMENT_PREFIX)
             if comment_pos != -1:
                 line_inline_comment = line[
-                    comment_pos + len(_ASN1_COMMENT_PREFIX) :  # noqa: E203  # Black VS flake8
+                    comment_pos + len(ASN1_COMMENT_PREFIX) :  # noqa: E203  # Black VS flake8
                 ].strip()
                 line = line[:comment_pos].strip()
 
             # Split line by field separator to get individual fields
-            parts = [p.strip() for p in line.split(_ASN1_FIELD_SEPARATOR) if p.strip()]
+            parts = [p.strip() for p in line.split(ASN1_FIELD_SEPARATOR) if p.strip()]
 
             # Process each field part
             for index, part in enumerate(parts):
                 # Skip extension markers
-                if part == _ASN1_EXTENSION_MARKER:
+                if part == ASN1_EXTENSION_MARKER:
                     continue
 
                 # Parse "fieldName TypeName OPTIONAL" or "fieldName TypeName"
@@ -1322,7 +1322,7 @@ class SequenceField:
                 if len(tokens) < 2:
                     continue
 
-                is_optional = _ASN1_OPTIONAL_KEYWORD in tokens[2:] if len(tokens) > 2 else False
+                is_optional = ASN1_OPTIONAL_KEYWORD in tokens[2:] if len(tokens) > 2 else False
 
                 # Inline comment only applies to the LAST field on the line
                 inline_comment = line_inline_comment if index == len(parts) - 1 else ""
@@ -1685,12 +1685,12 @@ class SequenceType(UPERConstraint):
             True
         """
         # Must start with SEQUENCE keyword (not CHOICE, etc.)
-        if not raw_def.strip().startswith(_ASN1_SEQUENCE_KEYWORD):
+        if not raw_def.strip().startswith(ASN1_SEQUENCE_KEYWORD):
             return None
         fields = SequenceField.from_asn1(raw_def)
         if not fields:
             return None
-        is_extensible = _ASN1_EXTENSION_MARKER in raw_def
+        is_extensible = ASN1_EXTENSION_MARKER in raw_def
         return cls(fields=fields, is_extensible=is_extensible)
 
 

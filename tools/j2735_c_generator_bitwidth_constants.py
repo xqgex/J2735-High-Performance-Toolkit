@@ -30,7 +30,7 @@ Example usage:
 """
 
 from .j2735_c_generator_jinja import create_jinja_env, get_template
-from .j2735_spec_parser import ASN1TypeDefinition, J2735Specification
+from .j2735_spec_parser import J2735Specification
 
 _BITWIDTH_TEMPLATE_NAME = "bitwidth_constants.j2"
 
@@ -58,15 +58,7 @@ def generate_bitwidth_constants(spec: J2735Specification) -> str:
         >>> "7U" in code
         True
     """
-    # Collect types with fixed bit-widths
-    fixed_types: list[ASN1TypeDefinition] = []
-    variable_count = 0
-
-    for _, typedef in sorted(spec.type_registry.items()):
-        if typedef.uper_bit_width is not None:
-            fixed_types.append(typedef)
-        else:
-            variable_count += 1
+    fixed_types, variable_count = spec.collect_fixed_width_types()
 
     env = create_jinja_env()
     template = get_template(env, _BITWIDTH_TEMPLATE_NAME)
