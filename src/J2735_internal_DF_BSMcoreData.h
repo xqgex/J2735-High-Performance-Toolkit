@@ -189,7 +189,7 @@
 /* ============================================================================================== */
 /**
  * @brief Get 'msgCnt' (MsgCount, unsigned 7 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return MsgCount value (uint8_t, range 0..127).
  */
 #define J2735_BSM_CORE_DATA_GET_MSG_CNT(buf)                                                       \
@@ -198,7 +198,7 @@
 
 /**
  * @brief Get 'id' (TemporaryID, unsigned 32 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return TemporaryID value (uint32_t, range 0..4294967295).
  */
 #define J2735_BSM_CORE_DATA_GET_ID(buf)                                                            \
@@ -207,7 +207,7 @@
 
 /**
  * @brief Get 'secMark' (DSecond, unsigned 16 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return DSecond value (uint16_t, range 0..65535).
  */
 #define J2735_BSM_CORE_DATA_GET_SEC_MARK(buf)                                                      \
@@ -216,7 +216,7 @@
 
 /**
  * @brief Get 'lat' (Latitude, signed 31 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return Latitude value (int32_t, range -900000000..900000001).
  */
 #define J2735_BSM_CORE_DATA_GET_LAT(buf)                                                           \
@@ -226,7 +226,7 @@
 
 /**
  * @brief Get 'long' (Longitude, signed 32 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return Longitude value (int32_t, range -1799999999..1800000001).
  */
 #define J2735_BSM_CORE_DATA_GET_LONG(buf)                                                          \
@@ -236,7 +236,7 @@
 
 /**
  * @brief Get 'elev' (Elevation, signed 16 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return Elevation value (int16_t, range -4096..61439).
  */
 #define J2735_BSM_CORE_DATA_GET_ELEV(buf)                                                          \
@@ -246,7 +246,7 @@
 
 /**
  * @brief Get 'accuracy' (PositionalAccuracy, unsigned 32 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return PositionalAccuracy value (uint32_t, range 0..4294967295).
  */
 #define J2735_BSM_CORE_DATA_GET_ACCURACY(buf)                                                      \
@@ -255,7 +255,7 @@
 
 /**
  * @brief Get 'transmission' (TransmissionState, unsigned 3 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return TransmissionState value (uint8_t, range 0..7).
  */
 #define J2735_BSM_CORE_DATA_GET_TRANSMISSION(buf)                                                  \
@@ -264,7 +264,7 @@
 
 /**
  * @brief Get 'speed' (Speed, unsigned 13 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return Speed value (uint16_t, range 0..8191).
  */
 #define J2735_BSM_CORE_DATA_GET_SPEED(buf)                                                         \
@@ -272,7 +272,7 @@
 
 /**
  * @brief Get 'heading' (Heading, unsigned 15 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return Heading value (uint16_t, range 0..28800).
  */
 #define J2735_BSM_CORE_DATA_GET_HEADING(buf)                                                       \
@@ -281,7 +281,7 @@
 
 /**
  * @brief Get 'angle' (SteeringWheelAngle, signed 8 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return SteeringWheelAngle value (int8_t, range -126..127).
  */
 #define J2735_BSM_CORE_DATA_GET_ANGLE(buf)                                                         \
@@ -291,7 +291,7 @@
 
 /**
  * @brief Get 'accelSet' (AccelerationSet4Way, unsigned 48 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return AccelerationSet4Way value (uint64_t, range 0..281474976710655).
  */
 #define J2735_BSM_CORE_DATA_GET_ACCEL_SET(buf)                                                     \
@@ -300,7 +300,7 @@
 
 /**
  * @brief Get 'brakes' (BrakeSystemStatus, unsigned 15 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return BrakeSystemStatus value (uint16_t, range 0..32767).
  */
 #define J2735_BSM_CORE_DATA_GET_BRAKES(buf)                                                        \
@@ -309,7 +309,7 @@
 
 /**
  * @brief Get 'size' (VehicleSize, unsigned 22 bits).
- * @param buf Pointer to the BSMcoreData encoding.
+ * @param[in] buf Pointer to the BSMcoreData encoding.
  * @return VehicleSize value (uint32_t, range 0..4194303).
  */
 #define J2735_BSM_CORE_DATA_GET_SIZE(buf)                                                          \

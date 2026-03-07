@@ -47,8 +47,8 @@
  * For non-extended messages, returns the fixed root size ({{ root_uper_bit_width }} bits).
  * For extended messages, parses and skips extension data.
  *
- * @param buf           Pointer to the {{ typedef_name }} encoding.
- * @param out_size_bits Output: total size in bits.
+ * @param[in]  buf           Pointer to the {{ typedef_name }} encoding.
+ * @param[out] out_size_bits Output: total size in bits.
  * @return 0 on success, non-zero on parsing error.
  */
 static inline int j2735_inline_{{ typedef_name_lower }}_size(uint8_t const *const buf, uint32_t *const out_size_bits) {

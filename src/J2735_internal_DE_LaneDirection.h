@@ -43,8 +43,6 @@
  *
  * 2-bit read layout (left-justified from bit 0):
  *   [F0..F1] (2 flag bits, no extension marker)
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_LANEDIRECTION_H
 #define J2735_INTERNAL_DE_LANEDIRECTION_H
@@ -124,7 +122,8 @@
  * @internal
  * @brief Extract a single flag bit from pre-read 2-bit raw value.
  *
- * @param[in] raw2   Value previously returned by J2735_INTERNAL_RAW_READ_LANE_DIRECTION().
+ * @param[in] raw2    Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_LANE_DIRECTION().
  * @param[in] bit_pos ASN.1 bit position (0-1). Use J2735_INTERNAL_BIT_LANE_DIRECTION_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

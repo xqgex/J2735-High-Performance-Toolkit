@@ -66,8 +66,6 @@
  *                  bit21  20..8     7..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F13]
  *                  bit21  20..14    13..0
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_H
 #define J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_H
@@ -215,7 +213,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  *   F0 at bit 13, F1 at bit 12, ..., F13 at bit 0
  *   Formula: (raw22 >> (13 - bit_pos)) & 1
  *
- * @param[in] raw22   Value previously returned by J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS().
+ * @param[in] raw22   Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS().
  * @param[in] bit_pos ASN.1 bit position (0-13). Use J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

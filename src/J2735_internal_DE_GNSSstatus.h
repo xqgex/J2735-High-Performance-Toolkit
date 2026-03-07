@@ -49,8 +49,6 @@
  *
  * 8-bit read layout (left-justified from bit 0):
  *   [F0..F7] (8 flag bits, no extension marker)
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_GNSSSTATUS_H
 #define J2735_INTERNAL_DE_GNSSSTATUS_H
@@ -136,7 +134,8 @@
  * @internal
  * @brief Extract a single flag bit from pre-read 8-bit raw value.
  *
- * @param[in] raw8   Value previously returned by J2735_INTERNAL_RAW_READ_GNSS_STATUS().
+ * @param[in] raw8    Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_GNSS_STATUS().
  * @param[in] bit_pos ASN.1 bit position (0-7). Use J2735_INTERNAL_BIT_GNSS_STATUS_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

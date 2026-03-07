@@ -70,7 +70,7 @@ class TestHasExtensionGeneration(TestCase):
         expected = (
             "/**\n"
             " * @brief Check if PathPrediction has extension additions present.\n"
-            " * @param buf Pointer to the PathPrediction encoding.\n"
+            " * @param[in] buf Pointer to the PathPrediction encoding.\n"
             " * @return 1 if extensions are present, 0 otherwise.\n"
             " */\n"
             "#define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)\n"
@@ -113,7 +113,7 @@ class TestHasExtensionWithRealSpec(SpecLoadingTestBase):
         expected = (
             "/**\n"
             " * @brief Check if PathPrediction has extension additions present.\n"
-            " * @param buf Pointer to the PathPrediction encoding.\n"
+            " * @param[in] buf Pointer to the PathPrediction encoding.\n"
             " * @return 1 if extensions are present, 0 otherwise.\n"
             " */\n"
             "#define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)\n"

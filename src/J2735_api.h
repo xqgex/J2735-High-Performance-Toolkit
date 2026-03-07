@@ -19,7 +19,8 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief TODO
+ * @brief J2735 UPER parsing toolkit - public API aggregating all type definitions and access
+ * macros.
  */
 #ifndef J2735_API_H
 #define J2735_API_H

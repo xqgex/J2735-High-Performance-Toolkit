@@ -101,7 +101,7 @@
 /* ============================================================================================== */
 /**
  * @brief Check if PathPrediction has extension additions present.
- * @param buf Pointer to the PathPrediction encoding.
+ * @param[in] buf Pointer to the PathPrediction encoding.
  * @return 1 if extensions are present, 0 otherwise.
  */
 #define J2735_PATH_PREDICTION_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)
@@ -111,7 +111,7 @@
 /* ============================================================================================== */
 /**
  * @brief Get 'radiusOfCurve' (RadiusOfCurvature, signed 16 bits).
- * @param buf Pointer to the PathPrediction encoding.
+ * @param[in] buf Pointer to the PathPrediction encoding.
  * @return RadiusOfCurvature value (int16_t, range -32767..32767).
  */
 #define J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(buf)                                             \
@@ -122,7 +122,7 @@
 
 /**
  * @brief Get 'confidence' (Confidence, unsigned 8 bits).
- * @param buf Pointer to the PathPrediction encoding.
+ * @param[in] buf Pointer to the PathPrediction encoding.
  * @return Confidence value (uint8_t, range 0..200).
  */
 #define J2735_PATH_PREDICTION_GET_CONFIDENCE(buf)                                                  \
@@ -138,8 +138,8 @@
  * For non-extended messages, returns the fixed root size (25 bits).
  * For extended messages, parses and skips extension data.
  *
- * @param buf           Pointer to the PathPrediction encoding.
- * @param out_size_bits Output: total size in bits.
+ * @param[in]  buf           Pointer to the PathPrediction encoding.
+ * @param[out] out_size_bits Output: total size in bits.
  * @return 0 on success, non-zero on parsing error.
  */
 static inline int j2735_inline_path_prediction_size(uint8_t const *const buf,

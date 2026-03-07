@@ -57,8 +57,6 @@
  *                  bit12  11..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F4]
  *                  bit12  11..5    4..0
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_H
 #define J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_H
@@ -199,7 +197,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  *   Formula: (raw13 >> (4 - bit_pos)) & 1
  *
  * @param[in] raw13   Value previously returned by
- * J2735_INTERNAL_RAW_READ_USER_SIZE_AND_BEHAVIOUR().
+ *                    J2735_INTERNAL_RAW_READ_USER_SIZE_AND_BEHAVIOUR().
  * @param[in] bit_pos ASN.1 bit position (0-4). Use J2735_INTERNAL_BIT_USER_SIZE_AND_BEHAVIOUR_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

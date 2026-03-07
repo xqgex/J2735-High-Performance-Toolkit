@@ -60,8 +60,6 @@
  *                  bit15  14..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F7]
  *                  bit15  14..8    7..0
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H
 #define J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H
@@ -209,7 +207,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  *   Formula: (raw16 >> (7 - bit_pos)) & 1
  *
  * @param[in] raw16   Value previously returned by
- * J2735_INTERNAL_RAW_READ_TRAFFIC_LIGHT_OPERATION_STATUS().
+ *                    J2735_INTERNAL_RAW_READ_TRAFFIC_LIGHT_OPERATION_STATUS().
  * @param[in] bit_pos ASN.1 bit position (0-7). Use
  * J2735_INTERNAL_BIT_TRAFFIC_LIGHT_OPERATION_STATUS_* constants.
  * @return 0 or 1 as uint8_t.

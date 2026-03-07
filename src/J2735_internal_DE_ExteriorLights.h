@@ -61,8 +61,6 @@
  *                  bit16  15..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F8]
  *                  bit16  15..9    8..0
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_EXTERIORLIGHTS_H
 #define J2735_INTERNAL_DE_EXTERIORLIGHTS_H
@@ -205,7 +203,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
  *   F0 at bit 8, F1 at bit 7, ..., F8 at bit 0
  *   Formula: (raw17 >> (8 - bit_pos)) & 1
  *
- * @param[in] raw17   Value previously returned by J2735_INTERNAL_RAW_READ_EXTERIOR_LIGHTS().
+ * @param[in] raw17   Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_EXTERIOR_LIGHTS().
  * @param[in] bit_pos ASN.1 bit position (0-8). Use J2735_INTERNAL_BIT_EXTERIOR_LIGHTS_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

@@ -47,8 +47,6 @@
  *
  * 6-bit read layout (left-justified from bit 0):
  *   [F0..F5] (6 flag bits, no extension marker)
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_TRANSITSTATUS_H
 #define J2735_INTERNAL_DE_TRANSITSTATUS_H
@@ -132,7 +130,8 @@
  * @internal
  * @brief Extract a single flag bit from pre-read 6-bit raw value.
  *
- * @param[in] raw6   Value previously returned by J2735_INTERNAL_RAW_READ_TRANSIT_STATUS().
+ * @param[in] raw6    Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_TRANSIT_STATUS().
  * @param[in] bit_pos ASN.1 bit position (0-5). Use J2735_INTERNAL_BIT_TRANSIT_STATUS_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

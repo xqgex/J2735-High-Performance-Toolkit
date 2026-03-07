@@ -213,10 +213,10 @@ class ASN1TypeDefinition:
 
     name: str
     type_class: ASN1TypeClass
-    raw_definition: str  # TODO: Inspect if still unused
+    raw_definition: str  # TODO: Evaluate for generated C Doxygen (already accessible to templates)
     constraint: UPERConstraint | None
-    spec_section: str  # TODO: Inspect if still unused
-    description: str  # TODO: Inspect if still unused
+    spec_section: str  # TODO: Evaluate for generated C Doxygen (already accessible to templates)
+    description: str  # TODO: Evaluate for generated C Doxygen (already accessible to templates)
 
     @property
     def uper_bit_width(self) -> int | None:
@@ -332,14 +332,16 @@ class SpecEntry:
         line_number: Source file line number for error reporting (None if unknown).
     """
 
-    section_number: str  # TODO: Inspect if still unused
-    entry_type: J2735EntryKind  # TODO: Inspect if still unused
+    section_number: str  # TODO: Evaluate for generated C Doxygen (not yet passed to templates)
+    entry_type: (
+        J2735EntryKind  # TODO: Evaluate for generated C Doxygen (not yet passed to templates)
+    )
     name: str
-    abbreviation: str  # TODO: Inspect if still unused
-    use_description: str  # TODO: Inspect if still unused
+    abbreviation: str  # TODO: Evaluate for generated C Doxygen (not yet passed to templates)
+    use_description: str  # TODO: Evaluate for generated C Doxygen (not yet passed to templates)
     asn1_definition: ASN1TypeDefinition | None
-    remarks: str  # TODO: Inspect if still unused
-    line_number: int | None  # TODO: Inspect if still unused
+    remarks: str  # TODO: Evaluate for generated C Doxygen (not yet passed to templates)
+    line_number: int | None  # TODO: Evaluate for generated C Doxygen (not yet passed to templates)
 
     # -----------------------------------------------------------------
     # Block Parsing Helpers
