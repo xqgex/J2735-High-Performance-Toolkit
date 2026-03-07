@@ -509,6 +509,21 @@ jobs:
 
             const existing = comments.data.find(c => c.body.includes(marker));
 
+            // Minimize stale report comments from previous commits
+            const prefix = '<!-- j2735-python-ci-report-';
+            const stale = comments.data.filter(c =>
+              c.body.includes(prefix) && !c.body.includes(marker)
+            );
+            for (const old of stale) {
+              await github.graphql(`
+                mutation($id: ID!) {
+                  minimizeComment(input: {subjectId: $id, classifier: OUTDATED}) {
+                    minimizedComment { isMinimized }
+                  }
+                }
+              `, { id: old.node_id });
+            }
+
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
