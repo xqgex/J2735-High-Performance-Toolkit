@@ -51,7 +51,7 @@
 {#-   Build the comment based on type_class -#}
 {%-   if t.type_class.name == "BIT_STRING" -%}
 {#-     BIT STRING: Show SIZE -#}
-{%-     set comment = t.name ~ ": BIT STRING (SIZE(" ~ t.constraint.size ~ "))" -%}
+{%-     set comment = t.name ~ ": BIT STRING (SIZE(" ~ t.constraint.root_size ~ "))" -%}
 {%-   elif t.type_class.name == "BOOLEAN" -%}
 {#-     BOOLEAN: Simple -#}
 {%-     set comment = t.name ~ ": BOOLEAN" -%}

@@ -62,6 +62,16 @@ class TestScreamingSnakeConversion(TestCase):
         self.assertEqual(filter_screaming_snake("AccelerationSet4Way"), "ACCELERATION_SET_4_WAY")
         self.assertEqual(filter_screaming_snake("Type2Value"), "TYPE_2_VALUE")
 
+    def test_hyphenated_asn1_names(self) -> None:
+        """Handle ASN.1 names with hyphens (e.g., Offset-B10, Node-LL-24B)."""
+        self.assertEqual(filter_screaming_snake("Offset-B10"), "OFFSET_B_10")
+        self.assertEqual(filter_screaming_snake("Node-LL-24B"), "NODE_LL_24_B")
+        self.assertEqual(filter_screaming_snake("OffsetLL-B12"), "OFFSET_LL_B_12")
+        self.assertEqual(filter_screaming_snake("NMEA-MsgType"), "NMEA_MSG_TYPE")
+        self.assertEqual(filter_screaming_snake("RTCM-Revision"), "RTCM_REVISION")
+        self.assertEqual(filter_screaming_snake("VertOffset-B07"), "VERT_OFFSET_B_07")
+        self.assertEqual(filter_screaming_snake("TimeInSecond-B16"), "TIME_IN_SECOND_B_16")
+
     def test_already_screaming(self) -> None:
         """Already SCREAMING_SNAKE stays the same."""
         self.assertEqual(filter_screaming_snake("MSG_COUNT"), "MSG_COUNT")
@@ -91,6 +101,13 @@ class TestSnakeCaseConversion(TestCase):
         """Handle digits - split before and after."""
         self.assertEqual(filter_snake_case("AccelerationSet4Way"), "acceleration_set_4_way")
         self.assertEqual(filter_snake_case("Type2Value"), "type_2_value")
+
+    def test_hyphenated_asn1_names(self) -> None:
+        """Handle ASN.1 names with hyphens."""
+        self.assertEqual(filter_snake_case("Offset-B10"), "offset_b_10")
+        self.assertEqual(filter_snake_case("Node-LL-24B"), "node_ll_24_b")
+        self.assertEqual(filter_snake_case("OffsetLL-B12"), "offset_ll_b_12")
+        self.assertEqual(filter_snake_case("NMEA-MsgType"), "nmea_msg_type")
 
     def test_already_snake(self) -> None:
         """Already snake_case stays the same."""

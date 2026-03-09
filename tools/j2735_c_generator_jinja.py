@@ -23,7 +23,7 @@ Provides Jinja2 environment setup and template loading for C code generation.
 from pathlib import Path
 from re import sub
 
-from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template, select_autoescape
 
 from .j2735_spec_constraints import SequenceField
 
@@ -186,14 +186,22 @@ def filter_screaming_snake(name: str) -> str:
         'BSM_CORE_DATA'
         >>> filter_screaming_snake("AccelerationSet4Way")
         'ACCELERATION_SET_4_WAY'
+        >>> filter_screaming_snake("Offset-B10")
+        'OFFSET_B_10'
+        >>> filter_screaming_snake("Node-LL-24B")
+        'NODE_LL_24_B'
+        >>> filter_screaming_snake("NMEA-MsgType")
+        'NMEA_MSG_TYPE'
     """
-    # Step 1: Insert underscore after abbreviation (2+ uppercase) before lowercase
+    # Step 1: Replace hyphens with underscores (ASN.1 names like Offset-B10, Node-LL-24B)
+    name = name.replace("-", "_")
+    # Step 2: Insert underscore after abbreviation (2+ uppercase) before lowercase
     result = sub(r"([A-Z]{2,})([a-z])", r"\1_\2", name)
-    # Step 2: Insert underscore between lowercase and uppercase
+    # Step 3: Insert underscore between lowercase and uppercase
     result = sub(r"([a-z])([A-Z])", r"\1_\2", result)
-    # Step 3: Insert underscore between letter and digit
+    # Step 4: Insert underscore between letter and digit
     result = sub(r"([a-zA-Z])([0-9])", r"\1_\2", result)
-    # Step 4: Insert underscore between digit and letter
+    # Step 5: Insert underscore between digit and letter
     result = sub(r"([0-9])([a-zA-Z])", r"\1_\2", result)
     return result.upper()
 
@@ -220,6 +228,10 @@ def filter_snake_case(name: str) -> str:
         'bsm_core_data'
         >>> filter_snake_case("AccelerationSet4Way")
         'acceleration_set_4_way'
+        >>> filter_snake_case("Offset-B10")
+        'offset_b_10'
+        >>> filter_snake_case("Node-LL-24B")
+        'node_ll_24_b'
     """
     return filter_screaming_snake(name).lower()
 
@@ -232,11 +244,12 @@ def filter_snake_case(name: str) -> str:
 def create_jinja_env() -> Environment:
     """Create and configure the Jinja2 environment."""
     env = Environment(
-        loader=FileSystemLoader(_TEMPLATES_DIR),
         autoescape=select_autoescape(default=False),
-        trim_blocks=True,
-        lstrip_blocks=True,
         keep_trailing_newline=True,
+        loader=FileSystemLoader(_TEMPLATES_DIR),
+        lstrip_blocks=True,
+        trim_blocks=True,
+        undefined=StrictUndefined,
     )
     env.filters[_FILTER_BYTES_FROM_BITS] = filter_bytes_from_bits
     env.filters[_FILTER_C_TYPE] = filter_c_type
