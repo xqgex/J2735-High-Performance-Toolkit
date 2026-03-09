@@ -580,11 +580,9 @@ def _resolve_constraint(
         type_ref_return = None
         # Look up the referenced type
         if constraint.name in resolving:
-            # TODO: Circular references silently return None. Consider:
-            #   - Logging an error for debugging
-            #   - Raising an exception that propagates to the caller
-            #   - Making cycles impossible by construction (prove with types)
-            pass  # Circular reference
+            # Circular reference detected - return None to break the cycle.
+            # The caller handles None gracefully (keeps the TypeReference as-is).
+            return None
         else:
             typedef = registry.get(constraint.name)
             type_ref_return = (

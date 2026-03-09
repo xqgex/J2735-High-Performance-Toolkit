@@ -22,6 +22,7 @@ Provides Jinja2 environment setup and template loading for C code generation.
 
 from pathlib import Path
 from re import sub
+from typing import Any, cast
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
@@ -97,7 +98,6 @@ def filter_c_type(bits: int, is_signed: bool = False) -> str:
         >>> filter_c_type(48, False)
         'uint64_t'
     """
-    # TODO: Verify the function with unit tests for the edge cases
     prefix = "int" if is_signed else "uint"
     if bits <= 8:
         return f"{prefix}8_t"
@@ -239,13 +239,15 @@ def create_jinja_env() -> Environment:
         lstrip_blocks=True,
         keep_trailing_newline=True,
     )
-    # TODO: Fix pylance `Type of "filters" is partially unknown`
-    env.filters[_FILTER_BYTES_FROM_BITS] = filter_bytes_from_bits
-    env.filters[_FILTER_C_TYPE] = filter_c_type
-    env.filters[_FILTER_FORMAT_RANGE] = filter_format_range
-    env.filters[_FILTER_IS_SIGNED] = filter_is_signed
-    env.filters[_FILTER_SCREAMING_SNAKE] = filter_screaming_snake
-    env.filters[_FILTER_SNAKE_CASE] = filter_snake_case
+    filters: dict[str, Any] = cast(
+        dict[str, Any], env.filters  # pyright: ignore[reportUnknownMemberType]
+    )
+    filters[_FILTER_BYTES_FROM_BITS] = filter_bytes_from_bits
+    filters[_FILTER_C_TYPE] = filter_c_type
+    filters[_FILTER_FORMAT_RANGE] = filter_format_range
+    filters[_FILTER_IS_SIGNED] = filter_is_signed
+    filters[_FILTER_SCREAMING_SNAKE] = filter_screaming_snake
+    filters[_FILTER_SNAKE_CASE] = filter_snake_case
     return env
 
 

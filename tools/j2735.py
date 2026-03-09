@@ -43,13 +43,13 @@ def main() -> None:
         metavar="SPEC_FILE",
         help="Path to the J2735 specification text file",
     )
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "--summary",
         action="store_true",
-        default=True,
         help="Display summary counts (default)",
     )
-    parser.add_argument(
+    mode.add_argument(
         "--types",
         action="store_true",
         help="Display detailed type dump for debugging",
@@ -62,7 +62,6 @@ def main() -> None:
         print(f"Error: {e}", file=stderr)
         sys_exit(1)
 
-    # TODO: Make it proper: either "--summary" or "--types"
     if args.types:
         # Detailed type dump for debugging
         for name, typedef in sorted(spec.type_registry.items()):
