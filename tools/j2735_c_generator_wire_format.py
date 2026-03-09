@@ -75,13 +75,25 @@ def _sum_field_bits(fields: tuple[SequenceField, ...]) -> int:
         fields: Tuple of SequenceField objects.
 
     Returns:
-        Total bit width (treating ``None`` widths as 0).
+        Total bit width.
+
+    Raises:
+        ValueError: If any field has an unresolved type (uper_bit_width is None).
 
     Examples:
         >>> _sum_field_bits(())
         0
     """
-    return sum(f.type.uper_bit_width or 0 for f in fields)
+    total = 0
+    for f in fields:
+        bw = f.type.uper_bit_width
+        if bw is None:
+            raise ValueError(
+                f"Field '{f.name}' (type '{f.type_name}') has unresolved bit width. "
+                "All type references must be resolved before computing wire format."
+            )
+        total += bw
+    return total
 
 
 def get_sequence_variants(constraint: SequenceType) -> list[SequenceWireVariant]:

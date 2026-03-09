@@ -27,9 +27,14 @@ from unittest import TestCase
 from tools.j2735_c_generator_wire_format import (
     SequenceWireVariant,
     _pluralize_bits,  # pyright: ignore[reportPrivateUsage]
+    _sum_field_bits,  # pyright: ignore[reportPrivateUsage]
     get_sequence_variants,
 )
-from tools.j2735_spec_constraints import SequenceType
+from tools.j2735_spec_constraints import (
+    SequenceField,
+    SequenceType,
+    TypeReference,
+)
 from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     get_sequence_typedef,
@@ -63,6 +68,43 @@ def _get_variants(type_name: str, spec: J2735Specification) -> list[SequenceWire
 # =============================================================================
 # Tests — _pluralize_bits()
 # =============================================================================
+
+
+class TestSumFieldBits(TestCase):
+    """Tests for _sum_field_bits() — must reject unresolved fields."""
+
+    def test_resolved_fields_sum_correctly(self) -> None:
+        """Fields with known bit-widths sum to the correct total."""
+        fields = (
+            make_integer_field("a", "TypeA", 0, 127),  # 7 bits
+            make_integer_field("b", "TypeB", 0, 255),  # 8 bits
+        )
+        self.assertEqual(_sum_field_bits(fields), 15)
+
+    def test_empty_tuple_returns_zero(self) -> None:
+        """Empty field tuple returns 0."""
+        self.assertEqual(_sum_field_bits(()), 0)
+
+    def test_unresolved_type_reference_raises(self) -> None:
+        """A field with unresolved TypeReference (uper_bit_width=None) must raise.
+
+        _sum_field_bits must reject fields whose bit-width has not been
+        resolved, rather than silently treating None as 0 and producing
+        an incorrect undercount.
+        """
+        fields = (
+            make_integer_field("a", "TypeA", 0, 127),  # 7 bits
+            SequenceField(
+                name="b",
+                type_name="UnresolvedType",
+                type=TypeReference(name="UnresolvedType"),
+                is_optional=False,
+                section_comment="",
+                inline_comment="",
+            ),
+        )
+        with self.assertRaises(ValueError):
+            _sum_field_bits(fields)
 
 
 class TestPluralizeBits(TestCase):
