@@ -99,8 +99,8 @@ class TestSizeFuncGeneration(TestCase):
         code = generate_sequence_size_func("PathPrediction", spec)
 
         self.assertIn("@brief", code)
-        self.assertIn("@param buf", code)
-        self.assertIn("@param out_size_bits", code)
+        self.assertIn("@param[in]  buf", code)
+        self.assertIn("@param[out] out_size_bits", code)
         self.assertIn("@return", code)
 
     def test_non_extensible_returns_empty(self) -> None:

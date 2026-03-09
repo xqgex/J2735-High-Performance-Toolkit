@@ -59,8 +59,6 @@
  *                  bit14  13..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F6]
  *                  bit14  13..7    6..0
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_H
 #define J2735_INTERNAL_DE_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_H
@@ -215,7 +213,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
  *   Formula: (raw15 >> (6 - bit_pos)) & 1
  *
  * @param[in] raw15   Value previously returned by
- * J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE().
+ *                    J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE().
  * @param[in] bit_pos ASN.1 bit position (0-6). Use
  * J2735_INTERNAL_BIT_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_* constants.
  * @return 0 or 1 as uint8_t.

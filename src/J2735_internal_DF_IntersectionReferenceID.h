@@ -78,7 +78,7 @@
 /**
  * @internal
  * @brief Dynamic width of OPTIONAL field 'region'.
- * @param buf Pointer to the IntersectionReferenceID encoding.
+ * @param[in] buf Pointer to the IntersectionReferenceID encoding.
  * @return J2735_BW_ROAD_REGULATOR_ID if present, 0 otherwise.
  */
 #define J2735_INTERNAL_WIDTH_INTERSECTION_REFERENCE_ID_REGION(buf)                                 \
@@ -108,7 +108,7 @@
 /* ============================================================================================== */
 /**
  * @brief Check if OPTIONAL field 'region' (RoadRegulatorID) is present.
- * @param buf Pointer to the IntersectionReferenceID encoding.
+ * @param[in] buf Pointer to the IntersectionReferenceID encoding.
  * @return 1 if present, 0 otherwise.
  */
 #define J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf)                                            \
@@ -119,7 +119,7 @@
 /* ============================================================================================== */
 /**
  * @brief Get 'region' (RoadRegulatorID, unsigned 16 bits).
- * @param buf Pointer to the IntersectionReferenceID encoding.
+ * @param[in] buf Pointer to the IntersectionReferenceID encoding.
  * @return RoadRegulatorID value (uint16_t, range 0..65535).
  * @pre J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf) must be true.
  */
@@ -129,7 +129,7 @@
 
 /**
  * @brief Get 'id' (IntersectionID, unsigned 16 bits).
- * @param buf Pointer to the IntersectionReferenceID encoding.
+ * @param[in] buf Pointer to the IntersectionReferenceID encoding.
  * @return IntersectionID value (uint16_t, range 0..65535).
  */
 #define J2735_INTERSECTION_REFERENCE_ID_GET_ID(buf)                                                \

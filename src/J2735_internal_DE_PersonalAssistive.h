@@ -58,8 +58,6 @@
  *                  bit13  12..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F5]
  *                  bit13  12..6    5..0
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_PERSONALASSISTIVE_H
 #define J2735_INTERNAL_DE_PERSONALASSISTIVE_H
@@ -199,7 +197,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
  *   F0 at bit 5, F1 at bit 4, ..., F5 at bit 0
  *   Formula: (raw14 >> (5 - bit_pos)) & 1
  *
- * @param[in] raw14   Value previously returned by J2735_INTERNAL_RAW_READ_PERSONAL_ASSISTIVE().
+ * @param[in] raw14   Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_PERSONAL_ASSISTIVE().
  * @param[in] bit_pos ASN.1 bit position (0-5). Use J2735_INTERNAL_BIT_PERSONAL_ASSISTIVE_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

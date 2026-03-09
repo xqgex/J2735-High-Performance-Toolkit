@@ -39,7 +39,7 @@
 {%- set typedef_name_upper = typedef_name | screaming_snake -%}
 /**
  * @brief Check if {{ typedef_name }} has extension additions present.
- * @param buf Pointer to the {{ typedef_name }} encoding.
+ * @param[in] buf Pointer to the {{ typedef_name }} encoding.
  * @return 1 if extensions are present, 0 otherwise.
  */
 #define J2735_{{ typedef_name_upper }}_HAS_EXTENSION(buf) J2735_INTERNAL_HAS_EXTENSION(buf)

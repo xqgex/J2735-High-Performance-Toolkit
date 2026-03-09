@@ -38,6 +38,7 @@ Example output (is_extensible=True, read_bits=22, ext_flag_base=13, root_flag_ba
 {%- set read_bits = typedef.constraint.read_bits -%}
 {%- set root_size = typedef.constraint.root_size -%}
 {%- set typedef_name_upper = typedef.name | screaming_snake -%}
+{%- set raw_pad = " " * (8 - ("raw" ~ read_bits)|length) -%}
 {%  if typedef.constraint.is_extensible %}
 {%-   set ext_flag_base = ext_bits - 1 -%}
 {%-   set root_flag_base = read_bits - 2 -%}
@@ -55,7 +56,8 @@ Example output (is_extensible=True, read_bits=22, ext_flag_base=13, root_flag_ba
  *   F0 at bit {{ ext_flag_base }}, F1 at bit {{ ext_flag_base - 1 }}, ..., F{{ ext_bits - 1 }} at bit 0
  *   Formula: (raw{{ read_bits }} >> ({{ ext_flag_base }} - bit_pos)) & 1
  *
- * @param[in] raw{{ read_bits }}   Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
+ * @param[in] raw{{ read_bits }}{{ raw_pad }}Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @param[in] bit_pos ASN.1 bit position (0-{{ ext_bits - 1 }}). Use J2735_INTERNAL_BIT_{{ typedef_name_upper }}_*
  *                    constants.
  * @return 0 or 1 as uint8_t.
@@ -75,7 +77,8 @@ Example output (is_extensible=True, read_bits=22, ext_flag_base=13, root_flag_ba
  * @internal
  * @brief Extract a single flag bit from pre-read {{ read_bits }}-bit raw value.
  *
- * @param[in] raw{{ read_bits }}   Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
+ * @param[in] raw{{ read_bits }}{{ raw_pad }}Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @param[in] bit_pos ASN.1 bit position (0-{{ ext_bits - 1 }}). Use J2735_INTERNAL_BIT_{{ typedef_name_upper }}_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

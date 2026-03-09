@@ -46,8 +46,6 @@
  *
  * 5-bit read layout (left-justified from bit 0):
  *   [F0..F4] (5 flag bits, no extension marker)
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_BRAKEAPPLIEDSTATUS_H
 #define J2735_INTERNAL_DE_BRAKEAPPLIEDSTATUS_H
@@ -130,7 +128,8 @@
  * @internal
  * @brief Extract a single flag bit from pre-read 5-bit raw value.
  *
- * @param[in] raw5   Value previously returned by J2735_INTERNAL_RAW_READ_BRAKE_APPLIED_STATUS().
+ * @param[in] raw5    Value previously returned by
+ *                    J2735_INTERNAL_RAW_READ_BRAKE_APPLIED_STATUS().
  * @param[in] bit_pos ASN.1 bit position (0-4). Use J2735_INTERNAL_BIT_BRAKE_APPLIED_STATUS_*
  *                    constants.
  * @return 0 or 1 as uint8_t.

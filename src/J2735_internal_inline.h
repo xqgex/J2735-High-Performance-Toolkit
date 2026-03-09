@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief TODO
+ * @brief Runtime helper functions for UPER decoding of variable-length structures.
  */
 #ifndef J2735_INTERNAL_INLINE_H
 #define J2735_INTERNAL_INLINE_H
@@ -41,9 +41,9 @@
  *
  * This function returns both the decoded length and the number of bits consumed.
  *
- * @param buf       Pointer to the buffer.
- * @param bit_off   Bit offset where the length determinant starts.
- * @param out_len   Output: the decoded length value.
+ * @param[in]  buf     Pointer to the buffer.
+ * @param[in]  bit_off Bit offset where the length determinant starts.
+ * @param[out] out_len Output: the decoded length value.
  * @return Number of bits consumed by the length determinant (8 or 16), or 0 on error.
  */
 static inline uint8_t j2735_internal_inline_read_length_determinant(uint8_t const *const buf,
@@ -99,9 +99,9 @@ static inline uint8_t j2735_internal_inline_read_length_determinant(uint8_t cons
  *   - Length determinant (8 or 16 bits) = number of octets
  *   - Value bytes (len × 8 bits) = the actual value
  *
- * @param buf       Pointer to the buffer.
- * @param bit_off   Bit offset where the nsnnwn starts.
- * @param out_val   Output: the decoded value.
+ * @param[in]  buf     Pointer to the buffer.
+ * @param[in]  bit_off Bit offset where the nsnnwn starts.
+ * @param[out] out_val Output: the decoded value.
  * @return Number of bits consumed, or 0 on error.
  */
 static inline uint8_t j2735_internal_inline_read_nsnnwn(uint8_t const *const buf,
@@ -153,9 +153,9 @@ static inline uint8_t j2735_internal_inline_read_nsnnwn(uint8_t const *const buf
  *
  * This function calculates the total bit size of all extension data.
  *
- * @param buf            Pointer to the buffer.
- * @param ext_start_off  Bit offset where extension data starts (after root component).
- * @param out_ext_bits   Output: total bits consumed by extensions.
+ * @param[in]  buf           Pointer to the buffer.
+ * @param[in]  ext_start_off Bit offset where extension data starts (after root component).
+ * @param[out] out_ext_bits  Output: total bits consumed by extensions.
  * @return 0 on success, non-zero on parsing error.
  */
 static inline int j2735_internal_inline_skip_extensions(uint8_t const *const buf,

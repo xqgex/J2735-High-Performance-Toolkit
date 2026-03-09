@@ -52,7 +52,7 @@
 {%-   set max_val = field.type.max_value if field.type.max_value is defined else (2**bits - 1) -%}
 /**
  * @brief Get '{{ field.name }}' ({{ field.type_name }}, {{ signedness }} {{ bits }} bits).
- * @param buf Pointer to the {{ typedef_name }} encoding.
+ * @param[in] buf Pointer to the {{ typedef_name }} encoding.
  * @return {{ field.type_name }} value ({{ return_type }}, range {{ min_val }}..{{ max_val }}).
 {%    if field.is_optional %}
  * @pre J2735_{{ typedef_name_upper }}_HAS_{{ field_name }}(buf) must be true.
@@ -65,6 +65,6 @@
 #define J2735_{{ typedef_name_upper }}_GET_{{ field_name }}(buf) \
   (({{ return_type }})J2735_READ_BITS((buf), J2735_INTERNAL_OFF_{{ typedef_name_upper }}_{{ field_name }}(buf), J2735_BW_{{ field_type_name }}))
 {%-   endif -%}
-{{ "" }}{# Intentionally two blank lines #}
-{{ "" }}{# Intentionally two blank lines #}
+{{ "" }}
+{{ "" }}
 {%  endfor -%}

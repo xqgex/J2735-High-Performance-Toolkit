@@ -277,7 +277,10 @@ class BitStringConstraint(UPERConstraint):
 
     @property
     def ext_bits(self) -> int:
-        """TODO
+        """Return the number of flag bits in the extended encoding.
+
+        Returns:
+            extension_size if set, otherwise root_size.
 
         Examples:
             >>> c = BitStringConstraint(

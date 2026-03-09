@@ -58,8 +58,6 @@
  *                  bit13  12..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F5]
  *                  bit13  12..6    5..0
- *
- * @todo Update the Doxygen to indicate [in] and [out] parameters
  */
 #ifndef J2735_INTERNAL_DE_PUBLICSAFETYANDROADWORKERACTIVITY_H
 #define J2735_INTERNAL_DE_PUBLICSAFETYANDROADWORKERACTIVITY_H
@@ -210,7 +208,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
  *   Formula: (raw14 >> (5 - bit_pos)) & 1
  *
  * @param[in] raw14   Value previously returned by
- * J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY().
+ *                    J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY().
  * @param[in] bit_pos ASN.1 bit position (0-5). Use
  * J2735_INTERNAL_BIT_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_* constants.
  * @return 0 or 1 as uint8_t.

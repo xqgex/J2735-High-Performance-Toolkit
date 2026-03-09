@@ -103,7 +103,7 @@ typedef struct j2735_aligned_u64 j2735_aligned_u64_t;
  * safe unaligned access without memcpy. This is the core design pattern and cannot be avoided while
  * maintaining zero-copy performance.
  *
- * @param addr Base pointer (uint8_t*)
+ * @param[in] addr Base pointer (uint8_t*)
  * @warning Caller must ensure at least 8 bytes are readable from addr.
  *          Buffers should include +7 bytes of padding beyond the last accessed field.
  */
@@ -117,9 +117,9 @@ typedef struct j2735_aligned_u64 j2735_aligned_u64_t;
  * 2. J2735_INTERNAL_BSWAP64: Flips bytes to Host Order (Big-Endian to Little-Endian conversion).
  * 3. Shifts: Isolates the specific bits requested.
  *
- * @param b  Base pointer (uint8_t*)
- * @param bo Bit Offset (integer)
- * @param n  Number of bits to extract (1 <= n <= 56).
+ * @param[in] b  Base pointer (uint8_t*)
+ * @param[in] bo Bit Offset (integer)
+ * @param[in] n  Number of bits to extract (1 <= n <= 56).
  * @pre Caller must ensure (bo + n) does not exceed buffer bounds (including +7 byte padding).
  * @warning For n > 56, bits may be truncated when bo is not byte-aligned.
  */
@@ -146,9 +146,9 @@ typedef struct j2735_aligned_u64 j2735_aligned_u64_t;
  * 2. If sign bit is set (negative): OR with `~0ULL << n` to fill upper bits with 1s
  * 3. If sign bit is clear (positive): return value unchanged
  *
- * @param val  The unsigned value extracted by J2735_READ_BITS.
- * @param n    Number of bits in the original field (1 <= n <= 64).
- * @param type The signed target type (e.g., int32_t).
+ * @param[in] val  The unsigned value extracted by J2735_READ_BITS.
+ * @param[in] n    Number of bits in the original field (1 <= n <= 64).
+ * @param[in] type The signed target type (e.g., int32_t).
  * @return The sign-extended value as the specified signed type.
  * @pre n must not exceed sizeof(type) * 8.
  * @note For a 31-bit Latitude, if bit 30 is set, upper bits are filled with 1s.
@@ -186,7 +186,7 @@ typedef struct j2735_aligned_u64 j2735_aligned_u64_t;
  * @note This counts only the optional bitmap, NOT the extension bit.
  *       For total prefix bits, use J2735_INTERNAL_PREFIX_BITS_<TYPE>.
  *
- * @param n Number of OPTIONAL fields in the SEQUENCE.
+ * @param[in] n Number of OPTIONAL fields in the SEQUENCE.
  * @return Number of optional bitmap bits (equals n).
  *
  * Example: IntersectionReferenceID has 1 OPTIONAL field -> 1 bitmap bit.
@@ -200,11 +200,11 @@ typedef struct j2735_aligned_u64 j2735_aligned_u64_t;
  * The optional bitmap ("preamble") is stored after the extension bit (if any).
  * Bit 0 (MSB of bitmap) = first OPTIONAL field, bit 1 = second, etc.
  *
- * @param buf        Pointer to the start of the SEQUENCE encoding (uint8_t*).
- * @param opt_offset Bit offset where the optional bitmap starts:
- *                   - 0 for non-extensible SEQUENCEs
- *                   - 1 for extensible SEQUENCEs (after extension bit)
- * @param field_idx  0-based index of the OPTIONAL field in the bitmap.
+ * @param[in] buf        Pointer to the start of the SEQUENCE encoding (uint8_t*).
+ * @param[in] opt_offset Bit offset where the optional bitmap starts:
+ *                       - 0 for non-extensible SEQUENCEs
+ *                       - 1 for extensible SEQUENCEs (after extension bit)
+ * @param[in] field_idx  0-based index of the OPTIONAL field in the bitmap.
  * @return 1 if field is present, 0 otherwise.
  *
  * Example for IntersectionReferenceID (non-extensible, 1 OPTIONAL):
@@ -220,7 +220,7 @@ typedef struct j2735_aligned_u64 j2735_aligned_u64_t;
  * Per X.691 §21.5, the extension bit is always at bit offset 0 (first bit of the encoding).
  * It is a single bit: 0 = no extensions present, 1 = extensions present.
  *
- * @param buf Pointer to the start of the SEQUENCE encoding.
+ * @param[in] buf Pointer to the start of the SEQUENCE encoding.
  * @return 1 if extensions are present, 0 otherwise.
  */
 #define J2735_INTERNAL_HAS_EXTENSION(buf)                                                          \
