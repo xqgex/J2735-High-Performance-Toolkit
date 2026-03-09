@@ -466,13 +466,17 @@ jobs:
               c.body.includes(prefix) && !c.body.includes(marker)
             );
             for (const old of stale) {
-              await github.graphql(`
-                mutation($id: ID!) {
-                  minimizeComment(input: {subjectId: $id, classifier: OUTDATED}) {
-                    minimizedComment { isMinimized }
+              try {
+                await github.graphql(`
+                  mutation($id: ID!) {
+                    minimizeComment(input: {subjectId: $id, classifier: OUTDATED}) {
+                      minimizedComment { isMinimized }
+                    }
                   }
-                }
-              `, { id: old.node_id });
+                `, { id: old.node_id });
+              } catch (error) {
+                console.warn(`Failed to minimize stale comment ${old.id}:`, error);
+              }
             }
 
             if (existing) {
