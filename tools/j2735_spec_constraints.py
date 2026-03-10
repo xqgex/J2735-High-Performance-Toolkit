@@ -53,6 +53,12 @@ _NonNegativeInt = Annotated[int, "Value must be >= 0"]
 
 _BITS_PER_BYTE: Final[int] = 8  # 8 bits per byte/octet in OCTET STRING
 
+# UPER encoding overhead constants (ITU-T X.691)
+# These mirror the C constants J2735_INTERNAL_EXTENSION_MARKER_BITS and
+# J2735_INTERNAL_NSNNWN_SMALL_BITS defined in J2735_internal_constants.h.
+_UPER_EXTENSION_MARKER_BITS: Final[int] = 1  # Extension presence bit (§11.9)
+_UPER_NSNNWN_SMALL_BITS: Final[int] = 7  # Normally-small-non-negative-whole-number field (§11.6)
+
 # J2735-specific constants
 # In J2735 CHOICE types, "regional" fields contain SEQUENCE OF RegionalExtension
 # which are variable-length and should be excluded from bit-width calculations
@@ -303,7 +309,8 @@ class BitStringConstraint(UPERConstraint):
         """Return total bits to read for single-read optimization.
 
         For non-extensible BIT STRING, returns the root size.
-        For extensible BIT STRING, returns 1 (ext marker) + 7 (nsnnwn) + ext_bits.
+        For extensible BIT STRING, returns
+        _UPER_EXTENSION_MARKER_BITS + _UPER_NSNNWN_SMALL_BITS + ext_bits.
 
         This value is used by code generators to read all possible bits
         in a single J2735_READ_BITS call.
@@ -326,7 +333,7 @@ class BitStringConstraint(UPERConstraint):
             22
         """
         if self.is_extensible:
-            return 1 + 7 + self.ext_bits
+            return _UPER_EXTENSION_MARKER_BITS + _UPER_NSNNWN_SMALL_BITS + self.ext_bits
         return self.root_size
 
     @classmethod

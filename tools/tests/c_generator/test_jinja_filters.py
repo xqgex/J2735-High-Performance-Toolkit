@@ -31,6 +31,7 @@ from tools.j2735_c_generator_jinja import (
     filter_screaming_snake,
     filter_snake_case,
 )
+from tools.j2735_spec_constraints import SequenceField, TypeReference
 from tools.tests.conftest import (
     make_bitstring_field,
     make_integer_field,
@@ -147,6 +148,18 @@ class TestIsSigned(TestCase):
         field = make_bitstring_field("flags", "Flags", 8)
         self.assertFalse(filter_is_signed(field))
 
+    def test_unresolved_type_reference_is_unsigned(self) -> None:
+        """Unresolved TypeReference has no min_value and returns False."""
+        field = SequenceField(
+            name="x",
+            type_name="Unknown",
+            type=TypeReference(name="Unknown"),
+            is_optional=False,
+            section_comment="",
+            inline_comment="",
+        )
+        self.assertFalse(filter_is_signed(field))
+
 
 # =============================================================================
 # Tests — filter_format_range()
@@ -179,4 +192,16 @@ class TestFormatRange(TestCase):
     def test_bitstring_returns_empty(self) -> None:
         """BIT STRING field has no range → returns empty string."""
         field = make_bitstring_field("flags", "Flags", 8)
+        self.assertEqual(filter_format_range(field), "")
+
+    def test_unresolved_type_reference_returns_empty(self) -> None:
+        """Unresolved TypeReference has no range and returns empty string."""
+        field = SequenceField(
+            name="x",
+            type_name="Unknown",
+            type=TypeReference(name="Unknown"),
+            is_optional=False,
+            section_comment="",
+            inline_comment="",
+        )
         self.assertEqual(filter_format_range(field), "")

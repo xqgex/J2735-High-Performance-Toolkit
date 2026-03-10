@@ -20,12 +20,19 @@ J2735 Jinja2 Template Utilities.
 Provides Jinja2 environment setup and template loading for C code generation.
 """
 
+from functools import lru_cache
 from pathlib import Path
 from re import sub
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template, select_autoescape
+from jinja2 import (
+    Environment,
+    FileSystemLoader,
+    StrictUndefined,
+    Template,
+    select_autoescape,
+)
 
-from .j2735_spec_constraints import SequenceField
+from .j2735_spec_constraints import IntegerConstraint, SequenceField
 
 # =============================================================================
 # Constants
@@ -128,11 +135,8 @@ def filter_format_range(field: SequenceField) -> str:
         >>> filter_format_range(f)
         '-900000000..900000001'
     """
-    if hasattr(field.type, "min_value") and hasattr(field.type, "max_value"):
-        min_val = getattr(field.type, "min_value", None)
-        max_val = getattr(field.type, "max_value", None)
-        if min_val is not None and max_val is not None:
-            return f"{min_val}..{max_val}"
+    if isinstance(field.type, IntegerConstraint):
+        return f"{field.type.min_value}..{field.type.max_value}"
     return ""
 
 
@@ -157,9 +161,8 @@ def filter_is_signed(field: SequenceField) -> bool:
         >>> filter_is_signed(f)
         True
     """
-    if hasattr(field.type, "min_value"):
-        min_val = getattr(field.type, "min_value", None)
-        return min_val is not None and min_val < 0
+    if isinstance(field.type, IntegerConstraint):
+        return field.type.min_value < 0
     return False
 
 
@@ -241,8 +244,13 @@ def filter_snake_case(name: str) -> str:
 # =============================================================================
 
 
+@lru_cache(maxsize=1)
 def create_jinja_env() -> Environment:
-    """Create and configure the Jinja2 environment."""
+    """Create and configure the Jinja2 environment.
+
+    The result is cached — the Environment and its filters are never mutated
+    after construction, so a single shared instance is safe.
+    """
     env = Environment(
         autoescape=select_autoescape(default=False),
         keep_trailing_newline=True,
