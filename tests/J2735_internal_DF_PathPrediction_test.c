@@ -140,14 +140,14 @@ void test_path_prediction_no_extension(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_path_prediction_with_extension(void) {
   static const uint8_t payload[] = {
-      0x80,                               /* ext(1) + radiusOfCurve[15:9] */
-      0xFA,                               /* radiusOfCurve[8:1] */
-      0x19,                               /* radiusOfCurve[0] + conf[7:1] */
-      0x00,                               /* conf[0] + nsnnwn[6:0] */
-      0x80,                               /* bitmap(1) + lenDet[7:1] */
-      0xD5,                               /* lenDet[0] + content[7:1] */
-      0x80,                               /* content[0] + padding */
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 8-byte alignment padding for J2735_READ_BITS */
+      0x80,                                          /* ext(1) + radiusOfCurve[15:9] */
+      0xFA,                                          /* radiusOfCurve[8:1] */
+      0x19,                                          /* radiusOfCurve[0] + conf[7:1] */
+      0x00,                                          /* conf[0] + nsnnwn[6:0] */
+      0x80,                                          /* bitmap(1) + lenDet[7:1] */
+      0xD5,                                          /* lenDet[0] + content[7:1] */
+      0x80,                                          /* content[0] + padding */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
   /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */

@@ -40,9 +40,6 @@ void test_vehicle_event_flags_individual_non_extended_flags_0_to_4(void);
 void test_vehicle_event_flags_individual_non_extended_flags_5_to_9(void);
 void test_vehicle_event_flags_individual_non_extended_flags_10_to_13(void);
 
-/* Individual flag accessor tests (extended) */
-void test_vehicle_event_flags_individual_extended_all_on(void);
-
 /* SIZE macro tests */
 void test_vehicle_event_flags_size_non_extended(void);
 void test_vehicle_event_flags_size_extended(void);
@@ -67,6 +64,9 @@ void test_vehicle_event_flags_single_bit_0_hazard_lights(void);
 void test_vehicle_event_flags_single_bit_12_airbag(void);
 void test_vehicle_event_flags_single_bit_7_hard_braking(void);
 void test_vehicle_event_flags_extended_single_hazard_lights(void);
+
+/* Misaligned buffer pointer test */
+void test_vehicle_event_flags_misaligned_access(void);
 
 void run_testsuite_vehicle_event_flags(void);
 

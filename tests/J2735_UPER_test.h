@@ -39,6 +39,7 @@ void test_inline_read_length_determinant_long_form_128(void);
 void test_inline_read_length_determinant_long_form_max(void);
 void test_inline_read_length_determinant_fragmented_error(void);
 void test_inline_read_length_determinant_nonzero_bit_offset(void);
+void test_inline_read_length_determinant_misaligned_access(void);
 
 /* j2735_internal_inline_read_nsnnwn() tests */
 void test_inline_read_nsnnwn_small_form_min(void);
@@ -53,6 +54,7 @@ void test_inline_read_nsnnwn_large_form_4_bytes(void);
 void test_inline_read_nsnnwn_large_form_5_bytes_error(void);
 void test_inline_read_nsnnwn_fragmented_error(void);
 void test_inline_read_nsnnwn_nonzero_bit_offset(void);
+void test_inline_read_nsnnwn_misaligned_access(void);
 
 /* j2735_internal_inline_skip_extensions() tests */
 void test_inline_skip_extensions_one_slot_none_present(void);
@@ -65,6 +67,7 @@ void test_inline_skip_extensions_nsnnwn_error(void);
 void test_inline_skip_extensions_length_error(void);
 void test_inline_skip_extensions_nonzero_offset(void);
 void test_inline_skip_extensions_too_many_extensions(void);
+void test_inline_skip_extensions_misaligned_access(void);
 
 /**
  * @brief Run all UPER primitive tests.

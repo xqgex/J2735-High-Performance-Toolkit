@@ -1205,6 +1205,56 @@ void test_vehicle_event_flags_extended_single_hazard_lights(void) {
                                   "bit 13: eventJackKnife should be OFF");
 }
 
+/**
+ * @brief Test VehicleEventFlags with deliberately misaligned buffer pointer.
+ *
+ * @par Test Vector:
+ * - Extended: NO (root form)
+ * - Flags: 0x1FFF (all 13 root bits ON)
+ *
+ * @par Wire Format (14 bits total):
+ * | Offset (bits) | Width | Field   | Value           |
+ * |---------------|-------|---------|-----------------|
+ * | 0             | 1     | ext_bit | 0               |
+ * | 1             | 13    | flags   | 1111111111111   |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x7F | 01111111 | ext(0) + flags[12:6]=1111111   |
+ * | 1    | 0xFC | 11111100 | flags[5:0]=111111 + pad(2)     |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_vehicle_event_flags_misaligned_access(void) {
+  static const uint8_t payload[] = {
+      0x00,                                          /* junk byte for misalignment */
+      0x7F,                                          /* ext(0) + flags[12:6] = 01111111 */
+      0xFC,                                          /* flags[5:0] + padding = 11111100 */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+  const uint8_t *unaligned_ptr = &payload[1];
+
+  /* Verify non-extended */
+  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Misaligned: extension bit should be 0");
+
+  /* Verify all 13 root flags ON */
+  TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x1FFFU, J2735_VEHICLE_EVENT_FLAGS_GET(unaligned_ptr),
+                                  "Misaligned: all 13 root flags should be ON (0x1FFF)");
+
+  /* Verify size */
+  TEST_ASSERT_EQUAL_UINT32_MESSAGE(14U, J2735_VEHICLE_EVENT_FLAGS_SIZE(unaligned_ptr),
+                                   "Misaligned: non-extended form should be 14 bits");
+
+  /* Verify individual flag accessors on unaligned data */
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(1U,
+                                  J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_HAZARD_LIGHTS(unaligned_ptr),
+                                  "Misaligned: eventHazardLights should be ON");
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(
+      1U, J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_AIR_BAG_DEPLOYMENT(unaligned_ptr),
+      "Misaligned: eventAirBagDeployment should be ON");
+}
+
 /* cppcheck-suppress-end misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 /**
@@ -1276,4 +1326,10 @@ void run_testsuite_vehicle_event_flags(void) {
   RUN_TEST(test_vehicle_event_flags_single_bit_12_airbag);
   RUN_TEST(test_vehicle_event_flags_single_bit_7_hard_braking);
   RUN_TEST(test_vehicle_event_flags_extended_single_hazard_lights);
+  /**
+   * Misaligned buffer pointer test
+   *
+   * - Misaligned access: Forces &payload[1] to verify alignment safety
+   */
+  RUN_TEST(test_vehicle_event_flags_misaligned_access);
 }
