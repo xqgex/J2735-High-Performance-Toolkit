@@ -79,10 +79,10 @@ class TestSizeGenerator(SpecLoadingTestBase):
                     f"(non-extensible types have no extension marker on wire)",
                 )
 
-    def test_non_extensible_size_evaluates_to_root_size(self) -> None:
-        """Non-extensible SIZE #define should expand to just ROOT_SIZE.
+    def test_non_extensible_size_evaluates_to_bw_constant(self) -> None:
+        """Non-extensible SIZE #define should expand to J2735_BW_*.
 
-        The #define line for SIZE must reference ROOT_SIZE and nothing else.
+        The #define line for SIZE must reference J2735_BW_* and nothing else.
         """
         for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
@@ -99,9 +99,9 @@ class TestSizeGenerator(SpecLoadingTestBase):
                 )
                 for line in size_defines:
                     self.assertIn(
-                        f"J2735_INTERNAL_ROOT_SIZE_{prefix}",
+                        f"J2735_BW_{prefix}",
                         line,
-                        f"{type_name} SIZE #define should reference ROOT_SIZE: {line}",
+                        f"{type_name} SIZE #define should reference J2735_BW_*: {line}",
                     )
                     self.assertNotIn(
                         "EXTENSION_MARKER_BITS",

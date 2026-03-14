@@ -54,15 +54,6 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of TransitStatus in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS 6U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
@@ -95,7 +86,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_TRANSIT_STATUS(buf)                                                \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS)
+  J2735_READ_BITS((buf), 0U, J2735_BW_TRANSIT_STATUS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -162,7 +153,7 @@
  * @param[in] buf Pointer to the start of the TransitStatus UPER encoding (const uint8_t*).
  * @return Always 6U.
  */
-#define J2735_TRANSIT_STATUS_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS)
+#define J2735_TRANSIT_STATUS_SIZE(buf) ((void)(buf), J2735_BW_TRANSIT_STATUS)
 
 /**
  * @brief Get all TransitStatus as a single uint8_t value.

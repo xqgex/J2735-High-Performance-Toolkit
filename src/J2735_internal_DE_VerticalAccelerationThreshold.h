@@ -53,15 +53,6 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of VerticalAccelerationThreshold in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_VERTICAL_ACCELERATION_THRESHOLD 5U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
@@ -95,7 +86,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_VERTICAL_ACCELERATION_THRESHOLD(buf)                               \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_VERTICAL_ACCELERATION_THRESHOLD)
+  J2735_READ_BITS((buf), 0U, J2735_BW_VERTICAL_ACCELERATION_THRESHOLD)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -168,7 +159,7 @@
  * @return Always 5U.
  */
 #define J2735_VERTICAL_ACCELERATION_THRESHOLD_SIZE(buf)                                            \
-  ((void)(buf), J2735_INTERNAL_ROOT_SIZE_VERTICAL_ACCELERATION_THRESHOLD)
+  ((void)(buf), J2735_BW_VERTICAL_ACCELERATION_THRESHOLD)
 
 /**
  * @brief Get all VerticalAccelerationThreshold as a single uint8_t value.

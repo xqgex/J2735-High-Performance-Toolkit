@@ -110,12 +110,12 @@ Template Context (from generator):
 #define J2735_INTERNAL_DE_{{ typedef_name | upper }}_H
 
 #include "J2735_internal_common.h"
+{%  if is_extensible %}
 
 /* ============================================================================================== */
 /*  Constants                                                                                     */
 /* ============================================================================================== */
 {%  include 'bitstring/bitstring_internal_root_size.j2' %}
-{%  if is_extensible %}
 
 {%    include 'bitstring/bitstring_internal_ext_size.j2' %}
 

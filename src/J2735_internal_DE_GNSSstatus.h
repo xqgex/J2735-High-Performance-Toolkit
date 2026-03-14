@@ -56,15 +56,6 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of GNSSstatus in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_GNSS_STATUS 8U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
@@ -98,8 +89,7 @@
  * @return 8-bit value as uint64_t with wire bits left-justified.
  * @note Internal use only. Not part of the public API.
  */
-#define J2735_INTERNAL_RAW_READ_GNSS_STATUS(buf)                                                   \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_GNSS_STATUS)
+#define J2735_INTERNAL_RAW_READ_GNSS_STATUS(buf) J2735_READ_BITS((buf), 0U, J2735_BW_GNSS_STATUS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -166,7 +156,7 @@
  * @param[in] buf Pointer to the start of the GNSSstatus UPER encoding (const uint8_t*).
  * @return Always 8U.
  */
-#define J2735_GNSS_STATUS_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_GNSS_STATUS)
+#define J2735_GNSS_STATUS_SIZE(buf) ((void)(buf), J2735_BW_GNSS_STATUS)
 
 /**
  * @brief Get all GNSSstatus as a single uint8_t value.

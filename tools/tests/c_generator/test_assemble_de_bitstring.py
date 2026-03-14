@@ -22,7 +22,7 @@ it includes.  Sub-template behaviour is verified in their own test files.
 """
 
 from tools.j2735_c_generator_data_element import generate_data_element
-from tools.tests.conftest import SpecLoadingTestBase
+from tools.tests.conftest import NON_EXTENSIBLE_BITSTRING_TYPES, SpecLoadingTestBase
 
 
 class TestAssembleBitstringWireFormatDocs(SpecLoadingTestBase):
@@ -48,6 +48,43 @@ class TestAssembleBitstringWireFormatDocs(SpecLoadingTestBase):
         code = generate_data_element("VehicleEventFlags", self.spec)
         self.assertIn("Non-extended:", code)
         self.assertIn("Extended:", code)
+
+    def test_non_extensible_no_constants_banner(self) -> None:
+        """Non-extensible output must not emit an empty Constants section."""
+        for type_name, _prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
+            with self.subTest(type_name=type_name):
+                code = generate_data_element(type_name, self.spec)
+                self.assertNotIn(
+                    "/*  Constants",
+                    code,
+                    f"{type_name} should not have a Constants banner",
+                )
+
+    def test_extensible_has_constants_banner(self) -> None:
+        """Extensible output must include the Constants section."""
+        code = generate_data_element("VehicleEventFlags", self.spec)
+        self.assertIn("/*  Constants", code)
+
+    def test_non_extensible_assembled_uses_bw_not_root_size(self) -> None:
+        """Non-extensible assembled output must use J2735_BW_*, not ROOT_SIZE."""
+        for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
+            with self.subTest(type_name=type_name):
+                code = generate_data_element(type_name, self.spec)
+                self.assertNotIn(
+                    f"J2735_INTERNAL_ROOT_SIZE_{prefix}",
+                    code,
+                    f"{type_name} assembled output should not contain ROOT_SIZE",
+                )
+                self.assertIn(
+                    f"J2735_BW_{prefix}",
+                    code,
+                    f"{type_name} assembled output should reference J2735_BW_*",
+                )
+
+    def test_extensible_assembled_uses_root_size(self) -> None:
+        """Extensible assembled output must define ROOT_SIZE."""
+        code = generate_data_element("VehicleEventFlags", self.spec)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS", code)
 
     def test_extensible_wire_format_doc_correct_bit_counts(self) -> None:
         """Extensible wire format shows correct bit counts for both forms."""

@@ -50,15 +50,6 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of LaneDirection in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION 2U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
@@ -87,7 +78,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_LANE_DIRECTION(buf)                                                \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION)
+  J2735_READ_BITS((buf), 0U, J2735_BW_LANE_DIRECTION)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -154,7 +145,7 @@
  * @param[in] buf Pointer to the start of the LaneDirection UPER encoding (const uint8_t*).
  * @return Always 2U.
  */
-#define J2735_LANE_DIRECTION_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION)
+#define J2735_LANE_DIRECTION_SIZE(buf) ((void)(buf), J2735_BW_LANE_DIRECTION)
 
 /**
  * @brief Get all LaneDirection as a single uint8_t value.

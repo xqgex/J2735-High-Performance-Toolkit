@@ -62,5 +62,5 @@ Example output (is_extensible=True, read_bits=22):
  * @param[in] buf Pointer to the start of the {{ typedef_name }} UPER encoding (const uint8_t*).
  * @return Always {{ root_size }}U.
  */
-#define J2735_{{ typedef_name_upper }}_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }})
+#define J2735_{{ typedef_name_upper }}_SIZE(buf) ((void)(buf), J2735_BW_{{ typedef_name_upper }})
 {%  endif %}

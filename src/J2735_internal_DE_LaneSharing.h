@@ -58,15 +58,6 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of LaneSharing in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_LANE_SHARING 10U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
@@ -102,8 +93,7 @@
  * @return 10-bit value as uint64_t with wire bits left-justified.
  * @note Internal use only. Not part of the public API.
  */
-#define J2735_INTERNAL_RAW_READ_LANE_SHARING(buf)                                                  \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_LANE_SHARING)
+#define J2735_INTERNAL_RAW_READ_LANE_SHARING(buf) J2735_READ_BITS((buf), 0U, J2735_BW_LANE_SHARING)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -170,7 +160,7 @@
  * @param[in] buf Pointer to the start of the LaneSharing UPER encoding (const uint8_t*).
  * @return Always 10U.
  */
-#define J2735_LANE_SHARING_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_LANE_SHARING)
+#define J2735_LANE_SHARING_SIZE(buf) ((void)(buf), J2735_BW_LANE_SHARING)
 
 /**
  * @brief Get all LaneSharing as a single uint16_t value.
