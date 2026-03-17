@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 VehicleEventFlags Definition and Access Macros.
  *
+ * @code
  * VehicleEventFlags ::= BIT STRING {
  *     eventHazardLights (0),
  *     eventStopLineViolation (1),
@@ -37,25 +38,30 @@
  *     eventAirBagDeployment (12),
  *     eventJackKnife (13)
  * } (SIZE (13, ..., 14))
+ * @endcode
  *
  * Extensible BIT STRING with root size 13 and known extension size 14.
  *
- * Wire Format (non-extended, 14 bits total):
+ * @par Wire Format (non-extended, 14 bits total):
+ * @code
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-13                                            │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..12] (13 bits)                               │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Wire Format (extended, 22 bits total):
+ * @par Wire Format (extended, 22 bits total):
+ * @code
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-21                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=14 (7 bits) │ flags[0..13] (14 bits)          │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 22 bits ≤ 56-bit READ_BITS limit.
  * We read all 22 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 21 (MSB of 22-bit value)
@@ -66,6 +72,7 @@
  *                  bit21  20..8     7..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F13]
  *                  bit21  20..14    13..0
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_H
 #define J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_H

@@ -92,6 +92,9 @@
  */
 #define J2735_INTERNAL_CHOICE_INDEX_BITS_APPROACH_OR_LANE 1U
 
+_Static_assert(J2735_INTERNAL_CHOICE_INDEX_BITS_APPROACH_OR_LANE == J2735_BW_APPROACH_OR_LANE,
+               "CHOICE index bits must match J2735_BW_APPROACH_OR_LANE");
+
 /* ============================================================================================== */
 /*  INTERNAL: Structure Metadata                                                                  */
 /* ============================================================================================== */

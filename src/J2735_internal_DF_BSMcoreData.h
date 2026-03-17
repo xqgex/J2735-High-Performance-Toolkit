@@ -184,6 +184,10 @@
 #define J2735_INTERNAL_OFF_BSM_CORE_DATA_SIZE(buf)                                                 \
   (J2735_INTERNAL_OFF_BSM_CORE_DATA_BRAKES(buf) + J2735_BW_BRAKE_SYSTEM_STATUS) /* 268 */
 
+_Static_assert((J2735_INTERNAL_OFF_BSM_CORE_DATA_SIZE(0) + J2735_BW_VEHICLE_SIZE) ==
+                   J2735_BW_BSM_CORE_DATA,
+               "BSMcoreData offset chain must sum to J2735_BW_BSM_CORE_DATA");
+
 /* ============================================================================================== */
 /*  PUBLIC API: Field Getters                                                                     */
 /* ============================================================================================== */

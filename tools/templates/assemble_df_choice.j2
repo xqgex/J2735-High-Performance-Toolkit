@@ -89,6 +89,9 @@
 /* ============================================================================================== */
 {% include 'choice/choice_internal_choice_index_bits.j2' %}
 
+_Static_assert(J2735_INTERNAL_CHOICE_INDEX_BITS_{{ typedef_name_upper }} == J2735_BW_{{ typedef_name_upper }},
+               "CHOICE index bits must match J2735_BW_{{ typedef_name_upper }}");
+
 /* ============================================================================================== */
 /*  INTERNAL: Structure Metadata                                                                  */
 /* ============================================================================================== */

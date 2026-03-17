@@ -21,28 +21,33 @@
  * @author Yogev Neumann
  * @brief J2735 LaneDirection Definition and Access Macros.
  *
+ * @code
  * LaneDirection ::= BIT STRING {
  *     ingressPath (0),
  *     egressPath (1)
  * } (SIZE (2))
+ * @endcode
  *
  * Fixed BIT STRING with size 2.
  *
- * Wire Format (2 bits total):
+ * @par Wire Format (2 bits total):
+ * @code
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-1                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..1] (2 bits)                                         │
  * └──────────────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 2 bits ≤ 56-bit READ_BITS limit.
  * We read all 2 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-1
  *
  * 2-bit read layout (left-justified from bit 0):
  *   [F0..F1] (2 flag bits, no extension marker)
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_LANEDIRECTION_H
 #define J2735_INTERNAL_DE_LANEDIRECTION_H

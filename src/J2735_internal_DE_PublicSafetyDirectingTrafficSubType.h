@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 PublicSafetyDirectingTrafficSubType Definition and Access Macros.
  *
+ * @code
  * PublicSafetyDirectingTrafficSubType ::= BIT STRING {
  *     unavailable (0),
  *     policeAndTrafficOfficers (1),
@@ -30,25 +31,30 @@
  *     emergencyOrganizationPersonnel (5),
  *     highwayServiceVehiclePersonnel (6)
  * } (SIZE (7, ...))
+ * @endcode
  *
  * Extensible BIT STRING with root size 7 and known extension size 7.
  *
- * Wire Format (non-extended, 8 bits total):
+ * @par Wire Format (non-extended, 8 bits total):
+ * @code
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..6] (7 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Wire Format (extended, 15 bits total):
+ * @par Wire Format (extended, 15 bits total):
+ * @code
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-14                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=7 (7 bits)  │ flags[0..6] (7 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 15 bits ≤ 56-bit READ_BITS limit.
  * We read all 15 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 14 (MSB of 15-bit value)
@@ -59,6 +65,7 @@
  *                  bit14  13..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F6]
  *                  bit14  13..7    6..0
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_H
 #define J2735_INTERNAL_DE_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_H

@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 PersonalAssistive Definition and Access Macros.
  *
+ * @code
  * PersonalAssistive ::= BIT STRING {
  *     unavailable (0),
  *     otherType (1),
@@ -29,25 +30,30 @@
  *     movement (4),
  *     cognition (5)
  * } (SIZE (6, ...))
+ * @endcode
  *
  * Extensible BIT STRING with root size 6 and known extension size 6.
  *
- * Wire Format (non-extended, 7 bits total):
+ * @par Wire Format (non-extended, 7 bits total):
+ * @code
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-6                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..5] (6 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Wire Format (extended, 14 bits total):
+ * @par Wire Format (extended, 14 bits total):
+ * @code
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-13                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=6 (7 bits)  │ flags[0..5] (6 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 14 bits ≤ 56-bit READ_BITS limit.
  * We read all 14 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 13 (MSB of 14-bit value)
@@ -58,6 +64,7 @@
  *                  bit13  12..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F5]
  *                  bit13  12..6    5..0
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_PERSONALASSISTIVE_H
 #define J2735_INTERNAL_DE_PERSONALASSISTIVE_H

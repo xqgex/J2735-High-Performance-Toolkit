@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 LaneSharing Definition and Access Macros.
  *
+ * @code
  * LaneSharing ::= BIT STRING {
  *     overlappingLaneDescriptionProvided (0),
  *     multipleLanesTreatedAsOneLane (1),
@@ -33,24 +34,28 @@
  *     trackedVehicleTraffic (8),
  *     reserved (9)
  * } (SIZE (10))
+ * @endcode
  *
  * Fixed BIT STRING with size 10.
  *
- * Wire Format (10 bits total):
+ * @par Wire Format (10 bits total):
+ * @code
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-9                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..9] (10 bits)                                        │
  * └──────────────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 10 bits ≤ 56-bit READ_BITS limit.
  * We read all 10 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-9
  *
  * 10-bit read layout (left-justified from bit 0):
  *   [F0..F9] (10 flag bits, no extension marker)
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_LANESHARING_H
 #define J2735_INTERNAL_DE_LANESHARING_H

@@ -77,6 +77,10 @@
   (J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION + J2735_BW_RADIUS_OF_CURVATURE +                     \
    J2735_BW_CONFIDENCE) /* 25 bits */
 
+_Static_assert(J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION ==
+                   (J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION + J2735_BW_PATH_PREDICTION),
+               "ROOT_SIZE_BITS must equal prefix + J2735_BW_PATH_PREDICTION");
+
 /* ============================================================================================== */
 /*  INTERNAL: Field Offsets                                                                       */
 /*  (Cumulative bit offset: prev_offset + prev_width)                                             */

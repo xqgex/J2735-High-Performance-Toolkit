@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 TrafficLightOperationStatus Definition and Access Macros.
  *
+ * @code
  * TrafficLightOperationStatus ::= BIT STRING {
  *     manual (0),
  *     flashing (1),
@@ -31,25 +32,30 @@
  *     phase (6),
  *     reserved (7)
  * } (SIZE (8, ...))
+ * @endcode
  *
  * Extensible BIT STRING with root size 8 and known extension size 8.
  *
- * Wire Format (non-extended, 9 bits total):
+ * @par Wire Format (non-extended, 9 bits total):
+ * @code
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-8                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..7] (8 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Wire Format (extended, 16 bits total):
+ * @par Wire Format (extended, 16 bits total):
+ * @code
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-15                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=8 (7 bits)  │ flags[0..7] (8 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 16 bits ≤ 56-bit READ_BITS limit.
  * We read all 16 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 15 (MSB of 16-bit value)
@@ -60,6 +66,7 @@
  *                  bit15  14..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F7]
  *                  bit15  14..8    7..0
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H
 #define J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H

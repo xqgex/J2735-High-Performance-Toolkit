@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 ExteriorLights Definition and Access Macros.
  *
+ * @code
  * ExteriorLights ::= BIT STRING {
  *     lowBeamHeadlightsOn (0),
  *     highBeamHeadlightsOn (1),
@@ -32,25 +33,30 @@
  *     fogLightOn (7),
  *     parkingLightsOn (8)
  * } (SIZE (9, ...))
+ * @endcode
  *
  * Extensible BIT STRING with root size 9 and known extension size 9.
  *
- * Wire Format (non-extended, 10 bits total):
+ * @par Wire Format (non-extended, 10 bits total):
+ * @code
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-9                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..8] (9 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Wire Format (extended, 17 bits total):
+ * @par Wire Format (extended, 17 bits total):
+ * @code
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-16                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=9 (7 bits)  │ flags[0..8] (9 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 17 bits ≤ 56-bit READ_BITS limit.
  * We read all 17 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 16 (MSB of 17-bit value)
@@ -61,6 +67,7 @@
  *                  bit16  15..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F8]
  *                  bit16  15..9    8..0
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_EXTERIORLIGHTS_H
 #define J2735_INTERNAL_DE_EXTERIORLIGHTS_H

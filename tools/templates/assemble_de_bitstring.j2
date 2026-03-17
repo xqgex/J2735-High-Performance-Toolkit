@@ -52,42 +52,50 @@ Template Context (from generator):
  * @author Yogev Neumann
  * @brief J2735 {{ typedef_name }} Definition and Access Macros.
  *
+ * @code
  * {{ typedef_name }} ::= BIT STRING {
 {% for name, index in typedef.constraint.named_bits.items() | sort(attribute='1') %}
  *     {{ name }} ({{ index }}){{ "," if not loop.last else "" }}
 {% endfor %}
  * } (SIZE ({{ root_size }}{{ ", ..." if is_extensible else "" }}{{ ", " ~ ext_bits if is_extensible and ext_bits != root_size else "" }}))
+ * @endcode
  *
 {% if is_extensible %}
  * Extensible BIT STRING with root size {{ root_size }} and known extension size {{ ext_bits }}.
  *
- * Wire Format (non-extended, {{ root_wire_size }} bits total):
+ * @par Wire Format (non-extended, {{ root_wire_size }} bits total):
+ * @code
  * ┌{{ "─" * (COL1 + 2) }}┬{{ "─" * (COL2_NONEXT + 2) }}┐
  * │ {{ "%-*s"|format(COL1, "Bit 0") }} │ {{ "%-*s"|format(COL2_NONEXT, "Bits 1-" ~ root_size) }} │
  * ├{{ "─" * (COL1 + 2) }}┼{{ "─" * (COL2_NONEXT + 2) }}┤
  * │ {{ "%-*s"|format(COL1, "Ext=0") }} │ {{ "%-*s"|format(COL2_NONEXT, "flags[0.." ~ (root_size - 1) ~ "] (" ~ root_size ~ " bits)") }} │
  * └{{ "─" * (COL1 + 2) }}┴{{ "─" * (COL2_NONEXT + 2) }}┘
+ * @endcode
  *
- * Wire Format (extended, {{ read_bits }} bits total):
+ * @par Wire Format (extended, {{ read_bits }} bits total):
+ * @code
  * ┌{{ "─" * (COL1 + 2) }}┬{{ "─" * (COL2_EXT + 2) }}┬{{ "─" * (COL3_EXT + 2) }}┐
  * │ {{ "%-*s"|format(COL1, "Bit 0") }} │ {{ "%-*s"|format(COL2_EXT, "Bits 1-7") }} │ {{ "%-*s"|format(COL3_EXT, "Bits 8-" ~ (read_bits - 1)) }} │
  * ├{{ "─" * (COL1 + 2) }}┼{{ "─" * (COL2_EXT + 2) }}┼{{ "─" * (COL3_EXT + 2) }}┤
  * │ {{ "%-*s"|format(COL1, "Ext=1") }} │ {{ "%-*s"|format(COL2_EXT, "nsnnwn=" ~ ext_bits ~ " (7 bits)") }} │ {{ "%-*s"|format(COL3_EXT, "flags[0.." ~ (ext_bits - 1) ~ "] (" ~ ext_bits ~ " bits)") }} │
  * └{{ "─" * (COL1 + 2) }}┴{{ "─" * (COL2_EXT + 2) }}┴{{ "─" * (COL3_EXT + 2) }}┘
+ * @endcode
 {% else %}
 {%- set COL_FIXED = 60 %}
  * Fixed BIT STRING with size {{ root_size }}.
  *
- * Wire Format ({{ root_wire_size }} bits total):
+ * @par Wire Format ({{ root_wire_size }} bits total):
+ * @code
  * ┌{{ "─" * (COL_FIXED + 2) }}┐
  * │ {{ "%-*s"|format(COL_FIXED, "Bits 0-" ~ (root_size - 1)) }} │
  * ├{{ "─" * (COL_FIXED + 2) }}┤
  * │ {{ "%-*s"|format(COL_FIXED, "flags[0.." ~ (root_size - 1) ~ "] (" ~ root_size ~ " bits)") }} │
  * └{{ "─" * (COL_FIXED + 2) }}┘
+ * @endcode
 {% endif %}
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = {{ read_bits }} bits ≤ 56-bit READ_BITS limit.
  * We read all {{ read_bits }} bits in ONE call, then use bit arithmetic to extract:
 {% if is_extensible %}
@@ -105,6 +113,7 @@ Template Context (from generator):
  * {{ read_bits }}-bit read layout (left-justified from bit 0):
  *   [F0..F{{ root_size - 1 }}] ({{ root_size }} flag bits, no extension marker)
 {% endif %}
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_{{ typedef_name | upper }}_H
 #define J2735_INTERNAL_DE_{{ typedef_name | upper }}_H

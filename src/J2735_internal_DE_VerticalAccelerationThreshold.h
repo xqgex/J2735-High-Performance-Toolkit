@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 VerticalAccelerationThreshold Definition and Access Macros.
  *
+ * @code
  * VerticalAccelerationThreshold ::= BIT STRING {
  *     notEquipped (0),
  *     leftFront (1),
@@ -28,24 +29,28 @@
  *     rightFront (3),
  *     rightRear (4)
  * } (SIZE (5))
+ * @endcode
  *
  * Fixed BIT STRING with size 5.
  *
- * Wire Format (5 bits total):
+ * @par Wire Format (5 bits total):
+ * @code
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-4                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..4] (5 bits)                                         │
  * └──────────────────────────────────────────────────────────────┘
+ * @endcode
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @code
  * Max wire size = 5 bits ≤ 56-bit READ_BITS limit.
  * We read all 5 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-4
  *
  * 5-bit read layout (left-justified from bit 0):
  *   [F0..F4] (5 flag bits, no extension marker)
+ * @endcode
  */
 #ifndef J2735_INTERNAL_DE_VERTICALACCELERATIONTHRESHOLD_H
 #define J2735_INTERNAL_DE_VERTICALACCELERATIONTHRESHOLD_H

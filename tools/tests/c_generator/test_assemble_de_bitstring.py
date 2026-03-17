@@ -86,6 +86,15 @@ class TestAssembleBitstringWireFormatDocs(SpecLoadingTestBase):
         code = generate_data_element("VehicleEventFlags", self.spec)
         self.assertIn("J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS", code)
 
+    def test_wire_format_uses_doxygen_code_blocks(self) -> None:
+        """Wire format diagrams must be wrapped in @par + @code/@endcode."""
+        for type_name, _prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
+            with self.subTest(type_name=type_name):
+                code = generate_data_element(type_name, self.spec)
+                self.assertIn("@par Wire Format", code)
+                self.assertIn("@code", code)
+                self.assertIn("@endcode", code)
+
     def test_extensible_wire_format_doc_correct_bit_counts(self) -> None:
         """Extensible wire format shows correct bit counts for both forms."""
         code = generate_data_element("VehicleEventFlags", self.spec)
