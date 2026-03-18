@@ -24,8 +24,8 @@
  * VerticalAccelerationThreshold is SIZE(5): a fixed BIT STRING with 5 bits.
  */
 
-#ifndef J2735_DE_INTERNAL_VERTICALACCELERATIONTHRESHOLD_TEST_H
-#define J2735_DE_INTERNAL_VERTICALACCELERATIONTHRESHOLD_TEST_H
+#ifndef J2735_INTERNAL_DE_VERTICALACCELERATIONTHRESHOLD_TEST_H
+#define J2735_INTERNAL_DE_VERTICALACCELERATIONTHRESHOLD_TEST_H
 
 /* Core tests */
 void test_vertical_acceleration_threshold_all_zeros(void);
@@ -44,4 +44,4 @@ void test_vertical_acceleration_threshold_misaligned_access(void);
 
 void run_testsuite_vertical_acceleration_threshold(void);
 
-#endif /* J2735_DE_INTERNAL_VERTICALACCELERATIONTHRESHOLD_TEST_H */
+#endif /* J2735_INTERNAL_DE_VERTICALACCELERATIONTHRESHOLD_TEST_H */

@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for PathPrediction.
+ * @brief Tests for PathPrediction extensible SEQUENCE.
  *
  * The data frame PathPrediction is a simple case with an extension field.
  */

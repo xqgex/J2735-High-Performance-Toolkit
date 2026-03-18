@@ -25,8 +25,8 @@
  * with 6-bit root and 6-bit extension (same size).
  */
 
-#ifndef J2735_DE_INTERNAL_PUBLICSAFETYANDROADWORKERACTIVITY_TEST_H
-#define J2735_DE_INTERNAL_PUBLICSAFETYANDROADWORKERACTIVITY_TEST_H
+#ifndef J2735_INTERNAL_DE_PUBLICSAFETYANDROADWORKERACTIVITY_TEST_H
+#define J2735_INTERNAL_DE_PUBLICSAFETYANDROADWORKERACTIVITY_TEST_H
 
 /* Basic form tests */
 void test_public_safety_and_road_worker_activity_non_extended(void);
@@ -55,4 +55,4 @@ void test_public_safety_and_road_worker_activity_misaligned_access(void);
 
 void run_testsuite_public_safety_and_road_worker_activity(void);
 
-#endif /* J2735_DE_INTERNAL_PUBLICSAFETYANDROADWORKERACTIVITY_TEST_H */
+#endif /* J2735_INTERNAL_DE_PUBLICSAFETYANDROADWORKERACTIVITY_TEST_H */

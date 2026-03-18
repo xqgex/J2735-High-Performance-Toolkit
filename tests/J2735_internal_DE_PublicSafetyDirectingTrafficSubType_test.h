@@ -25,8 +25,8 @@
  * with 7-bit root and 7-bit extension (same size).
  */
 
-#ifndef J2735_DE_INTERNAL_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_TEST_H
-#define J2735_DE_INTERNAL_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_TEST_H
+#ifndef J2735_INTERNAL_DE_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_TEST_H
+#define J2735_INTERNAL_DE_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_TEST_H
 
 /* Basic form tests */
 void test_public_safety_directing_traffic_sub_type_non_extended(void);
@@ -55,4 +55,4 @@ void test_public_safety_directing_traffic_sub_type_misaligned_access(void);
 
 void run_testsuite_public_safety_directing_traffic_sub_type(void);
 
-#endif /* J2735_DE_INTERNAL_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_TEST_H */
+#endif /* J2735_INTERNAL_DE_PUBLICSAFETYDIRECTINGTRAFFICSUBTYPE_TEST_H */

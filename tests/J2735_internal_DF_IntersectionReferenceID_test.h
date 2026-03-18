@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for IntersectionReferenceID.
+ * @brief Tests for IntersectionReferenceID non-extensible SEQUENCE.
  *
  * The data frame IntersectionReferenceID is a simple case with an optional fields.
  */

@@ -25,8 +25,8 @@
  * 9-bit root and 9-bit extension (same size).
  */
 
-#ifndef J2735_DE_INTERNAL_PERSONALDEVICEUSAGESTATE_TEST_H
-#define J2735_DE_INTERNAL_PERSONALDEVICEUSAGESTATE_TEST_H
+#ifndef J2735_INTERNAL_DE_PERSONALDEVICEUSAGESTATE_TEST_H
+#define J2735_INTERNAL_DE_PERSONALDEVICEUSAGESTATE_TEST_H
 
 /* Basic form tests */
 void test_personal_device_usage_state_non_extended(void);
@@ -55,4 +55,4 @@ void test_personal_device_usage_state_misaligned_access(void);
 
 void run_testsuite_personal_device_usage_state(void);
 
-#endif /* J2735_DE_INTERNAL_PERSONALDEVICEUSAGESTATE_TEST_H */
+#endif /* J2735_INTERNAL_DE_PERSONALDEVICEUSAGESTATE_TEST_H */

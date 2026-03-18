@@ -24,8 +24,8 @@
  * GNSSstatus is SIZE(8): a fixed BIT STRING with 8 bits.
  */
 
-#ifndef J2735_DE_INTERNAL_GNSSSTATUS_TEST_H
-#define J2735_DE_INTERNAL_GNSSSTATUS_TEST_H
+#ifndef J2735_INTERNAL_DE_GNSSSTATUS_TEST_H
+#define J2735_INTERNAL_DE_GNSSSTATUS_TEST_H
 
 /* Core tests */
 void test_gnss_status_all_zeros(void);
@@ -45,4 +45,4 @@ void test_gnss_status_misaligned_access(void);
 
 void run_testsuite_gnss_status(void);
 
-#endif /* J2735_DE_INTERNAL_GNSSSTATUS_TEST_H */
+#endif /* J2735_INTERNAL_DE_GNSSSTATUS_TEST_H */

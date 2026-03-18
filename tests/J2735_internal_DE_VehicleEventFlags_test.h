@@ -25,8 +25,8 @@
  * 13-bit root and 14-bit extension.
  */
 
-#ifndef J2735_DE_INTERNAL_VEHICLEEVENTFLAGS_TEST_H
-#define J2735_DE_INTERNAL_VEHICLEEVENTFLAGS_TEST_H
+#ifndef J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_TEST_H
+#define J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_TEST_H
 
 /* Basic form tests */
 void test_vehicle_event_flags_non_extended(void);
@@ -70,4 +70,4 @@ void test_vehicle_event_flags_misaligned_access(void);
 
 void run_testsuite_vehicle_event_flags(void);
 
-#endif /* J2735_DE_INTERNAL_VEHICLEEVENTFLAGS_TEST_H */
+#endif /* J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_TEST_H */

@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for IntersectionReferenceID.
+ * @brief Tests for IntersectionReferenceID non-extensible SEQUENCE.
  *
  * The data frame IntersectionReferenceID is a simple case with an optional fields.
  */
@@ -34,9 +34,7 @@
 #include "J2735_internal_DF_IntersectionReferenceID.h"
 #include "J2735_internal_DF_IntersectionReferenceID_test.h"
 
-/* ============================================================================================== */
-/*  Happy Path Tests                                                                              */
-/* ============================================================================================== */
+/* cppcheck-suppress-begin misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 /**
  * @brief Test IntersectionReferenceID with OPTIONAL field ABSENT.
@@ -74,11 +72,9 @@ void test_intersection_reference_id_optional_field_absent(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool region_present = J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(payload);
   TEST_ASSERT_FALSE_MESSAGE(region_present, "Region field should be absent");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t intersection_id = J2735_INTERSECTION_REFERENCE_ID_GET_ID(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x1234U, intersection_id, "id should be 0x1234");
 }
@@ -124,22 +120,15 @@ void test_intersection_reference_id_optional_field_present(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool region_present = J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(payload);
   TEST_ASSERT_TRUE_MESSAGE(region_present, "Region field should be present");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t region = J2735_INTERSECTION_REFERENCE_ID_GET_REGION(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x00FFU, region, "region should be 0x00FF");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t intersection_id = J2735_INTERSECTION_REFERENCE_ID_GET_ID(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x1234U, intersection_id, "id should be 0x1234");
 }
-
-/* ============================================================================================== */
-/*  Boundary Value Tests                                                                          */
-/* ============================================================================================== */
 
 /**
  * @brief Test IntersectionReferenceID with boundary minimum values (all zeros).
@@ -182,15 +171,12 @@ void test_intersection_reference_id_boundary_min(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool region_present = J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(payload);
   TEST_ASSERT_TRUE_MESSAGE(region_present, "Region field should be present");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t region = J2735_INTERSECTION_REFERENCE_ID_GET_REGION(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0U, region, "region should be 0 (minimum)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t intersection_id = J2735_INTERSECTION_REFERENCE_ID_GET_ID(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0U, intersection_id, "id should be 0 (minimum)");
 }
@@ -237,15 +223,12 @@ void test_intersection_reference_id_boundary_max(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool region_present = J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(payload);
   TEST_ASSERT_TRUE_MESSAGE(region_present, "Region field should be present");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t region = J2735_INTERSECTION_REFERENCE_ID_GET_REGION(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xFFFFU, region, "region should be 0xFFFF (maximum)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t intersection_id = J2735_INTERSECTION_REFERENCE_ID_GET_ID(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xFFFFU, intersection_id, "id should be 0xFFFF (maximum)");
 }
@@ -287,18 +270,12 @@ void test_intersection_reference_id_absent_region_max_id(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool region_present = J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(payload);
   TEST_ASSERT_FALSE_MESSAGE(region_present, "Region field should be absent");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t intersection_id = J2735_INTERSECTION_REFERENCE_ID_GET_ID(payload);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xFFFFU, intersection_id, "id should be 0xFFFF (maximum)");
 }
-
-/* ============================================================================================== */
-/*  Misalignment Tests                                                                            */
-/* ============================================================================================== */
 
 /**
  * @brief Test IntersectionReferenceID with misaligned buffer access.
@@ -324,18 +301,17 @@ void test_intersection_reference_id_misaligned_access(void) {
   /* Offset pointer by 1 byte to force misalignment */
   const uint8_t *unaligned_ptr = &payload[1];
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool region_present = J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(unaligned_ptr);
   TEST_ASSERT_TRUE_MESSAGE(region_present, "Region should be present (misaligned)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t region = J2735_INTERSECTION_REFERENCE_ID_GET_REGION(unaligned_ptr);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x00FFU, region, "region should be 0x00FF (misaligned)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t intersection_id = J2735_INTERSECTION_REFERENCE_ID_GET_ID(unaligned_ptr);
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x1234U, intersection_id, "id should be 0x1234 (misaligned)");
 }
+
+/* cppcheck-suppress-end misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 void run_testsuite_intersection_reference_id(void) {
   /* Happy path tests */

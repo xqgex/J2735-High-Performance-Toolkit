@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for PathPrediction.
+ * @brief Tests for PathPrediction extensible SEQUENCE.
  *
  * The data frame PathPrediction is a simple case with an extension field.
  */
@@ -34,9 +34,7 @@
 #include "J2735_internal_DF_PathPrediction.h"
 #include "J2735_internal_DF_PathPrediction_test.h"
 
-/* ============================================================================================== */
-/*  Happy Path Tests                                                                              */
-/* ============================================================================================== */
+/* cppcheck-suppress-begin misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 /**
  * @brief Test PathPrediction with NO extension (extension bit = 0).
@@ -79,15 +77,12 @@ void test_path_prediction_no_extension(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
   TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
   TEST_ASSERT_EQUAL_INT16_MESSAGE(1000, radius, "radiusOfCurve should be 1000");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(100U, conf, "confidence should be 100");
 
@@ -150,15 +145,12 @@ void test_path_prediction_with_extension(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
   TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension should be present");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
   TEST_ASSERT_EQUAL_INT16_MESSAGE(500, radius, "radiusOfCurve should be 500");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(50U, conf, "confidence should be 50");
 
@@ -210,22 +202,15 @@ void test_path_prediction_signed_negative(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
   TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
   TEST_ASSERT_EQUAL_INT16_MESSAGE(-1000, radius, "radiusOfCurve should be -1000");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(150U, conf, "confidence should be 150");
 }
-
-/* ============================================================================================== */
-/*  Boundary Value Tests                                                                          */
-/* ============================================================================================== */
 
 /**
  * @brief Test PathPrediction with minimum radiusOfCurve (-32767).
@@ -268,15 +253,12 @@ void test_path_prediction_radius_boundary_min(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
   TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
   TEST_ASSERT_EQUAL_INT16_MESSAGE(-32767, radius, "radiusOfCurve should be -32767 (min)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, conf, "confidence should be 0 (min)");
 }
@@ -322,15 +304,12 @@ void test_path_prediction_radius_boundary_max(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
   TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
   TEST_ASSERT_EQUAL_INT16_MESSAGE(32767, radius, "radiusOfCurve should be 32767 (max)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(200U, conf, "confidence should be 200 (max valid)");
 }
@@ -376,22 +355,15 @@ void test_path_prediction_radius_zero(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(payload);
   TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(payload);
   TEST_ASSERT_EQUAL_INT16_MESSAGE(0, radius, "radiusOfCurve should be 0 (straight)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(payload);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(100U, conf, "confidence should be 100");
 }
-
-/* ============================================================================================== */
-/*  Misalignment Tests                                                                            */
-/* ============================================================================================== */
 
 /**
  * @brief Test PathPrediction with misaligned buffer access.
@@ -416,18 +388,17 @@ void test_path_prediction_misaligned_access(void) {
   /* Offset pointer by 1 byte to force misalignment */
   const uint8_t *unaligned_ptr = &payload[1];
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   bool has_ext = J2735_PATH_PREDICTION_HAS_EXTENSION(unaligned_ptr);
   TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension should be absent (misaligned)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int16_t radius = J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(unaligned_ptr);
   TEST_ASSERT_EQUAL_INT16_MESSAGE(1000, radius, "radiusOfCurve should be 1000 (misaligned)");
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t conf = J2735_PATH_PREDICTION_GET_CONFIDENCE(unaligned_ptr);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(100U, conf, "confidence should be 100 (misaligned)");
 }
+
+/* cppcheck-suppress-end misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 void run_testsuite_path_prediction(void) {
   /* Happy path tests */

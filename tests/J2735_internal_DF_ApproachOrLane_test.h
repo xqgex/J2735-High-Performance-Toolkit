@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for ApproachOrLane CHOICE type.
+ * @brief Tests for ApproachOrLane CHOICE type.
  *
  * ApproachOrLane is a non-extensible CHOICE with 2 alternatives.
  * This validates CHOICE index reading and alternative value extraction.

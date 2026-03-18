@@ -24,8 +24,8 @@
  * AllowedManeuvers is SIZE(12): a fixed BIT STRING with 12 bits.
  */
 
-#ifndef J2735_DE_INTERNAL_ALLOWEDMANEUVERS_TEST_H
-#define J2735_DE_INTERNAL_ALLOWEDMANEUVERS_TEST_H
+#ifndef J2735_INTERNAL_DE_ALLOWEDMANEUVERS_TEST_H
+#define J2735_INTERNAL_DE_ALLOWEDMANEUVERS_TEST_H
 
 /* Core tests */
 void test_allowed_maneuvers_all_zeros(void);
@@ -45,4 +45,4 @@ void test_allowed_maneuvers_misaligned_access(void);
 
 void run_testsuite_allowed_maneuvers(void);
 
-#endif /* J2735_DE_INTERNAL_ALLOWEDMANEUVERS_TEST_H */
+#endif /* J2735_INTERNAL_DE_ALLOWEDMANEUVERS_TEST_H */

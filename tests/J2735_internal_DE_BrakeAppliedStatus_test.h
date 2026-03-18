@@ -24,8 +24,8 @@
  * BrakeAppliedStatus is SIZE(5): a fixed BIT STRING with 5 bits.
  */
 
-#ifndef J2735_DE_INTERNAL_BRAKEAPPLIEDSTATUS_TEST_H
-#define J2735_DE_INTERNAL_BRAKEAPPLIEDSTATUS_TEST_H
+#ifndef J2735_INTERNAL_DE_BRAKEAPPLIEDSTATUS_TEST_H
+#define J2735_INTERNAL_DE_BRAKEAPPLIEDSTATUS_TEST_H
 
 /* Core tests */
 void test_brake_applied_status_all_zeros(void);
@@ -44,4 +44,4 @@ void test_brake_applied_status_misaligned_access(void);
 
 void run_testsuite_brake_applied_status(void);
 
-#endif /* J2735_DE_INTERNAL_BRAKEAPPLIEDSTATUS_TEST_H */
+#endif /* J2735_INTERNAL_DE_BRAKEAPPLIEDSTATUS_TEST_H */

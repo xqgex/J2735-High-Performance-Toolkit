@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for BSMcoreData.
+ * @brief Tests for BSMcoreData non-extensible SEQUENCE.
  *
  * The data frame BSMcoreData is a simple case with no extensions or optional fields.
  */
@@ -33,9 +33,7 @@
 #include "J2735_internal_DF_BSMcoreData.h"
 #include "J2735_internal_DF_BSMcoreData_test.h"
 
-/* ============================================================================================== */
-/*  Happy Path Tests                                                                              */
-/* ============================================================================================== */
+/* cppcheck-suppress-begin misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 /**
  * @brief Test BSMcoreData field extraction (fixed-layout SEQUENCE).
@@ -106,18 +104,12 @@ void test_bsm_core_data_fixed_data(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t msg_cnt = J2735_BSM_CORE_DATA_GET_MSG_CNT(payload);
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int32_t lat = J2735_BSM_CORE_DATA_GET_LAT(payload);
 
   TEST_ASSERT_EQUAL_INT_MESSAGE(10, msg_cnt, "msgCnt should be 10");
   TEST_ASSERT_EQUAL_INT_MESSAGE(410123450, lat, "lat should be 410123450");
 }
-
-/* ============================================================================================== */
-/*  Boundary Value Tests                                                                          */
-/* ============================================================================================== */
 
 /**
  * @brief Test BSMcoreData with negative latitude at southern boundary.
@@ -193,7 +185,6 @@ void test_bsm_core_data_latitude_negative_min(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int32_t lat = J2735_BSM_CORE_DATA_GET_LAT(payload);
   TEST_ASSERT_EQUAL_INT32_MESSAGE(-900000000, lat, "lat should be -900000000 (min valid)");
 }
@@ -247,7 +238,6 @@ void test_bsm_core_data_latitude_positive_max(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int32_t lat = J2735_BSM_CORE_DATA_GET_LAT(payload);
   TEST_ASSERT_EQUAL_INT32_MESSAGE(900000000, lat, "lat should be 900000000 (max practical)");
 }
@@ -296,7 +286,6 @@ void test_bsm_core_data_steering_angle_negative(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int8_t angle = J2735_BSM_CORE_DATA_GET_ANGLE(payload);
   TEST_ASSERT_EQUAL_INT8_MESSAGE(-126, angle, "angle should be -126 (min valid)");
 }
@@ -331,14 +320,9 @@ void test_bsm_core_data_steering_angle_positive_max(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int8_t angle = J2735_BSM_CORE_DATA_GET_ANGLE(payload);
   TEST_ASSERT_EQUAL_INT8_MESSAGE(127, angle, "angle should be 127 (max)");
 }
-
-/* ============================================================================================== */
-/*  Misalignment Tests                                                                            */
-/* ============================================================================================== */
 
 /**
  * @brief Test BSMcoreData with misaligned buffer access.
@@ -374,14 +358,14 @@ void test_bsm_core_data_misaligned_access(void) {
   /* Offset pointer by 1 byte to force misalignment */
   const uint8_t *unaligned_ptr = &payload[1];
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint8_t msg_cnt = J2735_BSM_CORE_DATA_GET_MSG_CNT(unaligned_ptr);
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   int32_t lat = J2735_BSM_CORE_DATA_GET_LAT(unaligned_ptr);
 
   TEST_ASSERT_EQUAL_INT_MESSAGE(10, msg_cnt, "msgCnt should be 10 (misaligned)");
   TEST_ASSERT_EQUAL_INT_MESSAGE(410123450, lat, "lat should be 410123450 (misaligned)");
 }
+
+/* cppcheck-suppress-end misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 void run_testsuite_bsm_core_data(void) {
   /* Happy path tests */
