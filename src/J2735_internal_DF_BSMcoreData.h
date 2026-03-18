@@ -22,7 +22,7 @@
  * @brief J2735 BSMcoreData Definition and Access Macros.
  *
  * @par BSMcoreData Wire Format (UPER):
- * @code
+ * @verbatim
  * BSMcoreData ::= SEQUENCE {
  *     msgCnt        MsgCount,             --  7 bits (unsigned, 0..127)
  *     id            TemporaryID,          -- 32 bits
@@ -39,7 +39,7 @@
  *     brakes        BrakeSystemStatus,    -- 15 bits
  *     size          VehicleSize           -- 22 bits
  * }
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (290 bits):
  * @code

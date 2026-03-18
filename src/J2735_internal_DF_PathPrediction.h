@@ -22,13 +22,13 @@
  * @brief J2735 PathPrediction Definition and Access Macros.
  *
  * @par PathPrediction Wire Format (UPER):
- * @code
+ * @verbatim
  * PathPrediction ::= SEQUENCE {
  *     radiusOfCurve  RadiusOfCurvature,    -- 16 bits (signed, -32767..32767)
  *     confidence     Confidence,           --  8 bits (unsigned, 0..200)
  *     ...
  * }
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (no extensions, 25 bits):
  * @code

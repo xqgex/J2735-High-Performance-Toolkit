@@ -22,12 +22,12 @@
  * @brief J2735 IntersectionReferenceID Definition and Access Macros.
  *
  * @par IntersectionReferenceID Wire Format (UPER):
- * @code
+ * @verbatim
  * IntersectionReferenceID ::= SEQUENCE {
  *     region        RoadRegulatorID OPTIONAL,  -- 16 bits (unsigned, 0..65535)
  *     id            IntersectionID             -- 16 bits (unsigned, 0..65535)
  * }
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (region ABSENT, 17 bits):
  * @code

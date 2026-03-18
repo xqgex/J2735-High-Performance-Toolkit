@@ -20,50 +20,79 @@
   J2735 ASN.1 Definition Block Template
 
   Renders the ASN.1 type definition in Doxygen comment format.
-  Works directly with ASN1TypeDefinition - no intermediate data structures.
+  Handles SEQUENCE, CHOICE, and BIT STRING types via typedef.type_class.
 
   Context variables:
     - typedef: ASN1TypeDefinition object
+    - alternatives: (CHOICE only) List of dicts with name, type_ref, bit_width
 
   Filters used:
-    - is_signed(field): Returns True if field.type.min_value < 0
-    - format_range(field): Returns "min..max" or ""
+    - is_signed(field): Returns True if field.type.min_value < 0 (SEQUENCE only)
+    - format_range(field): Returns "min..max" or "" (SEQUENCE only)
+    - screaming_snake: Converts camelCase to SCREAMING_SNAKE_CASE (CHOICE only)
 
   Output format:
-    * BSMcoreData ::= SEQUENCE {
-    *     msgCnt        MsgCount,             -- 7 bits (unsigned, 0..127)
-    *     ...
+    * TypeName ::= SEQUENCE {
+    *     field  Type,  -- NN bits (unsigned, 0..127)
     * }
+
+    * TypeName ::= CHOICE {
+    *     alt  TypeRef,  -- NN bits (J2735_BW_TYPE_REF)
+    * }
+
+    * TypeName ::= BIT STRING {
+    *     name (0),
+    *     name (1)
+    * } (SIZE (N, ..., M))
 -#}
-{#- Compute column widths for alignment -#}
-{%- set name_width = namespace(val=14) -%}
-{%- set type_width = namespace(val=22) -%}
-{%- for field in typedef.constraint.fields -%}
-{%-   if field.name | length > name_width.val - 2 -%}
-{%-     set name_width.val = field.name | length + 2 -%}
-{%-   endif -%}
-{%-   set type_len = field.type_name | length + (9 if field.is_optional else 0) + 1 -%}
-{%-   if type_len > type_width.val - 2 -%}
-{%-     set type_width.val = type_len + 2 -%}
-{%-   endif -%}
-{%- endfor %}
+{%- set type_class = typedef.type_class.name -%}
+{%  if type_class == "SEQUENCE" %}
+{#- SEQUENCE: fields with types, optional markers, sign/range comments -#}
+{%-   set name_width = namespace(val=14) -%}
+{%-   set type_width = namespace(val=22) -%}
+{%-   for field in typedef.constraint.fields -%}
+{%-     if field.name | length > name_width.val - 2 -%}
+{%-       set name_width.val = field.name | length + 2 -%}
+{%-     endif -%}
+{%-     set type_len = field.type_name | length + (9 if field.is_optional else 0) + 1 -%}
+{%-     if type_len > type_width.val - 2 -%}
+{%-       set type_width.val = type_len + 2 -%}
+{%-     endif -%}
+{%-   endfor %}
  * {{ typedef.name }} ::= SEQUENCE {
-{% for field in typedef.constraint.fields %}
-{%-   set optional_marker = " OPTIONAL" if field.is_optional else "" -%}
-{%-   set is_last = loop.last and not typedef.constraint.is_extensible -%}
-{%-   set comma = "" if is_last else "," -%}
-{%-   set type_part = field.type_name ~ optional_marker ~ comma -%}
-{%-   set sign_str = "signed" if field | is_signed else "unsigned" -%}
-{%-   set range_str = field | format_range -%}
-{%-   set bits = field.type.uper_bit_width or 0 -%}
-{%-   if range_str -%}
-{%-     set comment = "-- " ~ "%2d" | format(bits) ~ " bits (" ~ sign_str ~ ", " ~ range_str ~ ")" -%}
-{%-   else -%}
-{%-     set comment = "-- " ~ "%2d" | format(bits) ~ " bits" -%}
-{%-   endif %}
+{%    for field in typedef.constraint.fields %}
+{%-     set optional_marker = " OPTIONAL" if field.is_optional else "" -%}
+{%-     set is_last = loop.last and not typedef.constraint.is_extensible -%}
+{%-     set comma = "" if is_last else "," -%}
+{%-     set type_part = field.type_name ~ optional_marker ~ comma -%}
+{%-     set sign_str = "signed" if field | is_signed else "unsigned" -%}
+{%-     set range_str = field | format_range -%}
+{%-     set bits = field.type.uper_bit_width or 0 -%}
+{%-     if range_str -%}
+{%-       set comment = "-- " ~ "%2d" | format(bits) ~ " bits (" ~ sign_str ~ ", " ~ range_str ~ ")" -%}
+{%-     else -%}
+{%-       set comment = "-- " ~ "%2d" | format(bits) ~ " bits" -%}
+{%-     endif %}
  *     {{ "%-*s" | format(name_width.val, field.name) }}{{ "%-*s" | format(type_width.val, type_part) }}{{ comment }}
-{%  endfor %}
-{%- if typedef.constraint.is_extensible %}
+{%    endfor %}
+{%-   if typedef.constraint.is_extensible %}
  *     ...
-{%  endif %}
+{%    endif %}
  * }
+{%  elif type_class == "CHOICE" %}
+{#- CHOICE: alternatives with type refs and bit-width comments -#}
+ * {{ typedef.name }} ::= CHOICE {
+{%    for alt in alternatives %}
+ *     {{ alt.name }}  {{ alt.type_ref }}{{ "," if not loop.last else "" }}  -- {{ alt.bit_width }} bits (J2735_BW_{{ alt.type_ref | screaming_snake }})
+{%    endfor %}
+ * }
+{%  elif type_class == "BIT_STRING" %}
+{#- BIT STRING: named bits with indices and SIZE constraint -#}
+{%-   set root_size = typedef.constraint.root_size -%}
+{%-   set ext_bits = typedef.constraint.ext_bits %}
+ * {{ typedef.name }} ::= BIT STRING {
+{%    for name, index in typedef.constraint.named_bits.items() | sort(attribute='1') %}
+ *     {{ name }} ({{ index }}){{ "," if not loop.last else "" }}
+{%    endfor %}
+ * } (SIZE ({{ root_size }}{{ ", ..." if typedef.constraint.is_extensible else "" }}{{ ", " ~ ext_bits if typedef.constraint.is_extensible and ext_bits != root_size else "" }}))
+{%  endif %}

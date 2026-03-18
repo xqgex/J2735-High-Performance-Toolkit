@@ -54,11 +54,7 @@
  * @brief J2735 {{ typedef_name }} Definition and Access Macros.
  *
  * @verbatim
- * {{ typedef_name }} ::= BIT STRING {
-{% for name, index in typedef.constraint.named_bits.items() | sort(attribute='1') %}
- *     {{ name }} ({{ index }}){{ "," if not loop.last else "" }}
-{% endfor %}
- * } (SIZE ({{ root_size }}{{ ", ..." if is_extensible else "" }}{{ ", " ~ ext_bits if is_extensible and ext_bits != root_size else "" }}))
+{%  include 'asn1_definition.j2' %}
  * @endverbatim
  *
 {% if is_extensible %}

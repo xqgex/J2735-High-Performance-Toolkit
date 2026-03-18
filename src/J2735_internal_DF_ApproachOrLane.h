@@ -22,12 +22,12 @@
  * @brief J2735 ApproachOrLane Definition and Access Macros.
  *
  * @par ApproachOrLane Wire Format (UPER):
- * @code
+ * @verbatim
  * ApproachOrLane ::= CHOICE {
  *     approach  ApproachID,  -- 4 bits (J2735_BW_APPROACH_ID)
  *     lane  LaneID  -- 8 bits (J2735_BW_LANE_ID)
  * }
- * @endcode
+ * @endverbatim
  *
  * This is a non-extensible CHOICE with 2 alternatives.
  * Per ITU-T X.691 §23, the choice index uses ceil(log2(2)) = 1 bit.
