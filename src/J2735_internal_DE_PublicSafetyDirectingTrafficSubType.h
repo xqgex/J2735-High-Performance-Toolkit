@@ -186,8 +186,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
  * @param[in] raw15 Value previously returned by
  * J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE().
  * @return Right-aligned flag bits as uint8_t:
- *         - 7 significant bits (0x0000-0x007F) if non-extended
- *         - 7 significant bits (0x0000-0x007F) if extended
+ *         - 7 significant bits (0x00-0x7F) if non-extended
+ *         - 7 significant bits (0x00-0x7F) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET() for public API.

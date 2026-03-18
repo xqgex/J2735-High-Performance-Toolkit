@@ -120,7 +120,7 @@
  *
  * @param[in] raw8 Value previously returned by J2735_INTERNAL_RAW_READ_GNSS_STATUS().
  * @return Right-aligned flag bits as uint8_t:
- *         - 8 significant bits (0x0000-0x00FF)
+ *         - 8 significant bits (0x00-0xFF)
  * @note Internal use only. Use J2735_GNSS_STATUS_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_GNSS_STATUS(raw8) ((uint8_t)((raw8) & 0xFFU))

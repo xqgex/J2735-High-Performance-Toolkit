@@ -117,7 +117,7 @@
  *
  * @param[in] raw6 Value previously returned by J2735_INTERNAL_RAW_READ_TRANSIT_STATUS().
  * @return Right-aligned flag bits as uint8_t:
- *         - 6 significant bits (0x0000-0x003F)
+ *         - 6 significant bits (0x00-0x3F)
  * @note Internal use only. Use J2735_TRANSIT_STATUS_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_TRANSIT_STATUS(raw6) ((uint8_t)((raw6) & 0x3FU))

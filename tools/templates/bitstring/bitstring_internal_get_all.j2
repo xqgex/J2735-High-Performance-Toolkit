@@ -44,6 +44,9 @@
 {%- set root_shift = read_bits - 1 - root_size -%}{#- Right shift for root extraction (e.g., 8) -#}
 {%- set root_mask = (2 ** root_size) - 1 -%}{#- Mask for root bits (e.g., 0x1FFF) -#}
 {%- set return_type = ext_bits | c_type -%}
+{%- set hex_digits = {"uint8_t": 2, "uint16_t": 4, "uint32_t": 8, "uint64_t": 16}[return_type] -%}
+{%- set hex_fmt = "%0" ~ hex_digits|string ~ "X" -%}
+{%- set hex_zero = "0" * hex_digits -%}
 {%  if typedef.constraint.is_extensible %}
 /**
  * @internal
@@ -63,8 +66,8 @@
  *
  * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @return Right-aligned flag bits as {{ return_type }}:
- *         - {{ root_size }} significant bits (0x0000-0x{{ "%04X" | format(root_mask) }}) if non-extended
- *         - {{ ext_bits }} significant bits (0x0000-0x{{ "%04X" | format(ext_mask) }}) if extended
+ *         - {{ root_size }} significant bits (0x{{ hex_zero }}-0x{{ hex_fmt | format(root_mask) }}) if non-extended
+ *         - {{ ext_bits }} significant bits (0x{{ hex_zero }}-0x{{ hex_fmt | format(ext_mask) }}) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to {{ return_type }}.
  * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET() for public API.
@@ -83,7 +86,7 @@
  *
  * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @return Right-aligned flag bits as {{ return_type }}:
- *         - {{ root_size }} significant bits (0x0000-0x{{ "%04X" | format(root_mask) }})
+ *         - {{ root_size }} significant bits (0x{{ hex_zero }}-0x{{ hex_fmt | format(root_mask) }})
  * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_{{ typedef_name_upper }}(raw{{ read_bits }}) \

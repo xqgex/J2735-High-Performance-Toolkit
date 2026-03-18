@@ -109,7 +109,7 @@
  *
  * @param[in] raw2 Value previously returned by J2735_INTERNAL_RAW_READ_LANE_DIRECTION().
  * @return Right-aligned flag bits as uint8_t:
- *         - 2 significant bits (0x0000-0x0003)
+ *         - 2 significant bits (0x00-0x03)
  * @note Internal use only. Use J2735_LANE_DIRECTION_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_LANE_DIRECTION(raw2) ((uint8_t)((raw2) & 0x3U))

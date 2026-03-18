@@ -175,8 +175,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  *
  * @param[in] raw13 Value previously returned by J2735_INTERNAL_RAW_READ_USER_SIZE_AND_BEHAVIOUR().
  * @return Right-aligned flag bits as uint8_t:
- *         - 5 significant bits (0x0000-0x001F) if non-extended
- *         - 5 significant bits (0x0000-0x001F) if extended
+ *         - 5 significant bits (0x00-0x1F) if non-extended
+ *         - 5 significant bits (0x00-0x1F) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_USER_SIZE_AND_BEHAVIOUR_GET() for public API.

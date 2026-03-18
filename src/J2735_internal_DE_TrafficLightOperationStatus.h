@@ -183,8 +183,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  * @param[in] raw16 Value previously returned by
  * J2735_INTERNAL_RAW_READ_TRAFFIC_LIGHT_OPERATION_STATUS().
  * @return Right-aligned flag bits as uint8_t:
- *         - 8 significant bits (0x0000-0x00FF) if non-extended
- *         - 8 significant bits (0x0000-0x00FF) if extended
+ *         - 8 significant bits (0x00-0xFF) if non-extended
+ *         - 8 significant bits (0x00-0xFF) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET() for public API.

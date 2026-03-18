@@ -176,8 +176,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
  *
  * @param[in] raw14 Value previously returned by J2735_INTERNAL_RAW_READ_PERSONAL_ASSISTIVE().
  * @return Right-aligned flag bits as uint8_t:
- *         - 6 significant bits (0x0000-0x003F) if non-extended
- *         - 6 significant bits (0x0000-0x003F) if extended
+ *         - 6 significant bits (0x00-0x3F) if non-extended
+ *         - 6 significant bits (0x00-0x3F) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_PERSONAL_ASSISTIVE_GET() for public API.
