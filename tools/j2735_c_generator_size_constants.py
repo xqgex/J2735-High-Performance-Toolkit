@@ -33,7 +33,7 @@ Example usage:
 from .j2735_c_generator_jinja import create_jinja_env, get_template
 from .j2735_spec_parser import J2735Specification
 
-_TEMPLATE_NAME = "size_constants.j2"
+_SIZE_CONSTANTS_TEMPLATE_NAME = "size_constants.j2"
 
 
 def generate_size_constants(spec: J2735Specification) -> str:
@@ -60,7 +60,7 @@ def generate_size_constants(spec: J2735Specification) -> str:
     fixed_types, _ = spec.collect_fixed_width_types()
 
     env = create_jinja_env()
-    template = get_template(env, _TEMPLATE_NAME)
+    template = get_template(env, _SIZE_CONSTANTS_TEMPLATE_NAME)
 
     return template.render(
         types=fixed_types,

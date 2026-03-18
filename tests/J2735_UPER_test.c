@@ -29,8 +29,6 @@
  * These are comprehensive edge-case tests covering all branches and error paths.
  */
 
-#include <inttypes.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "unity.h"

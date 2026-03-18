@@ -24,7 +24,6 @@
  * The data frame BSMcoreData is a simple case with no extensions or optional fields.
  */
 
-#include <inttypes.h>
 #include <stdint.h>
 
 #include "unity.h"

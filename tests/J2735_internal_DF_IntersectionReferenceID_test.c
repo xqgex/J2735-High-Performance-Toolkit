@@ -21,11 +21,9 @@
  * @author Yogev Neumann
  * @brief Tests for IntersectionReferenceID non-extensible SEQUENCE.
  *
- * The data frame IntersectionReferenceID is a simple case with an optional fields.
+ * The data frame IntersectionReferenceID is a simple case with an optional field.
  */
 
-#include <inttypes.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "unity.h"

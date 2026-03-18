@@ -24,8 +24,6 @@
  * The data frame PathPrediction is a simple case with an extension field.
  */
 
-#include <inttypes.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "unity.h"
