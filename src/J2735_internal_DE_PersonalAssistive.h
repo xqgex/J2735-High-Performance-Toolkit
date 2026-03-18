@@ -21,7 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 PersonalAssistive Definition and Access Macros.
  *
- * @code
+ * @verbatim
  * PersonalAssistive ::= BIT STRING {
  *     unavailable (0),
  *     otherType (1),
@@ -30,7 +30,7 @@
  *     movement (4),
  *     cognition (5)
  * } (SIZE (6, ...))
- * @endcode
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 6 and known extension size 6.
  *
@@ -53,7 +53,7 @@
  * @endcode
  *
  * @par Optimization: Single-Read Strategy
- * @code
+ * @verbatim
  * Max wire size = 14 bits ≤ 56-bit READ_BITS limit.
  * We read all 14 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 13 (MSB of 14-bit value)
@@ -64,7 +64,7 @@
  *                  bit13  12..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F5]
  *                  bit13  12..6    5..0
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_PERSONALASSISTIVE_H
 #define J2735_INTERNAL_DE_PERSONALASSISTIVE_H

@@ -20,6 +20,7 @@ from typing import ClassVar
 from unittest import TestCase
 
 from tools.j2735_c_generator_data_frame import generate_data_frame
+from tools.j2735_spec_constraints import SequenceType
 from tools.j2735_spec_parser import J2735Specification, parse_spec_file
 from tools.tests.conftest import SPEC_FILE_PATH
 
@@ -54,3 +55,29 @@ class TestAssembleDfSequenceStaticAsserts(TestCase):
         """Non-extensible SEQUENCE with OPTIONAL has no offset chain assert."""
         code = generate_data_frame("IntersectionReferenceID", self.spec)
         self.assertNotIn("_Static_assert(", code)
+
+    def test_variable_width_sequence_excluded_from_offset_assert(self) -> None:
+        """Non-extensible, no-optional SEQUENCE with variable-width fields skips assert.
+
+        The template guard requires ``uper_bit_width is not none`` so that
+        SEQUENCE types containing SEQUENCE OF or unresolved inline types
+        (e.g. RestrictionClassAssignment, Sample) do not emit a
+        _Static_assert referencing a nonexistent J2735_BW_* constant.
+        """
+        # These are non-extensible, no-optional but have variable-width fields
+        variable_width_types = ["Circle", "PrivilegedEvents"]
+        for type_name in variable_width_types:
+            with self.subTest(type_name=type_name):
+                typedef = self.spec.lookup_type(type_name)
+                self.assertIsNotNone(typedef, f"{type_name} not in spec")
+                assert typedef is not None  # narrow for type checkers
+                constraint = typedef.constraint
+                assert isinstance(constraint, SequenceType)
+                self.assertFalse(constraint.is_extensible)
+                self.assertFalse(
+                    any(f.is_optional for f in constraint.fields),
+                )
+                self.assertIsNone(
+                    constraint.uper_bit_width,
+                    f"{type_name} should have variable width (None)",
+                )

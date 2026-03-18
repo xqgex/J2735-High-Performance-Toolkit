@@ -21,7 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 TrafficLightOperationStatus Definition and Access Macros.
  *
- * @code
+ * @verbatim
  * TrafficLightOperationStatus ::= BIT STRING {
  *     manual (0),
  *     flashing (1),
@@ -32,7 +32,7 @@
  *     phase (6),
  *     reserved (7)
  * } (SIZE (8, ...))
- * @endcode
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 8 and known extension size 8.
  *
@@ -55,7 +55,7 @@
  * @endcode
  *
  * @par Optimization: Single-Read Strategy
- * @code
+ * @verbatim
  * Max wire size = 16 bits ≤ 56-bit READ_BITS limit.
  * We read all 16 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 15 (MSB of 16-bit value)
@@ -66,7 +66,7 @@
  *                  bit15  14..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F7]
  *                  bit15  14..8    7..0
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H
 #define J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H

@@ -21,7 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 PersonalDeviceUsageState Definition and Access Macros.
  *
- * @code
+ * @verbatim
  * PersonalDeviceUsageState ::= BIT STRING {
  *     unavailable (0),
  *     other (1),
@@ -33,7 +33,7 @@
  *     reading (7),
  *     viewing (8)
  * } (SIZE (9, ...))
- * @endcode
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 9 and known extension size 9.
  *
@@ -56,7 +56,7 @@
  * @endcode
  *
  * @par Optimization: Single-Read Strategy
- * @code
+ * @verbatim
  * Max wire size = 17 bits ≤ 56-bit READ_BITS limit.
  * We read all 17 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 16 (MSB of 17-bit value)
@@ -67,7 +67,7 @@
  *                  bit16  15..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F8]
  *                  bit16  15..9    8..0
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_PERSONALDEVICEUSAGESTATE_H
 #define J2735_INTERNAL_DE_PERSONALDEVICEUSAGESTATE_H

@@ -21,7 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 UserSizeAndBehaviour Definition and Access Macros.
  *
- * @code
+ * @verbatim
  * UserSizeAndBehaviour ::= BIT STRING {
  *     unavailable (0),
  *     smallStature (1),
@@ -29,7 +29,7 @@
  *     erraticMoving (3),
  *     slowMoving (4)
  * } (SIZE (5, ...))
- * @endcode
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 5 and known extension size 5.
  *
@@ -52,7 +52,7 @@
  * @endcode
  *
  * @par Optimization: Single-Read Strategy
- * @code
+ * @verbatim
  * Max wire size = 13 bits ≤ 56-bit READ_BITS limit.
  * We read all 13 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 12 (MSB of 13-bit value)
@@ -63,7 +63,7 @@
  *                  bit12  11..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F4]
  *                  bit12  11..5    4..0
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_H
 #define J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_H

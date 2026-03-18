@@ -82,7 +82,7 @@ _Static_assert(J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name | screaming_snake }
 /* ============================================================================================== */
 {%  include 'sequence/sequence_internal_off.j2' %}
 
-{%  if not typedef.constraint.is_extensible and not has_optional %}
+{%  if not typedef.constraint.is_extensible and not has_optional and typedef.constraint.uper_bit_width is not none %}
 {%-   set last_field = typedef.constraint.fields[-1] -%}
 _Static_assert((J2735_INTERNAL_OFF_{{ typedef_name | screaming_snake }}_{{ last_field.name | screaming_snake }}(0) + J2735_BW_{{ last_field.type_name | screaming_snake }}) ==
                    J2735_BW_{{ typedef_name | screaming_snake }},

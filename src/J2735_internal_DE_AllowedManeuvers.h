@@ -21,7 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 AllowedManeuvers Definition and Access Macros.
  *
- * @code
+ * @verbatim
  * AllowedManeuvers ::= BIT STRING {
  *     maneuverStraightAllowed (0),
  *     maneuverLeftAllowed (1),
@@ -36,7 +36,7 @@
  *     caution (10),
  *     reserved1 (11)
  * } (SIZE (12))
- * @endcode
+ * @endverbatim
  *
  * Fixed BIT STRING with size 12.
  *
@@ -50,14 +50,14 @@
  * @endcode
  *
  * @par Optimization: Single-Read Strategy
- * @code
+ * @verbatim
  * Max wire size = 12 bits ≤ 56-bit READ_BITS limit.
  * We read all 12 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-11
  *
  * 12-bit read layout (left-justified from bit 0):
  *   [F0..F11] (12 flag bits, no extension marker)
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_ALLOWEDMANEUVERS_H
 #define J2735_INTERNAL_DE_ALLOWEDMANEUVERS_H

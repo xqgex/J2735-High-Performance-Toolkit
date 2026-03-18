@@ -21,7 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 TransitStatus Definition and Access Macros.
  *
- * @code
+ * @verbatim
  * TransitStatus ::= BIT STRING {
  *     none (0),
  *     anADAuse (1),
@@ -30,7 +30,7 @@
  *     occM (4),
  *     occL (5)
  * } (SIZE (6))
- * @endcode
+ * @endverbatim
  *
  * Fixed BIT STRING with size 6.
  *
@@ -44,14 +44,14 @@
  * @endcode
  *
  * @par Optimization: Single-Read Strategy
- * @code
+ * @verbatim
  * Max wire size = 6 bits ≤ 56-bit READ_BITS limit.
  * We read all 6 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-5
  *
  * 6-bit read layout (left-justified from bit 0):
  *   [F0..F5] (6 flag bits, no extension marker)
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_TRANSITSTATUS_H
 #define J2735_INTERNAL_DE_TRANSITSTATUS_H

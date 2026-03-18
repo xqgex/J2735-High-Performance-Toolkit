@@ -94,6 +94,24 @@ class TestAssembleBitstringWireFormatDocs(SpecLoadingTestBase):
                 self.assertIn("@par Wire Format", code)
                 self.assertIn("@code", code)
                 self.assertIn("@endcode", code)
+                self.assertEqual(
+                    code.count("@code"),
+                    code.count("@endcode"),
+                    f"{type_name}: @code/@endcode tags must be paired",
+                )
+                self.assertEqual(
+                    code.count("@verbatim"),
+                    code.count("@endverbatim"),
+                    f"{type_name}: @verbatim/@endverbatim tags must be paired",
+                )
+
+    def test_asn1_definition_uses_verbatim(self) -> None:
+        """ASN.1 grammar block must use @verbatim, not @code."""
+        for type_name, _prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
+            with self.subTest(type_name=type_name):
+                code = generate_data_element(type_name, self.spec)
+                self.assertIn("@verbatim", code)
+                self.assertIn("@endverbatim", code)
 
     def test_extensible_wire_format_doc_correct_bit_counts(self) -> None:
         """Extensible wire format shows correct bit counts for both forms."""
