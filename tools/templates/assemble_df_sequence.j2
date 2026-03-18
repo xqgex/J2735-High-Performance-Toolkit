@@ -22,7 +22,7 @@
   Main assembly template for SEQUENCE types. Generates a complete C header file
   by including sub-templates from the sequence/ directory.
 
-  Template Context (from generator):
+  Context variables:
     - typedef:   ASN1TypeDefinition for the SEQUENCE type
     - sequence_variants: list[SequenceWireVariant] from get_sequence_variants()
     - opt_count: Number of OPTIONAL fields (for bitmap width)

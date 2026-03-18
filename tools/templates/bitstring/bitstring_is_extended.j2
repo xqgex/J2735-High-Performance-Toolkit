@@ -17,13 +17,14 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-Template: bitstring_is_extended.j2
-Purpose: Generate public C macro for checking if a BIT STRING is in extended form.
+  BIT STRING Public Is-Extended Macro Template
 
-Template Context (from generator):
-  - typedef: The full typedef object containing the metadata
+  Generates public C macro for checking if a BIT STRING is in extended form.
 
-Example output (is_extensible=True):
+  Context variables:
+    - typedef: The full typedef object containing the metadata
+
+  Output format:
     /**
      * @brief Check if VehicleEventFlags is in extended form.
      * ...

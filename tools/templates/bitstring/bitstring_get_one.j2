@@ -17,13 +17,14 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-Template: bitstring_get_one.j2
-Purpose: Generate public C macros for accessing individual flags from a BIT STRING.
+  BIT STRING Public Get-One Macro Template
 
-Template Context (from generator):
-  - typedef: The full typedef object containing the metadata
+  Generates public C macros for accessing individual flags from a BIT STRING.
 
-Example output:
+  Context variables:
+    - typedef: The full typedef object containing the metadata
+
+  Output format:
     /**
      * @brief Get eventHazardLights flag (ASN.1 bit 0).
      * ...

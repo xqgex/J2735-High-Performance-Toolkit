@@ -17,13 +17,14 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-Template: bitstring_internal_get_one.j2
-Purpose: Generate C macro for extracting a single flag bit from pre-read raw value.
+  BIT STRING Internal Get-One Macro Template
 
-Template Context (from generator):
-  - typedef: The full typedef object containing the metadata
+  Generates C macro for extracting a single flag bit from pre-read raw value.
 
-Example output (is_extensible=True, read_bits=22, ext_flag_base=13, root_flag_base=20):
+  Context variables:
+    - typedef: The full typedef object containing the metadata
+
+  Output format:
     /**
      * @internal
      * @brief Extract a single flag bit from pre-read 22-bit raw value.

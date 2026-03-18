@@ -17,11 +17,12 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-Template: assemble_de_bitstring.j2
-Purpose: Generate C header file for a BIT STRING data element (DE).
+  BIT STRING Data Element Assembly Template
 
-Template Context (from generator):
-  - typedef: The full typedef object containing the metadata
+  Generates a complete C header file for a BIT STRING data element (DE).
+
+  Context variables:
+    - typedef: The full typedef object containing the metadata
 -#}
 {%- set data_type = typedef.type_class.name | lower -%}
 {%- set is_extensible = typedef.constraint.is_extensible -%}

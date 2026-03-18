@@ -17,13 +17,14 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-Template: bitstring_size.j2
-Purpose: Generate public C macro for getting wire size of a BIT STRING in bits.
+  BIT STRING Public Size Macro Template
 
-Template Context (from generator):
+  Generates public C macro for getting wire size of a BIT STRING in bits.
+
+  Context variables:
     - typedef: The full typedef object containing the metadata
 
-Example output (is_extensible=True, read_bits=22):
+  Output format:
     /**
      * @brief Get wire size of VehicleEventFlags in bits.
      * ...

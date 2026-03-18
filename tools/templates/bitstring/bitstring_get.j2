@@ -17,13 +17,14 @@
   SPDX-FileCopyrightText: 2026 Yogev Neumann
 -#}
 {#-
-Template: bitstring_get.j2
-Purpose: Generate public C macro for getting all flags as a single integer value.
+  BIT STRING Public Get-All Macro Template
 
-Template Context (from generator):
-  - typedef: The full typedef object containing the metadata
+  Generates public C macro for getting all flags as a single integer value.
 
-Example output (is_extensible=True, root_size=13, ext_bits=14):
+  Context variables:
+    - typedef: The full typedef object containing the metadata
+
+  Output format:
     /**
      * @brief Get all VehicleEventFlags as a single uint16_t value.
      * ...
