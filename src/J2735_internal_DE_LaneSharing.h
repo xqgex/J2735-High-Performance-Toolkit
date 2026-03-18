@@ -68,7 +68,8 @@
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_LANE_SHARING_GET_*() accessors instead.         */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_LANE_SHARING_GET_*() accessors instead.                                  */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_LANE_SHARING_OVERLAPPING_LANE_DESCRIPTION_PROVIDED 0U
 #define J2735_INTERNAL_BIT_LANE_SHARING_MULTIPLE_LANES_TREATED_AS_ONE_LANE    1U

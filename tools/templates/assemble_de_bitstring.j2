@@ -138,14 +138,15 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} ==
 {%  endif %}
 {%  if named_bits %}
 
-{%    set bit_position_constants_line = "@note Internal use only. Use the public J2735_" ~ (typedef_name_upper) ~ "_GET_*() accessors instead." %}
+{%    set note_line2 = "Use the public J2735_" ~ typedef_name_upper ~ "_GET_*() accessors instead." %}
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  {{ "%-*s"|format(W, bit_position_constants_line) }}  */
+/*  @note Internal use only.                                                                      */
+/*  {{ "%-*s"|format(W, note_line2) }}  */
 /* ============================================================================================== */
 {%    include 'bitstring/bitstring_internal_bit_pos.j2' %}
 {%  endif %}

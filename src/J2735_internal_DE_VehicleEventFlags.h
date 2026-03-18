@@ -114,7 +114,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_VEHICLE_EVENT_FLAGS_GET_*() accessors instead.  */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_VEHICLE_EVENT_FLAGS_GET_*() accessors instead.                           */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_HAZARD_LIGHTS              0U
 #define J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_STOP_LINE_VIOLATION        1U

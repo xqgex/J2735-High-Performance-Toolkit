@@ -109,7 +109,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_EXTERIOR_LIGHTS_GET_*() accessors instead.      */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_EXTERIOR_LIGHTS_GET_*() accessors instead.                               */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_EXTERIOR_LIGHTS_LOW_BEAM_HEADLIGHTS_ON     0U
 #define J2735_INTERNAL_BIT_EXTERIOR_LIGHTS_HIGH_BEAM_HEADLIGHTS_ON    1U
