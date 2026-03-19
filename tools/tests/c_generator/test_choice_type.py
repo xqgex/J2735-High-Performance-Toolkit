@@ -127,6 +127,15 @@ class TestGenerateDataframeChoice(TestCase):
         # The mask-only pattern should have a comment indicating no shift needed
         self.assertIn("no shift needed", code.lower())
 
+    def test_generates_static_assert_choice_index_bits(self) -> None:
+        """Generated code validates CHOICE index bits with _Static_assert."""
+        code = generate_data_frame("ApproachOrLane", self.spec)
+        self.assertIn(
+            "_Static_assert(J2735_INTERNAL_CHOICE_INDEX_BITS_APPROACH_OR_LANE"
+            " == J2735_BW_APPROACH_OR_LANE",
+            code,
+        )
+
     def test_unknown_type_raises(self) -> None:
         """generate_data_frame raises ValueError for unknown type."""
         with self.assertRaises(ValueError) as cm:

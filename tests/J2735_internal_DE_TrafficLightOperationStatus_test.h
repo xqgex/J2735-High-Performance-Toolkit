@@ -25,8 +25,8 @@
  * 8-bit root and 8-bit extension (same size).
  */
 
-#ifndef J2735_DE_INTERNAL_TRAFFICLIGHTOPERATIONSTATUS_TEST_H
-#define J2735_DE_INTERNAL_TRAFFICLIGHTOPERATIONSTATUS_TEST_H
+#ifndef J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_TEST_H
+#define J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_TEST_H
 
 /* Basic form tests */
 void test_traffic_light_operation_status_non_extended(void);
@@ -55,4 +55,4 @@ void test_traffic_light_operation_status_misaligned_access(void);
 
 void run_testsuite_traffic_light_operation_status(void);
 
-#endif /* J2735_DE_INTERNAL_TRAFFICLIGHTOPERATIONSTATUS_TEST_H */
+#endif /* J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_TEST_H */

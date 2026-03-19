@@ -191,11 +191,6 @@ void test_vehicle_event_flags_extended(void) {
  * | 0    | 0x48 | 01001000 | ext(0) + flags[12:6]   |
  * | 1    | 0xD0 | 11010000 | flags[5:0] + pad(2)    |
  *
- * @par Byte Derivation:
- * - flags = 0x1234 = 1 0010 0011 0100 (13 bits, ASN.1 bit 0 at left)
- * - Wire = [ext=0][flags] = 0|1001000110100 = 01001000 11010000 (with 2-bit pad)
- * - Byte 0: 0100 1000 = 0x48
- * - Byte 1: 1101 0000 = 0xD0
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_individual_non_extended_flags_0_to_4(void) {
@@ -332,13 +327,6 @@ void test_vehicle_event_flags_individual_non_extended_flags_10_to_13(void) {
  * | 1    | 0xFF | 11111111 | flags[13:6]                 |
  * | 2    | 0xFC | 11111100 | flags[5:0] + pad(2)         |
  *
- * @par Byte Derivation:
- * - nsnnwn = 14: small form (bit 0 = 0), value = 14 → 0|001110 = 0001110
- * - flags = 0x3FFF = 11 1111 1111 1111 (14 bits)
- * - Wire = [ext=1][nsnnwn][flags] = 1|0001110|11111111111111
- * - Byte 0: 1000 1110 = 0x8E
- * - Byte 1: 1111 1111 = 0xFF
- * - Byte 2: 1111 1100 = 0xFC (with 2-bit padding)
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_individual_extended_flags_0_to_4(void) {
@@ -751,11 +739,6 @@ void test_vehicle_event_flags_non_extended_alternating_0x1555_metadata(void) {
  * | 0    | 0x55 | 01010101 | ext(0) + flags[12:6]=1010101 |
  * | 1    | 0x54 | 01010100 | flags[5:0]=010101 + pad(2)   |
  *
- * @par Byte Derivation:
- * - flags = 0x1555 = 1 0101 0101 0101 (13 bits)
- * - Wire = [ext=0][flags] = 0|1010101010101 = 01010101 01010100
- * - Byte 0: 0101 0101 = 0x55
- * - Byte 1: 0101 0100 = 0x54 (with 2-bit padding)
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_non_extended_alternating_0x1555_0_to_4(void) {
@@ -916,11 +899,6 @@ void test_vehicle_event_flags_non_extended_alternating_0x0AAA_metadata(void) {
  * | 0    | 0x2A | 00101010 | ext(0) + flags[12:6]=0101010 |
  * | 1    | 0xA8 | 10101000 | flags[5:0]=101010 + pad(2)   |
  *
- * @par Byte Derivation:
- * - flags = 0x0AAA = 0 1010 1010 1010 (13 bits)
- * - Wire = [ext=0][flags] = 0|0101010101010 = 00101010 10101000
- * - Byte 0: 0010 1010 = 0x2A
- * - Byte 1: 1010 1000 = 0xA8 (with 2-bit padding)
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_non_extended_alternating_0x0AAA_0_to_4(void) {
@@ -1042,11 +1020,6 @@ void test_vehicle_event_flags_non_extended_alternating_0x0AAA_10_to_12(void) {
  * | 0    | 0x40 | 01000000 | ext(0) + flags[0:6]=1000000  |
  * | 1    | 0x00 | 00000000 | flags[7:12]=000000 + pad(2)  |
  *
- * @par Byte Derivation:
- * - flags = 0x1000 = 1 0000 0000 0000 (13 bits, bit 0 = hazardLights = 1)
- * - Wire = [ext=0][flags] = 0|1000000000000 = 01000000 00000000
- * - Byte 0: ext(0) + flags bits 0-6 = 0|1000000 = 0x40
- * - Byte 1: flags bits 7-12 + pad = 000000|00 = 0x00
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_single_bit_0_hazard_lights(void) {
@@ -1088,11 +1061,6 @@ void test_vehicle_event_flags_single_bit_0_hazard_lights(void) {
  * | 0    | 0x00 | 00000000 | ext(0) + flags[0:6]=0000000  |
  * | 1    | 0x04 | 00000100 | flags[7:12]=000001 + pad(2)  |
  *
- * @par Byte Derivation:
- * - flags = 0x0001 = 0 0000 0000 0001 (13 bits, bit 12 = airBagDeployment = 1)
- * - Wire = [ext=0][flags] = 0|0000000000001 = 00000000 00000100
- * - Byte 0: ext(0) + flags bits 0-6 = 0|0000000 = 0x00
- * - Byte 1: flags bits 7-12 + pad = 000001|00 = 0x04
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_single_bit_12_airbag(void) {
@@ -1133,11 +1101,6 @@ void test_vehicle_event_flags_single_bit_12_airbag(void) {
  * | 0    | 0x00 | 00000000 | ext(0) + flags[0:6]=0000000  |
  * | 1    | 0x80 | 10000000 | flags[7:12]=100000 + pad(2)  |
  *
- * @par Byte Derivation:
- * - flags = 0x0020 = 0 0000 0010 0000 (13 bits, bit 7 = hardBraking = 1)
- * - Wire = [ext=0][flags] = 0|0000000100000 = 00000000 10000000
- * - Byte 0: ext(0) + flags bits 0-6 = 0|0000000 = 0x00
- * - Byte 1: flags bits 7-12 + pad = 100000|00 = 0x80
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_single_bit_7_hard_braking(void) {
@@ -1203,6 +1166,56 @@ void test_vehicle_event_flags_extended_single_hazard_lights(void) {
                                   "bit 1: eventStopLineViolation should be OFF");
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_JACK_KNIFE(payload),
                                   "bit 13: eventJackKnife should be OFF");
+}
+
+/**
+ * @brief Test VehicleEventFlags with deliberately misaligned buffer pointer.
+ *
+ * @par Test Vector:
+ * - Extended: NO (root form)
+ * - Flags: 0x1FFF (all 13 root bits ON)
+ *
+ * @par Wire Format (14 bits total):
+ * | Offset (bits) | Width | Field   | Value           |
+ * |---------------|-------|---------|-----------------|
+ * | 0             | 1     | ext_bit | 0               |
+ * | 1             | 13    | flags   | 1111111111111   |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x7F | 01111111 | ext(0) + flags[12:6]=1111111   |
+ * | 1    | 0xFC | 11111100 | flags[5:0]=111111 + pad(2)     |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_vehicle_event_flags_misaligned_access(void) {
+  static const uint8_t payload[] = {
+      0x00,                                          /* junk byte for misalignment */
+      0x7F,                                          /* ext(0) + flags[12:6] = 01111111 */
+      0xFC,                                          /* flags[5:0] + padding = 11111100 */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+  const uint8_t *unaligned_ptr = &payload[1];
+
+  /* Verify non-extended */
+  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Misaligned: extension bit should be 0");
+
+  /* Verify all 13 root flags ON */
+  TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x1FFFU, J2735_VEHICLE_EVENT_FLAGS_GET(unaligned_ptr),
+                                  "Misaligned: all 13 root flags should be ON (0x1FFF)");
+
+  /* Verify size */
+  TEST_ASSERT_EQUAL_UINT32_MESSAGE(14U, J2735_VEHICLE_EVENT_FLAGS_SIZE(unaligned_ptr),
+                                   "Misaligned: non-extended form should be 14 bits");
+
+  /* Verify individual flag accessors on unaligned data */
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(1U,
+                                  J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_HAZARD_LIGHTS(unaligned_ptr),
+                                  "Misaligned: eventHazardLights should be ON");
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(
+      1U, J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_AIR_BAG_DEPLOYMENT(unaligned_ptr),
+      "Misaligned: eventAirBagDeployment should be ON");
 }
 
 /* cppcheck-suppress-end misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
@@ -1276,4 +1289,10 @@ void run_testsuite_vehicle_event_flags(void) {
   RUN_TEST(test_vehicle_event_flags_single_bit_12_airbag);
   RUN_TEST(test_vehicle_event_flags_single_bit_7_hard_braking);
   RUN_TEST(test_vehicle_event_flags_extended_single_hazard_lights);
+  /**
+   * Misaligned buffer pointer test
+   *
+   * - Misaligned access: Forces &payload[1] to verify alignment safety
+   */
+  RUN_TEST(test_vehicle_event_flags_misaligned_access);
 }

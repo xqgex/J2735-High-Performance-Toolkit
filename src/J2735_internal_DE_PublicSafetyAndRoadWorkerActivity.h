@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 PublicSafetyAndRoadWorkerActivity Definition and Access Macros.
  *
+ * @verbatim
  * PublicSafetyAndRoadWorkerActivity ::= BIT STRING {
  *     unavailable (0),
  *     workingOnRoad (1),
@@ -29,25 +30,30 @@
  *     directingTraffic (4),
  *     otherActivities (5)
  * } (SIZE (6, ...))
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 6 and known extension size 6.
  *
- * Wire Format (non-extended, 7 bits total):
+ * @par Wire Format (non-extended, 7 bits total):
+ * @verbatim
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-6                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..5] (6 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Wire Format (extended, 14 bits total):
+ * @par Wire Format (extended, 14 bits total):
+ * @verbatim
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-13                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=6 (7 bits)  │ flags[0..5] (6 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 14 bits ≤ 56-bit READ_BITS limit.
  * We read all 14 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 13 (MSB of 14-bit value)
@@ -58,6 +64,7 @@
  *                  bit13  12..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F5]
  *                  bit13  12..6    5..0
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_PUBLICSAFETYANDROADWORKERACTIVITY_H
 #define J2735_INTERNAL_DE_PUBLICSAFETYANDROADWORKERACTIVITY_H
@@ -99,8 +106,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET_*()
- * accessors instead.  */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET_*() accessors instead.        */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_UNAVAILABLE          0U
 #define J2735_INTERNAL_BIT_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_WORKING_ON_ROAD      1U
@@ -174,8 +181,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
  * @param[in] raw14 Value previously returned by
  * J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY().
  * @return Right-aligned flag bits as uint8_t:
- *         - 6 significant bits (0x0000-0x003F) if non-extended
- *         - 6 significant bits (0x0000-0x003F) if extended
+ *         - 6 significant bits (0x00-0x3F) if non-extended
+ *         - 6 significant bits (0x00-0x3F) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET() for public API.

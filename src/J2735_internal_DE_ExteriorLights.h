@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 ExteriorLights Definition and Access Macros.
  *
+ * @verbatim
  * ExteriorLights ::= BIT STRING {
  *     lowBeamHeadlightsOn (0),
  *     highBeamHeadlightsOn (1),
@@ -32,25 +33,30 @@
  *     fogLightOn (7),
  *     parkingLightsOn (8)
  * } (SIZE (9, ...))
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 9 and known extension size 9.
  *
- * Wire Format (non-extended, 10 bits total):
+ * @par Wire Format (non-extended, 10 bits total):
+ * @verbatim
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-9                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..8] (9 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Wire Format (extended, 17 bits total):
+ * @par Wire Format (extended, 17 bits total):
+ * @verbatim
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-16                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=9 (7 bits)  │ flags[0..8] (9 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 17 bits ≤ 56-bit READ_BITS limit.
  * We read all 17 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 16 (MSB of 17-bit value)
@@ -61,6 +67,7 @@
  *                  bit16  15..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F8]
  *                  bit16  15..9    8..0
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_EXTERIORLIGHTS_H
 #define J2735_INTERNAL_DE_EXTERIORLIGHTS_H
@@ -102,7 +109,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_EXTERIOR_LIGHTS_GET_*() accessors instead.      */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_EXTERIOR_LIGHTS_GET_*() accessors instead.                               */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_EXTERIOR_LIGHTS_LOW_BEAM_HEADLIGHTS_ON     0U
 #define J2735_INTERNAL_BIT_EXTERIOR_LIGHTS_HIGH_BEAM_HEADLIGHTS_ON    1U

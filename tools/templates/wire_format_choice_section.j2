@@ -34,18 +34,18 @@
 
   Output (rendered inside an existing Doxygen comment block):
     * @par Wire Format (approach selected, 5 bits):
-    * @code
+    * @verbatim
     * ┌──────────┬──────────────────────────────┐
     * │ Bit 0    │ Bits 1-4                     │
     * ├──────────┼──────────────────────────────┤
     * │ Index = 0│ ApproachID value (4 bits)    │
     * └──────────┴──────────────────────────────┘
-    * @endcode
+    * @endverbatim
 -#}
 {% for variant in choice_variants %}
  *
  * @par Wire Format ({{ variant.name }}):
- * @code
+ * @verbatim
 {#  Build segments from domain data (header, content, min_width) -#}
 {%- set segments = [] -%}
 {#- Index segment -#}
@@ -79,5 +79,5 @@
  * │{% for i in range(segments | length) %} {{ "%-*s" | format(widths[i], segments[i][1]) }} │{% endfor %}
 
  * └{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┴{% endif %}{% endfor %}┘
- * @endcode
+ * @endverbatim
 {% endfor %}

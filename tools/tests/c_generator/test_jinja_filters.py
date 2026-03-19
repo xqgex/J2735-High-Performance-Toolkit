@@ -19,8 +19,8 @@
 Tests cover all filters registered in create_jinja_env():
     - filter_format_range: value range formatting for SequenceField
     - filter_is_signed: signed/unsigned detection for SequenceField
-    - filter_screaming_snake: CamelCase → SCREAMING_SNAKE_CASE
-    - filter_snake_case: CamelCase → snake_case
+    - filter_screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
+    - filter_snake_case: CamelCase -> snake_case
 """
 
 from unittest import TestCase
@@ -31,6 +31,7 @@ from tools.j2735_c_generator_jinja import (
     filter_screaming_snake,
     filter_snake_case,
 )
+from tools.j2735_spec_constraints import SequenceField, TypeReference
 from tools.tests.conftest import (
     make_bitstring_field,
     make_integer_field,
@@ -62,6 +63,16 @@ class TestScreamingSnakeConversion(TestCase):
         self.assertEqual(filter_screaming_snake("AccelerationSet4Way"), "ACCELERATION_SET_4_WAY")
         self.assertEqual(filter_screaming_snake("Type2Value"), "TYPE_2_VALUE")
 
+    def test_hyphenated_asn1_names(self) -> None:
+        """Handle ASN.1 names with hyphens (e.g., Offset-B10, Node-LL-24B)."""
+        self.assertEqual(filter_screaming_snake("Offset-B10"), "OFFSET_B_10")
+        self.assertEqual(filter_screaming_snake("Node-LL-24B"), "NODE_LL_24_B")
+        self.assertEqual(filter_screaming_snake("OffsetLL-B12"), "OFFSET_LL_B_12")
+        self.assertEqual(filter_screaming_snake("NMEA-MsgType"), "NMEA_MSG_TYPE")
+        self.assertEqual(filter_screaming_snake("RTCM-Revision"), "RTCM_REVISION")
+        self.assertEqual(filter_screaming_snake("VertOffset-B07"), "VERT_OFFSET_B_07")
+        self.assertEqual(filter_screaming_snake("TimeInSecond-B16"), "TIME_IN_SECOND_B_16")
+
     def test_already_screaming(self) -> None:
         """Already SCREAMING_SNAKE stays the same."""
         self.assertEqual(filter_screaming_snake("MSG_COUNT"), "MSG_COUNT")
@@ -92,13 +103,20 @@ class TestSnakeCaseConversion(TestCase):
         self.assertEqual(filter_snake_case("AccelerationSet4Way"), "acceleration_set_4_way")
         self.assertEqual(filter_snake_case("Type2Value"), "type_2_value")
 
+    def test_hyphenated_asn1_names(self) -> None:
+        """Handle ASN.1 names with hyphens."""
+        self.assertEqual(filter_snake_case("Offset-B10"), "offset_b_10")
+        self.assertEqual(filter_snake_case("Node-LL-24B"), "node_ll_24_b")
+        self.assertEqual(filter_snake_case("OffsetLL-B12"), "offset_ll_b_12")
+        self.assertEqual(filter_snake_case("NMEA-MsgType"), "nmea_msg_type")
+
     def test_already_snake(self) -> None:
         """Already snake_case stays the same."""
         self.assertEqual(filter_snake_case("msg_count"), "msg_count")
 
 
 # =============================================================================
-# Tests — filter_is_signed()
+# Tests - filter_is_signed()
 # =============================================================================
 
 
@@ -130,9 +148,21 @@ class TestIsSigned(TestCase):
         field = make_bitstring_field("flags", "Flags", 8)
         self.assertFalse(filter_is_signed(field))
 
+    def test_unresolved_type_reference_is_unsigned(self) -> None:
+        """Unresolved TypeReference has no min_value and returns False."""
+        field = SequenceField(
+            name="x",
+            type_name="Unknown",
+            type=TypeReference(name="Unknown"),
+            is_optional=False,
+            section_comment="",
+            inline_comment="",
+        )
+        self.assertFalse(filter_is_signed(field))
+
 
 # =============================================================================
-# Tests — filter_format_range()
+# Tests - filter_format_range()
 # =============================================================================
 
 
@@ -160,6 +190,18 @@ class TestFormatRange(TestCase):
         self.assertEqual(filter_format_range(field), "42..42")
 
     def test_bitstring_returns_empty(self) -> None:
-        """BIT STRING field has no range → returns empty string."""
+        """BIT STRING field has no range -> returns empty string."""
         field = make_bitstring_field("flags", "Flags", 8)
+        self.assertEqual(filter_format_range(field), "")
+
+    def test_unresolved_type_reference_returns_empty(self) -> None:
+        """Unresolved TypeReference has no range and returns empty string."""
+        field = SequenceField(
+            name="x",
+            type_name="Unknown",
+            type=TypeReference(name="Unknown"),
+            is_optional=False,
+            section_comment="",
+            inline_comment="",
+        )
         self.assertEqual(filter_format_range(field), "")

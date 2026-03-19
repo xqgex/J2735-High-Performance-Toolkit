@@ -47,6 +47,7 @@ from tools.tests.conftest import (
     make_nested_mock_spec,
     make_optional_mock_spec,
     make_sequence,
+    make_variable_width_field,
 )
 
 # =============================================================================
@@ -137,7 +138,7 @@ def _render_real_asn1(type_name: str, spec: J2735Specification) -> str:
 
 
 # =============================================================================
-# Test Helpers — Synthetic Type Builders
+# Test Helpers - Synthetic Type Builders
 # =============================================================================
 
 
@@ -196,12 +197,12 @@ def _extract_row_widths(line: str) -> list[int]:
     Returns:
         List of cell widths (number of '─' chars per cell).
     """
-    # Find all runs of ─ characters
+    # Find all runs of `─` characters
     return [len(m.group()) for m in re.finditer(r"─+", line)]
 
 
 # =============================================================================
-# Tests — ASN.1 Definition Template
+# Tests - ASN.1 Definition Template
 # =============================================================================
 
 
@@ -358,6 +359,24 @@ class TestASN1DefinitionTemplate(TestCase):
             elif "TypeC" in type_part:
                 self.assertNotIn(",", type_part)
 
+    def test_variable_width_field_shows_variable(self) -> None:
+        """Variable-width field shows '-- variable' comment."""
+        typedef = _make_typedef(
+            "TestType",
+            fields=(
+                make_integer_field(
+                    "a",
+                    "TypeA",
+                    0,
+                    127,
+                ),
+                make_variable_width_field("items", "NodeList"),
+            ),
+        )
+        output = _render_asn1(typedef)
+
+        self.assertIn("-- variable", output)
+
     def test_doxygen_prefix(self) -> None:
         """Every content line starts with ' * '."""
         typedef = _make_typedef(
@@ -375,7 +394,7 @@ class TestASN1DefinitionTemplate(TestCase):
 
 
 # =============================================================================
-# Tests — Wire Format Table Template (Column-Based)
+# Tests - Wire Format Table Template (Column-Based)
 # =============================================================================
 
 
@@ -534,7 +553,7 @@ class TestWireFormatTableTemplate(TestCase):
 
 
 # =============================================================================
-# Tests — Wire Format Compact Template (Row-Based)
+# Tests - Wire Format Compact Template (Row-Based)
 # =============================================================================
 
 
@@ -682,7 +701,7 @@ class TestWireFormatCompactTemplate(TestCase):
 
 
 # =============================================================================
-# Tests — Bit Position Continuity (Regression)
+# Tests - Bit Position Continuity (Regression)
 # =============================================================================
 
 
@@ -854,7 +873,7 @@ class TestBitPositionContinuity(TestCase):
 
 
 # =============================================================================
-# Tests — Template Selection Logic
+# Tests - Template Selection Logic
 # =============================================================================
 
 
@@ -891,7 +910,7 @@ class TestTemplateSelection(TestCase):
 
 
 # =============================================================================
-# Tests — With Real Spec Fixtures
+# Tests - With Real Spec Fixtures
 # =============================================================================
 
 

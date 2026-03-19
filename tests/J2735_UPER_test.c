@@ -29,8 +29,6 @@
  * These are comprehensive edge-case tests covering all branches and error paths.
  */
 
-#include <inttypes.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "unity.h"
@@ -69,13 +67,30 @@
 /**
  * @brief Test length determinant short form: minimum value (0).
  *
- * @par Encoding:
- * - Short form: bit[0] = 0, bits[1:7] = 0
- * - Binary: 00000000
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 0
- * - Bits consumed: 8
+ * @par Test Vector:
+ * - Form: short (bit[0] = 0)
+ * - Length value: 0 (0x00)
+ *
+ * @par Wire Format (8 bits total):
+ * | Offset (bits) | Width | Field  | Value   |
+ * |---------------|-------|--------|---------|
+ * | 0             | 1     | form   | 0       |
+ * | 1             | 7     | length | 0000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields              |
+ * |------|------|----------|---------------------|
+ * | 0    | 0x00 | 00000000 | form(0) + length(0) |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_short_form_min(void) {
@@ -94,13 +109,30 @@ void test_inline_read_length_determinant_short_form_min(void) {
 /**
  * @brief Test length determinant short form: maximum value (127).
  *
- * @par Encoding:
- * - Short form: bit[0] = 0, bits[1:7] = 127
- * - Binary: 01111111
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 127
- * - Bits consumed: 8
+ * @par Test Vector:
+ * - Form: short (bit[0] = 0)
+ * - Length value: 127 (0x7F)
+ *
+ * @par Wire Format (8 bits total):
+ * | Offset (bits) | Width | Field  | Value   |
+ * |---------------|-------|--------|---------|
+ * | 0             | 1     | form   | 0       |
+ * | 1             | 7     | length | 1111111 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                |
+ * |------|------|----------|-----------------------|
+ * | 0    | 0x7F | 01111111 | form(0) + length(127) |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_short_form_max(void) {
@@ -119,13 +151,30 @@ void test_inline_read_length_determinant_short_form_max(void) {
 /**
  * @brief Test length determinant short form: typical value (1).
  *
- * @par Encoding:
- * - Short form: bit[0] = 0, bits[1:7] = 1
- * - Binary: 00000001
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 1
- * - Bits consumed: 8
+ * @par Test Vector:
+ * - Form: short (bit[0] = 0)
+ * - Length value: 1 (0x01)
+ *
+ * @par Wire Format (8 bits total):
+ * | Offset (bits) | Width | Field  | Value   |
+ * |---------------|-------|--------|---------|
+ * | 0             | 1     | form   | 0       |
+ * | 1             | 7     | length | 0000001 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields              |
+ * |------|------|----------|---------------------|
+ * | 0    | 0x01 | 00000001 | form(0) + length(1) |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_short_form_typical(void) {
@@ -144,13 +193,31 @@ void test_inline_read_length_determinant_short_form_typical(void) {
 /**
  * @brief Test length determinant long form: minimum value (0).
  *
- * @par Encoding:
- * - Long form: bits[0:1] = 10, bits[2:15] = 0
- * - Binary: 10000000 00000000
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 0
- * - Bits consumed: 16
+ * @par Test Vector:
+ * - Form: long (bits[0:1] = 10)
+ * - Length value: 0 (0x0000)
+ *
+ * @par Wire Format (16 bits total):
+ * | Offset (bits) | Width | Field  | Value          |
+ * |---------------|-------|--------|----------------|
+ * | 0             | 2     | form   | 10             |
+ * | 2             | 14    | length | 00000000000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                  |
+ * |------|------|----------|-------------------------|
+ * | 0    | 0x80 | 10000000 | form(10) + length[13:8] |
+ * | 1    | 0x00 | 00000000 | length[7:0]             |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_long_form_min(void) {
@@ -169,13 +236,31 @@ void test_inline_read_length_determinant_long_form_min(void) {
 /**
  * @brief Test length determinant long form: just above short form range (128).
  *
- * @par Encoding:
- * - Long form: bits[0:1] = 10, bits[2:15] = 128
- * - Binary: 10000000 10000000
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 128
- * - Bits consumed: 16
+ * @par Test Vector:
+ * - Form: long (bits[0:1] = 10)
+ * - Length value: 128 (0x0080)
+ *
+ * @par Wire Format (16 bits total):
+ * | Offset (bits) | Width | Field  | Value          |
+ * |---------------|-------|--------|----------------|
+ * | 0             | 2     | form   | 10             |
+ * | 2             | 14    | length | 00000010000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                  |
+ * |------|------|----------|-------------------------|
+ * | 0    | 0x80 | 10000000 | form(10) + length[13:8] |
+ * | 1    | 0x80 | 10000000 | length[7:0]             |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_long_form_128(void) {
@@ -194,13 +279,31 @@ void test_inline_read_length_determinant_long_form_128(void) {
 /**
  * @brief Test length determinant long form: maximum value (16383).
  *
- * @par Encoding:
- * - Long form: bits[0:1] = 10, bits[2:15] = 16383
- * - Binary: 10111111 11111111
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 16383
- * - Bits consumed: 16
+ * @par Test Vector:
+ * - Form: long (bits[0:1] = 10)
+ * - Length value: 16383 (0x3FFF)
+ *
+ * @par Wire Format (16 bits total):
+ * | Offset (bits) | Width | Field  | Value          |
+ * |---------------|-------|--------|----------------|
+ * | 0             | 2     | form   | 10             |
+ * | 2             | 14    | length | 11111111111111 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                      |
+ * |------|------|----------|-----------------------------|
+ * | 0    | 0xBF | 10111111 | form(10) + length[13:8]     |
+ * | 1    | 0xFF | 11111111 | length[7:0]                 |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_long_form_max(void) {
@@ -219,13 +322,29 @@ void test_inline_read_length_determinant_long_form_max(void) {
 /**
  * @brief Test length determinant fragmented form: returns error.
  *
- * @par Encoding:
- * - Fragmented: bits[0:1] = 11
- * - Binary: 11xxxxxx...
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 0 (error)
- * - Bits consumed: 0 (error)
+ * @par Test Vector:
+ * - Form: fragmented (bits[0:1] = 11) — unsupported, returns error
+ * - Expected: length = 0, bits consumed = 0
+ *
+ * @par Wire Format (2+ bits total):
+ * | Offset (bits) | Width | Field | Value |
+ * |---------------|-------|-------|-------|
+ * | 0             | 2     | form  | 11    |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields          |
+ * |------|------|----------|-----------------|
+ * | 0    | 0xC0 | 11000000 | form(11) + pad  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_fragmented_error(void) {
@@ -244,13 +363,33 @@ void test_inline_read_length_determinant_fragmented_error(void) {
 /**
  * @brief Test length determinant with non-zero bit offset.
  *
- * @par Encoding:
- * - 3 bits padding + short form length=42
- * - Binary: xxx_00101010 (short form 0 + 42)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Length: 42
- * - Bits consumed: 8
+ * @par Test Vector:
+ * - Bit offset: 3
+ * - Form: short (bit[0] = 0)
+ * - Length value: 42 (0x2A)
+ *
+ * @par Wire Format (8 bits at offset 3):
+ * | Offset (bits) | Width | Field   | Value   |
+ * |---------------|-------|---------|---------|
+ * | 0             | 3     | padding | 111     |
+ * | 3             | 1     | form    | 0       |
+ * | 4             | 7     | length  | 0101010 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0xE5 | 11100101 | pad(111) + form(0) + length[6:3]    |
+ * | 1    | 0x40 | 01000000 | length[2:0] + pad                   |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_nonzero_bit_offset(void) {
@@ -268,6 +407,53 @@ void test_inline_read_length_determinant_nonzero_bit_offset(void) {
   TEST_ASSERT_EQUAL_UINT16_MESSAGE(42U, length, "Length should be 42");
 }
 
+/**
+ * @brief Test read_length_determinant with deliberately misaligned buffer pointer.
+ *
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.9 Length Determinant (Unconstrained)
+ * length-determinant ::= CHOICE {
+ *   short-form    BIT STRING (SIZE(8)),    -- 0xxxxxxx → 0..127
+ *   long-form     BIT STRING (SIZE(16)),   -- 10xxxxxx xxxxxxxx → 0..16383
+ *   fragmented    BIT STRING (SIZE(8+))    -- 11xxxxxx... (unsupported)
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - Buffer: &payload[1] (deliberately misaligned)
+ * - Form: short (bit[0] = 0)
+ * - Length value: 42 (0x2A)
+ *
+ * @par Wire Format (8 bits total):
+ * | Offset (bits) | Width | Field  | Value   |
+ * |---------------|-------|--------|---------|
+ * | 0             | 1     | form   | 0       |
+ * | 1             | 7     | length | 0101010 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields               |
+ * |------|------|----------|----------------------|
+ * | 0    | 0xFF | 11111111 | junk (misalignment)  |
+ * | 1    | 0x2A | 00101010 | form(0) + length(42) |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_inline_read_length_determinant_misaligned_access(void) {
+  static const uint8_t payload[] = {
+      0xFF,                                          /* junk byte for misalignment */
+      0x2A,                                          /* 0_0101010: short form, length=42 */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+  const uint8_t *unaligned_ptr = &payload[1];
+
+  uint16_t length = TEST_POISON_U16;
+  uint8_t bits_consumed = j2735_internal_inline_read_length_determinant(unaligned_ptr, 0U, &length);
+
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(8U, bits_consumed,
+                                  "Misaligned: should consume 8 bits for short form");
+  TEST_ASSERT_EQUAL_UINT16_MESSAGE(42U, length, "Misaligned: length should be 42");
+}
+
 /* ============================================================================
  * j2735_internal_inline_read_nsnnwn() Tests
  * ============================================================================
@@ -280,13 +466,33 @@ void test_inline_read_length_determinant_nonzero_bit_offset(void) {
 /**
  * @brief Test nsnnwn small form: minimum value (0).
  *
- * @par Encoding:
- * - Small form: bit[0] = 0, bits[1:6] = 0
- * - Binary: 0_000000
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
+ * @par Test Vector:
+ * - Form: small (bit[0] = 0)
  * - Value: 0
- * - Bits consumed: 7
+ *
+ * @par Wire Format (7 bits total):
+ * | Offset (bits) | Width | Field | Value  |
+ * |---------------|-------|-------|--------|
+ * | 0             | 1     | form  | 0      |
+ * | 1             | 6     | value | 000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                    |
+ * |------|------|----------|---------------------------|
+ * | 0    | 0x00 | 00000000 | form(0) + value(0) + pad  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_small_form_min(void) {
@@ -305,13 +511,33 @@ void test_inline_read_nsnnwn_small_form_min(void) {
 /**
  * @brief Test nsnnwn small form: maximum value (63).
  *
- * @par Encoding:
- * - Small form: bit[0] = 0, bits[1:6] = 63
- * - Binary: 0_111111
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 63
- * - Bits consumed: 7
+ * @par Test Vector:
+ * - Form: small (bit[0] = 0)
+ * - Value: 63 (0x3F)
+ *
+ * @par Wire Format (7 bits total):
+ * | Offset (bits) | Width | Field | Value  |
+ * |---------------|-------|-------|--------|
+ * | 0             | 1     | form  | 0      |
+ * | 1             | 6     | value | 111111 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                     |
+ * |------|------|----------|----------------------------|
+ * | 0    | 0x7E | 01111110 | form(0) + value(63) + pad  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_small_form_max(void) {
@@ -330,13 +556,33 @@ void test_inline_read_nsnnwn_small_form_max(void) {
 /**
  * @brief Test nsnnwn small form: typical value (5).
  *
- * @par Encoding:
- * - Small form: bit[0] = 0, bits[1:6] = 5
- * - Binary: 0_000101
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 5
- * - Bits consumed: 7
+ * @par Test Vector:
+ * - Form: small (bit[0] = 0)
+ * - Value: 5 (0x05)
+ *
+ * @par Wire Format (7 bits total):
+ * | Offset (bits) | Width | Field | Value  |
+ * |---------------|-------|-------|--------|
+ * | 0             | 1     | form  | 0      |
+ * | 1             | 6     | value | 000101 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                    |
+ * |------|------|----------|---------------------------|
+ * | 0    | 0x0A | 00001010 | form(0) + value(5) + pad  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_small_form_typical(void) {
@@ -355,15 +601,36 @@ void test_inline_read_nsnnwn_small_form_typical(void) {
 /**
  * @brief Test nsnnwn large form: minimum large value (64).
  *
- * @par Encoding:
- * - Large form: 1 + len_det(1 octet) + value(0x40)
- * - Binary: 1_0000000_1 01000000
- *           ^         ^ ^
- *           large     len=1 value=64
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 64
- * - Bits consumed: 1 + 8 + 8 = 17
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: short form, 1 octet
+ * - Value: 64 (0x40)
+ *
+ * @par Wire Format (17 bits total):
+ * | Offset (bits) | Width | Field      | Value    |
+ * |---------------|-------|------------|----------|
+ * | 0             | 1     | prefix     | 1        |
+ * | 1             | 8     | length_det | 00000001 |
+ * | 9             | 8     | value      | 01000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x80 | 10000000 | prefix(1) + length_det[7:1]    |
+ * | 1    | 0xA0 | 10100000 | length_det[0] + value[7:1]     |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_large_form_64(void) {
@@ -383,13 +650,36 @@ void test_inline_read_nsnnwn_large_form_64(void) {
 /**
  * @brief Test nsnnwn large form: value 100.
  *
- * @par Encoding:
- * - Large form: 1 + len_det(1 octet) + value(0x64)
- * - Binary: 1_0000000_1 01100100
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 100
- * - Bits consumed: 17
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: short form, 1 octet
+ * - Value: 100 (0x64)
+ *
+ * @par Wire Format (17 bits total):
+ * | Offset (bits) | Width | Field      | Value    |
+ * |---------------|-------|------------|----------|
+ * | 0             | 1     | prefix     | 1        |
+ * | 1             | 8     | length_det | 00000001 |
+ * | 9             | 8     | value      | 01100100 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x80 | 10000000 | prefix(1) + length_det[7:1]    |
+ * | 1    | 0xB2 | 10110010 | length_det[0] + value[7:1]     |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_large_form_100(void) {
@@ -408,13 +698,37 @@ void test_inline_read_nsnnwn_large_form_100(void) {
 /**
  * @brief Test nsnnwn large form: value 255 (max 1 byte).
  *
- * @par Encoding:
- * - Large form: 1 + len_det(1 octet) + value(0xFF)
- * - Binary: 1_0000000_1 11111111
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 255
- * - Bits consumed: 17
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: short form, 1 octet
+ * - Value: 255 (0xFF)
+ *
+ * @par Wire Format (17 bits total):
+ * | Offset (bits) | Width | Field      | Value    |
+ * |---------------|-------|------------|----------|
+ * | 0             | 1     | prefix     | 1        |
+ * | 1             | 8     | length_det | 00000001 |
+ * | 9             | 8     | value      | 11111111 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x80 | 10000000 | prefix(1) + length_det[7:1]    |
+ * | 1    | 0xFF | 11111111 | length_det[0] + value[7:1]     |
+ * | 2    | 0x80 | 10000000 | value[0] + pad                 |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_large_form_255(void) {
@@ -433,15 +747,37 @@ void test_inline_read_nsnnwn_large_form_255(void) {
 /**
  * @brief Test nsnnwn large form: value 256 (needs 2 bytes).
  *
- * @par Encoding:
- * - Large form: 1 + len_det(2 octets) + value(0x0100)
- * - Binary: 1_0000001_0 00000001 00000000
- *           ^       ^           ^
- *           large   len=2       value=256
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 256
- * - Bits consumed: 1 + 8 + 16 = 25
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: short form, 2 octets
+ * - Value: 256 (0x0100)
+ *
+ * @par Wire Format (25 bits total):
+ * | Offset (bits) | Width | Field      | Value            |
+ * |---------------|-------|------------|------------------|
+ * | 0             | 1     | prefix     | 1                |
+ * | 1             | 8     | length_det | 00000010         |
+ * | 9             | 16    | value      | 0000000100000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x81 | 10000001 | prefix(1) + length_det[7:1]    |
+ * | 1    | 0x00 | 00000000 | length_det[0] + value[15:9]    |
+ * | 2    | 0x80 | 10000000 | value[8:1]                     |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_large_form_256(void) {
@@ -461,12 +797,38 @@ void test_inline_read_nsnnwn_large_form_256(void) {
 /**
  * @brief Test nsnnwn large form: value 65535 (max 2 bytes).
  *
- * @par Encoding:
- * - Large form: 1 + len_det(2 octets) + value(0xFFFF)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 65535
- * - Bits consumed: 25
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: short form, 2 octets
+ * - Value: 65535 (0xFFFF)
+ *
+ * @par Wire Format (25 bits total):
+ * | Offset (bits) | Width | Field      | Value            |
+ * |---------------|-------|------------|------------------|
+ * | 0             | 1     | prefix     | 1                |
+ * | 1             | 8     | length_det | 00000010         |
+ * | 9             | 16    | value      | 1111111111111111 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x81 | 10000001 | prefix(1) + length_det[7:1]    |
+ * | 1    | 0x7F | 01111111 | length_det[0] + value[15:9]    |
+ * | 2    | 0xFF | 11111111 | value[8:1]                     |
+ * | 3    | 0x80 | 10000000 | value[0] + pad                 |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_large_form_65535(void) {
@@ -485,12 +847,39 @@ void test_inline_read_nsnnwn_large_form_65535(void) {
 /**
  * @brief Test nsnnwn large form: 4-byte value (max supported).
  *
- * @par Encoding:
- * - Large form: 1 + len_det(4 octets) + value(0x12345678)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: short form, 4 octets
  * - Value: 0x12345678
- * - Bits consumed: 1 + 8 + 32 = 41
+ *
+ * @par Wire Format (41 bits total):
+ * | Offset (bits) | Width | Field      | Value                            |
+ * |---------------|-------|------------|----------------------------------|
+ * | 0             | 1     | prefix     | 1                                |
+ * | 1             | 8     | length_det | 00000100                         |
+ * | 9             | 32    | value      | 00010010001101000101011001111000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x82 | 10000010 | prefix(1) + length_det[7:1]    |
+ * | 1    | 0x09 | 00001001 | length_det[0] + value[31:25]   |
+ * | 2    | 0x1A | 00011010 | value[24:17]                   |
+ * | 3    | 0x2B | 00101011 | value[16:9]                    |
+ * | 4    | 0x3C | 00111100 | value[8:1]                     |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_large_form_4_bytes(void) {
@@ -511,12 +900,35 @@ void test_inline_read_nsnnwn_large_form_4_bytes(void) {
 /**
  * @brief Test nsnnwn large form: 5-byte value (error - exceeds uint32_t).
  *
- * @par Encoding:
- * - Large form: 1 + len_det(5 octets) + ...
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 0 (error)
- * - Bits consumed: 0 (error)
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: short form, 5 octets — exceeds uint32_t, returns error
+ * - Expected: value = 0, bits consumed = 0
+ *
+ * @par Wire Format (9+ bits total):
+ * | Offset (bits) | Width | Field      | Value    |
+ * |---------------|-------|------------|----------|
+ * | 0             | 1     | prefix     | 1        |
+ * | 1             | 8     | length_det | 00000101 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                         |
+ * |------|------|----------|--------------------------------|
+ * | 0    | 0x82 | 10000010 | prefix(1) + length_det[7:1]    |
+ * | 1    | 0x80 | 10000000 | length_det[0] + pad            |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_large_form_5_bytes_error(void) {
@@ -535,12 +947,34 @@ void test_inline_read_nsnnwn_large_form_5_bytes_error(void) {
 /**
  * @brief Test nsnnwn large form: fragmented length (error).
  *
- * @par Encoding:
- * - Large form: 1 + fragmented_len_det (11_...)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Value: 0 (error)
- * - Bits consumed: 0 (error)
+ * @par Test Vector:
+ * - Form: large (bit[0] = 1)
+ * - Length determinant: fragmented form (bits[1:2] = 11) — unsupported, returns error
+ * - Expected: value = 0, bits consumed = 0
+ *
+ * @par Wire Format (3+ bits total):
+ * | Offset (bits) | Width | Field          | Value |
+ * |---------------|-------|----------------|-------|
+ * | 0             | 1     | prefix         | 1     |
+ * | 1             | 2     | length_det_tag | 11    |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                            |
+ * |------|------|----------|-----------------------------------|
+ * | 0    | 0xE0 | 11100000 | prefix(1) + length_det(11) + pad  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_fragmented_error(void) {
@@ -559,19 +993,36 @@ void test_inline_read_nsnnwn_fragmented_error(void) {
 /**
  * @brief Test nsnnwn with non-zero bit offset.
  *
- * @par Encoding:
- * - 3 bits padding + small form value=31
- * - Binary: xxx_0_011111 (7 bits: small form 0 + 31)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
  *
- * @par Layout (10 bits):
- * - Bits 0-2: 111 (padding)
- * - Bit 3: 0 (small form)
- * - Bits 4-9: 011111 (value 31)
- * - Bytes: 0xE7, 0xC0 = 1110_0111 1100_0000
+ * @par Test Vector:
+ * - Bit offset: 3
+ * - Form: small (bit[0] = 0)
+ * - Value: 31 (0x1F)
  *
- * @par Expected:
- * - Value: 31
- * - Bits consumed: 7
+ * @par Wire Format (7 bits at offset 3):
+ * | Offset (bits) | Width | Field   | Value  |
+ * |---------------|-------|---------|--------|
+ * | 0             | 3     | padding | 111    |
+ * | 3             | 1     | form    | 0      |
+ * | 4             | 6     | value   | 011111 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                             |
+ * |------|------|----------|------------------------------------|
+ * | 0    | 0xE7 | 11100111 | pad(111) + form(0) + value[5:2]    |
+ * | 1    | 0xC0 | 11000000 | value[1:0] + pad                   |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_nonzero_bit_offset(void) {
@@ -588,6 +1039,56 @@ void test_inline_read_nsnnwn_nonzero_bit_offset(void) {
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(31U, value, "Value should be 31");
 }
 
+/**
+ * @brief Test read_nsnnwn with deliberately misaligned buffer pointer.
+ *
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §11.6 Normally-Small Non-Negative Whole Number
+ * nsnnwn ::= CHOICE {
+ *   small-form  BIT STRING (SIZE(7)),          -- 0xxxxxx → 0..63
+ *   large-form  SEQUENCE {                     -- 1 + length_det + value
+ *     prefix       BIT STRING (SIZE(1)),       -- always 1
+ *     length       length-determinant,         -- octet count
+ *     value        OCTET STRING (SIZE(1..4))   -- big-endian unsigned
+ *   }
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - Buffer: &payload[1] (deliberately misaligned)
+ * - Form: small (bit[0] = 0)
+ * - Value: 10 (0x0A)
+ *
+ * @par Wire Format (7 bits total):
+ * | Offset (bits) | Width | Field | Value  |
+ * |---------------|-------|-------|--------|
+ * | 0             | 1     | form  | 0      |
+ * | 1             | 6     | value | 001010 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                     |
+ * |------|------|----------|----------------------------|
+ * | 0    | 0xFF | 11111111 | junk (misalignment)        |
+ * | 1    | 0x14 | 00010100 | form(0) + value(10) + pad  |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_inline_read_nsnnwn_misaligned_access(void) {
+  static const uint8_t payload[] = {
+      0xFF,                                          /* junk byte for misalignment */
+      0x14,                                          /* 0_001010_0: small form, value=10 */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+  const uint8_t *unaligned_ptr = &payload[1];
+
+  uint32_t value = TEST_POISON_U32;
+  uint8_t bits_consumed = j2735_internal_inline_read_nsnnwn(unaligned_ptr, 0U, &value);
+
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(7U, bits_consumed,
+                                  "Misaligned: should consume 7 bits for small form");
+  TEST_ASSERT_EQUAL_UINT32_MESSAGE(10U, value, "Misaligned: value should be 10");
+}
+
 /* ============================================================================
  * j2735_internal_inline_skip_extensions() Tests
  * ============================================================================
@@ -601,13 +1102,34 @@ void test_inline_read_nsnnwn_nonzero_bit_offset(void) {
 /**
  * @brief Test skip extensions: 1 slot defined, none present.
  *
- * @par Encoding:
- * - nsnnwn = 0 (small form, 7 bits) → 1 extension slot
- * - bitmap = 0 (1 bit) → extension not present
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Extension bits: 7 + 1 = 8
- * - Result: 0 (success)
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 0 (small form) → 1 extension slot
+ * - bitmap: 0 (1 bit) → extension not present
+ *
+ * @par Wire Format (8 bits total):
+ * | Offset (bits) | Width | Field     | Value  |
+ * |---------------|-------|-----------|--------|
+ * | 0             | 1     | nsn_form  | 0      |
+ * | 1             | 6     | ext_count | 000000 |
+ * | 7             | 1     | bitmap    | 0      |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                          |
+ * |------|------|----------|---------------------------------|
+ * | 0    | 0x00 | 00000000 | nsn_form(0) + count(0) + bmp(0) |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_one_slot_none_present(void) {
@@ -626,24 +1148,40 @@ void test_inline_skip_extensions_one_slot_none_present(void) {
 /**
  * @brief Test skip extensions: 1 slot defined, present with 1 byte content.
  *
- * @par Encoding:
- * - nsnnwn = 0 (7 bits) → 1 extension slot
- * - bitmap = 1 (1 bit) → extension present
- * - length = 1 (8 bits, short form)
- * - content = 0xAB (8 bits)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
  *
- * @par Layout (24 bits):
- * - Bits 0-6:   0_000000 (nsnnwn=0)
- * - Bit 7:      1 (bitmap=1)
- * - Bits 8-15:  0_0000001 (length=1)
- * - Bits 16-23: 10101011 (content=0xAB)
- * - Byte 0: 0_000000_1 = 0x01
- * - Byte 1: 0_0000001  = 0x01
- * - Byte 2: 10101011   = 0xAB
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 0 (small form) → 1 extension slot
+ * - bitmap: 1 (1 bit) → extension present
+ * - length: 1 byte (short form)
+ * - content: 0xAB
  *
- * @par Expected:
- * - Extension bits: 7 + 1 + 8 + 8 = 24
- * - Result: 0 (success)
+ * @par Wire Format (24 bits total):
+ * | Offset (bits) | Width | Field     | Value    |
+ * |---------------|-------|-----------|----------|
+ * | 0             | 1     | nsn_form  | 0        |
+ * | 1             | 6     | ext_count | 000000   |
+ * | 7             | 1     | bitmap    | 1        |
+ * | 8             | 8     | length    | 00000001 |
+ * | 16            | 8     | content   | 10101011 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                          |
+ * |------|------|----------|---------------------------------|
+ * | 0    | 0x01 | 00000001 | nsn_form(0) + count(0) + bmp(1) |
+ * | 1    | 0x01 | 00000001 | length(1)                       |
+ * | 2    | 0xAB | 10101011 | content(0xAB)                   |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_one_slot_present(void) {
@@ -662,19 +1200,46 @@ void test_inline_skip_extensions_one_slot_present(void) {
 /**
  * @brief Test skip extensions: 2 slots defined, both present.
  *
- * @par Encoding:
- * - nsnnwn = 1 (7 bits) → 2 extension slots
- * - bitmap = 11 (2 bits) → both present
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 1 (small form) → 2 extension slots
+ * - bitmap: 11 (2 bits) → both present
  * - ext0: length = 1, content = 0xAA (16 bits)
  * - ext1: length = 2, content = 0xBBCC (24 bits)
  *
- * @par Layout (49 bits):
- * - Bit stream: 0000001 11 00000001 10101010 00000010 1011101111001100
- * - Bytes: 0x03 0x80 0xD5 0x01 0x5D 0xE6 0x00
+ * @par Wire Format (49 bits total):
+ * | Offset (bits) | Width | Field      | Value            |
+ * |---------------|-------|------------|------------------|
+ * | 0             | 1     | nsn_form   | 0                |
+ * | 1             | 6     | ext_count  | 000001           |
+ * | 7             | 2     | bitmap     | 11               |
+ * | 9             | 8     | ext0_len   | 00000001         |
+ * | 17            | 8     | ext0_data  | 10101010         |
+ * | 25            | 8     | ext1_len   | 00000010         |
+ * | 33            | 16    | ext1_data  | 1011101111001100 |
  *
- * @par Expected:
- * - Extension bits: 7 + 2 + 16 + 24 = 49
- * - Result: 0 (success)
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0x03 | 00000011 | nsn_form(0) + count(1) + bitmap[1]  |
+ * | 1    | 0x80 | 10000000 | bitmap[0] + ext0_len[7:1]           |
+ * | 2    | 0xD5 | 11010101 | ext0_len[0] + ext0_data[7:1]        |
+ * | 3    | 0x01 | 00000001 | ext0_data[0] + ext1_len[7:1]        |
+ * | 4    | 0x5D | 01011101 | ext1_len[0] + ext1_data[15:9]       |
+ * | 5    | 0xE6 | 11100110 | ext1_data[8:1]                      |
+ * | 6    | 0x00 | 00000000 | ext1_data[0] + pad                  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_two_slots_both_present(void) {
@@ -694,19 +1259,45 @@ void test_inline_skip_extensions_two_slots_both_present(void) {
 /**
  * @brief Test skip extensions: 2 slots defined, first only present.
  *
- * @par Encoding:
- * - nsnnwn = 1 (7 bits) → 2 extension slots
- * - bitmap = 10 (2 bits) → first present, second absent
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 1 (small form) → 2 extension slots
+ * - bitmap: 10 (2 bits) → first present, second absent
  * - ext0: length = 1, content = 0xAA (16 bits)
  *
- * @par Expected:
- * - Extension bits: 7 + 2 + 16 = 25
- * - Result: 0 (success)
+ * @par Wire Format (25 bits total):
+ * | Offset (bits) | Width | Field     | Value    |
+ * |---------------|-------|-----------|----------|
+ * | 0             | 1     | nsn_form  | 0        |
+ * | 1             | 6     | ext_count | 000001   |
+ * | 7             | 2     | bitmap    | 10       |
+ * | 9             | 8     | ext0_len  | 00000001 |
+ * | 17            | 8     | ext0_data | 10101010 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0x03 | 00000011 | nsn_form(0) + count(1) + bitmap[1]  |
+ * | 1    | 0x00 | 00000000 | bitmap[0] + ext0_len[7:1]           |
+ * | 2    | 0xD5 | 11010101 | ext0_len[0] + ext0_data[7:1]        |
+ * | 3    | 0x00 | 00000000 | ext0_data[0] + pad                  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_two_slots_first_only(void) {
   static const uint8_t buf[] = {
-      0x02, 0x80, 0xAA, /* 0_000001 0_1_000000 0_1010101 0: nsnnwn=1,bitmap=10,len=1,cont */
+      0x03, 0x00, 0xD5, 0x00,                        /* nsnnwn=1,bitmap=10,len=1,content=0xAA */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
@@ -720,18 +1311,40 @@ void test_inline_skip_extensions_two_slots_first_only(void) {
 /**
  * @brief Test skip extensions: 2 slots defined, second only present.
  *
- * @par Encoding:
- * - nsnnwn = 1 (7 bits) → 2 extension slots
- * - bitmap = 01 (2 bits) → first absent, second present
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 1 (small form) → 2 extension slots
+ * - bitmap: 01 (2 bits) → first absent, second present
  * - ext1: length = 1, content = 0xBB (16 bits)
  *
- * @par Layout (25 bits):
- * - Bit stream: 0000001 01 00000001 10111011
- * - Bytes: 0x02 0x80 0xDD 0x80
+ * @par Wire Format (25 bits total):
+ * | Offset (bits) | Width | Field     | Value    |
+ * |---------------|-------|-----------|----------|
+ * | 0             | 1     | nsn_form  | 0        |
+ * | 1             | 6     | ext_count | 000001   |
+ * | 7             | 2     | bitmap    | 01       |
+ * | 9             | 8     | ext1_len  | 00000001 |
+ * | 17            | 8     | ext1_data | 10111011 |
  *
- * @par Expected:
- * - Extension bits: 7 + 2 + 16 = 25
- * - Result: 0 (success)
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0x02 | 00000010 | nsn_form(0) + count(1) + bitmap[1]  |
+ * | 1    | 0x80 | 10000000 | bitmap[0] + ext1_len[7:1]           |
+ * | 2    | 0xDD | 11011101 | ext1_len[0] + ext1_data[7:1]        |
+ * | 3    | 0x80 | 10000000 | ext1_data[0] + pad                  |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_two_slots_second_only(void) {
@@ -750,14 +1363,37 @@ void test_inline_skip_extensions_two_slots_second_only(void) {
 /**
  * @brief Test skip extensions: empty content (length = 0).
  *
- * @par Encoding:
- * - nsnnwn = 0 (7 bits) → 1 extension slot
- * - bitmap = 1 (1 bit) → present
- * - length = 0 (8 bits) → empty content
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Extension bits: 7 + 1 + 8 + 0 = 16
- * - Result: 0 (success)
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 0 (small form) → 1 extension slot
+ * - bitmap: 1 (1 bit) → present
+ * - length: 0 bytes (short form) → empty content
+ *
+ * @par Wire Format (16 bits total):
+ * | Offset (bits) | Width | Field     | Value    |
+ * |---------------|-------|-----------|----------|
+ * | 0             | 1     | nsn_form  | 0        |
+ * | 1             | 6     | ext_count | 000000   |
+ * | 7             | 1     | bitmap    | 1        |
+ * | 8             | 8     | length    | 00000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                          |
+ * |------|------|----------|---------------------------------|
+ * | 0    | 0x01 | 00000001 | nsn_form(0) + count(0) + bmp(1) |
+ * | 1    | 0x00 | 00000000 | length(0)                       |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_empty_content(void) {
@@ -776,12 +1412,33 @@ void test_inline_skip_extensions_empty_content(void) {
 /**
  * @brief Test skip extensions: nsnnwn parse error.
  *
- * @par Encoding:
- * - nsnnwn large form with fragmented length
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Extension bits: 0 (error)
- * - Result: -1 (error)
+ * @par Test Vector:
+ * - ext-count (nsnnwn): large form with fragmented length — returns error
+ * - Expected: ext_bits = 0, result = -1
+ *
+ * @par Wire Format (3+ bits total):
+ * | Offset (bits) | Width | Field          | Value |
+ * |---------------|-------|----------------|-------|
+ * | 0             | 1     | nsn_prefix     | 1     |
+ * | 1             | 2     | length_det_tag | 11    |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0xE0 | 11100000 | nsn_prefix(1) + len_det(11) + pad   |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_nsnnwn_error(void) {
@@ -800,13 +1457,38 @@ void test_inline_skip_extensions_nsnnwn_error(void) {
 /**
  * @brief Test skip extensions: length determinant error in open type.
  *
- * @par Encoding:
- * - nsnnwn = 0, bitmap = 1 (extension present)
- * - length = fragmented (error)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Extension bits: 0 (error)
- * - Result: -1 (error)
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 0 (small form) → 1 extension slot
+ * - bitmap: 1 (1 bit) → extension present
+ * - length: fragmented form (bits[0:1] = 11) — returns error
+ * - Expected: ext_bits = 0, result = -1
+ *
+ * @par Wire Format (10+ bits total):
+ * | Offset (bits) | Width | Field      | Value  |
+ * |---------------|-------|------------|--------|
+ * | 0             | 1     | nsn_form   | 0      |
+ * | 1             | 6     | ext_count  | 000000 |
+ * | 7             | 1     | bitmap     | 1      |
+ * | 8             | 2     | len_det_tag| 11     |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0x01 | 00000001 | nsn_form(0) + count(0) + bmp(1)     |
+ * | 1    | 0xE0 | 11100000 | len_det(11) + pad                   |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_length_error(void) {
@@ -825,12 +1507,37 @@ void test_inline_skip_extensions_length_error(void) {
 /**
  * @brief Test skip extensions: non-zero start offset.
  *
- * @par Encoding:
- * - 5 bits padding + nsnnwn = 0, bitmap = 0
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Extension bits: 8
- * - Result: 0 (success)
+ * @par Test Vector:
+ * - Bit offset: 5
+ * - ext-count (nsnnwn): 0 (small form) → 1 extension slot
+ * - bitmap: 0 (1 bit) → extension not present
+ *
+ * @par Wire Format (8 bits at offset 5):
+ * | Offset (bits) | Width | Field     | Value  |
+ * |---------------|-------|-----------|--------|
+ * | 0             | 5     | padding   | 11111  |
+ * | 5             | 1     | nsn_form  | 0      |
+ * | 6             | 6     | ext_count | 000000 |
+ * | 12            | 1     | bitmap    | 0      |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0xF8 | 11111000 | pad(11111) + nsn_form(0) + count[5:4]|
+ * | 1    | 0x00 | 00000000 | count[3:0] + bmp(0) + pad           |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_nonzero_offset(void) {
@@ -849,12 +1556,35 @@ void test_inline_skip_extensions_nonzero_offset(void) {
 /**
  * @brief Test skip extensions: ext_count > 63 returns error.
  *
- * @par Encoding:
- * - Large form nsnnwn with value 64 (too many extensions for 64-bit bitmap)
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
  *
- * @par Expected:
- * - Result: -1 (error, ext_count > 63 exceeds bitmap capacity)
- * - Extension bits: 0
+ * @par Test Vector:
+ * - ext-count (nsnnwn): 64 (large form) — exceeds 63-bit bitmap, returns error
+ * - Expected: ext_bits = 0, result = -1
+ *
+ * @par Wire Format (17 bits total):
+ * | Offset (bits) | Width | Field      | Value    |
+ * |---------------|-------|------------|----------|
+ * | 0             | 1     | nsn_prefix | 1        |
+ * | 1             | 8     | length_det | 00000001 |
+ * | 9             | 8     | value      | 01000000 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                              |
+ * |------|------|----------|-------------------------------------|
+ * | 0    | 0x80 | 10000000 | nsn_prefix(1) + length_det[7:1]     |
+ * | 1    | 0xA0 | 10100000 | length_det[0] + value[7:1]          |
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_skip_extensions_too_many_extensions(void) {
@@ -862,9 +1592,9 @@ void test_inline_skip_extensions_too_many_extensions(void) {
    * bit[0] = 1 (large form)
    * length_det = short form, length = 1 byte
    * value = 64 = 0x40
-   * Binary: 1_00000001_01000000 = 0x81, 0x40 */
+   * Binary: 1_00000001_01000000 = 0x80, 0xA0 */
   static const uint8_t buf[] = {
-      0x81, 0x40,                                    /* large form nsnnwn = 64 */
+      0x80, 0xA0,                                    /* large form nsnnwn = 64 */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
@@ -873,6 +1603,72 @@ void test_inline_skip_extensions_too_many_extensions(void) {
 
   TEST_ASSERT_EQUAL_INT_MESSAGE(-1, result, "Should return error for ext_count > 63");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(0U, ext_bits, "Ext bits should be 0 on error");
+}
+
+/**
+ * @brief Test skip_extensions with deliberately misaligned buffer pointer.
+ *
+ * @par ASN.1 Definition:
+ * @code
+ * -- X.691 §18.8 Extension Additions
+ * extension-additions ::= SEQUENCE {
+ *   ext-count   nsnnwn,                        -- number of extensions - 1
+ *   bitmap      BIT STRING (SIZE(ext-count+1)),-- presence bitmap
+ *   extensions  SEQUENCE (SIZE(0..ext-count)) OF SEQUENCE {
+ *     length      length-determinant,          -- open type wrapper
+ *     content     OCTET STRING (SIZE(length))  -- extension content
+ *   }
+ * }
+ * @endcode
+ *
+ * @par Test Vector:
+ * - Buffer: &payload[1] (deliberately misaligned)
+ * - ext-count (nsnnwn): 0 (small form) → 1 extension slot
+ * - bitmap: 1 (1 bit) → extension present
+ * - length: 1 byte (short form)
+ * - content: 0xAB
+ *
+ * @par Wire Format (24 bits total):
+ * | Offset (bits) | Width | Field     | Value    |
+ * |---------------|-------|-----------|----------|
+ * | 0             | 1     | nsn_form  | 0        |
+ * | 1             | 6     | ext_count | 000000   |
+ * | 7             | 1     | bitmap    | 1        |
+ * | 8             | 8     | length    | 00000001 |
+ * | 16            | 8     | content   | 10101011 |
+ *
+ * @par Byte Encoding:
+ * | Byte | Hex  | Binary   | Fields                          |
+ * |------|------|----------|---------------------------------|
+ * | 0    | 0xFF | 11111111 | junk (misalignment)             |
+ * | 1    | 0x01 | 00000001 | nsn_form(0) + count(0) + bmp(1) |
+ * | 2    | 0x01 | 00000001 | length(1)                       |
+ * | 3    | 0xAB | 10101011 | content(0xAB)                   |
+ */
+/* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
+void test_inline_skip_extensions_misaligned_access(void) {
+  /* Same encoding as test_inline_skip_extensions_one_slot_present:
+   * nsnnwn small form: 0_000000 = ext_count 0 → 1 slot
+   * bitmap: 1 = extension[0] present
+   * length_det short form: 0_0000001 = 1 byte
+   * extension content: 0xAB (8 bits)
+   * Binary: 0000000_1_00000001_10101011
+   * Bytes:  00000001 00000001 10101011
+   *         0x01     0x01     0xAB       */
+  static const uint8_t payload[] = {
+      0xFF,                                          /* junk byte for misalignment */
+      0x01,                                          /* nsnnwn=0 + bitmap=1 */
+      0x01,                                          /* length_det=00000001 (1 byte) */
+      0xAB,                                          /* extension content (8 bits) */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+  };
+  const uint8_t *unaligned_ptr = &payload[1];
+
+  uint32_t ext_bits = TEST_POISON_U32;
+  int result = j2735_internal_inline_skip_extensions(unaligned_ptr, 0U, &ext_bits);
+
+  TEST_ASSERT_EQUAL_INT_MESSAGE(0, result, "Misaligned: should succeed");
+  TEST_ASSERT_EQUAL_UINT32_MESSAGE(24U, ext_bits, "Misaligned: should consume 24 bits (7+1+8+8)");
 }
 
 /* ============================================================================
@@ -890,6 +1686,7 @@ void run_testsuite_uper(void) {
   RUN_TEST(test_inline_read_length_determinant_long_form_max);
   RUN_TEST(test_inline_read_length_determinant_fragmented_error);
   RUN_TEST(test_inline_read_length_determinant_nonzero_bit_offset);
+  RUN_TEST(test_inline_read_length_determinant_misaligned_access);
 
   /* j2735_internal_inline_read_nsnnwn tests */
   RUN_TEST(test_inline_read_nsnnwn_small_form_min);
@@ -904,6 +1701,7 @@ void run_testsuite_uper(void) {
   RUN_TEST(test_inline_read_nsnnwn_large_form_5_bytes_error);
   RUN_TEST(test_inline_read_nsnnwn_fragmented_error);
   RUN_TEST(test_inline_read_nsnnwn_nonzero_bit_offset);
+  RUN_TEST(test_inline_read_nsnnwn_misaligned_access);
 
   /* j2735_internal_inline_skip_extensions tests */
   RUN_TEST(test_inline_skip_extensions_one_slot_none_present);
@@ -916,4 +1714,5 @@ void run_testsuite_uper(void) {
   RUN_TEST(test_inline_skip_extensions_length_error);
   RUN_TEST(test_inline_skip_extensions_nonzero_offset);
   RUN_TEST(test_inline_skip_extensions_too_many_extensions);
+  RUN_TEST(test_inline_skip_extensions_misaligned_access);
 }

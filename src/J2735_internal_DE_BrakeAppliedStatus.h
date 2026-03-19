@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 BrakeAppliedStatus Definition and Access Macros.
  *
+ * @verbatim
  * BrakeAppliedStatus ::= BIT STRING {
  *     unavailable (0),
  *     leftFront (1),
@@ -28,24 +29,28 @@
  *     rightFront (3),
  *     rightRear (4)
  * } (SIZE (5))
+ * @endverbatim
  *
  * Fixed BIT STRING with size 5.
  *
- * Wire Format (5 bits total):
+ * @par Wire Format (5 bits total):
+ * @verbatim
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-4                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..4] (5 bits)                                         │
  * └──────────────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 5 bits ≤ 56-bit READ_BITS limit.
  * We read all 5 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-4
  *
  * 5-bit read layout (left-justified from bit 0):
  *   [F0..F4] (5 flag bits, no extension marker)
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_BRAKEAPPLIEDSTATUS_H
 #define J2735_INTERNAL_DE_BRAKEAPPLIEDSTATUS_H
@@ -53,21 +58,13 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of BrakeAppliedStatus in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_BRAKE_APPLIED_STATUS 5U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_BRAKE_APPLIED_STATUS_GET_*() accessors instead. */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_BRAKE_APPLIED_STATUS_GET_*() accessors instead.                          */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_BRAKE_APPLIED_STATUS_UNAVAILABLE 0U
 #define J2735_INTERNAL_BIT_BRAKE_APPLIED_STATUS_LEFT_FRONT  1U
@@ -93,7 +90,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_BRAKE_APPLIED_STATUS(buf)                                          \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_BRAKE_APPLIED_STATUS)
+  J2735_READ_BITS((buf), 0U, J2735_BW_BRAKE_APPLIED_STATUS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -119,7 +116,7 @@
  *
  * @param[in] raw5 Value previously returned by J2735_INTERNAL_RAW_READ_BRAKE_APPLIED_STATUS().
  * @return Right-aligned flag bits as uint8_t:
- *         - 5 significant bits (0x0000-0x001F)
+ *         - 5 significant bits (0x00-0x1F)
  * @note Internal use only. Use J2735_BRAKE_APPLIED_STATUS_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_BRAKE_APPLIED_STATUS(raw5) ((uint8_t)((raw5) & 0x1FU))
@@ -160,8 +157,7 @@
  * @param[in] buf Pointer to the start of the BrakeAppliedStatus UPER encoding (const uint8_t*).
  * @return Always 5U.
  */
-#define J2735_BRAKE_APPLIED_STATUS_SIZE(buf)                                                       \
-  ((void)(buf), J2735_INTERNAL_ROOT_SIZE_BRAKE_APPLIED_STATUS)
+#define J2735_BRAKE_APPLIED_STATUS_SIZE(buf) ((void)(buf), J2735_BW_BRAKE_APPLIED_STATUS)
 
 /**
  * @brief Get all BrakeAppliedStatus as a single uint8_t value.

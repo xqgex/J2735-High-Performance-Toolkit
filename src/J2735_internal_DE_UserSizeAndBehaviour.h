@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 UserSizeAndBehaviour Definition and Access Macros.
  *
+ * @verbatim
  * UserSizeAndBehaviour ::= BIT STRING {
  *     unavailable (0),
  *     smallStature (1),
@@ -28,25 +29,30 @@
  *     erraticMoving (3),
  *     slowMoving (4)
  * } (SIZE (5, ...))
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 5 and known extension size 5.
  *
- * Wire Format (non-extended, 6 bits total):
+ * @par Wire Format (non-extended, 6 bits total):
+ * @verbatim
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-5                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..4] (5 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Wire Format (extended, 13 bits total):
+ * @par Wire Format (extended, 13 bits total):
+ * @verbatim
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-12                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=5 (7 bits)  │ flags[0..4] (5 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 13 bits ≤ 56-bit READ_BITS limit.
  * We read all 13 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 12 (MSB of 13-bit value)
@@ -57,6 +63,7 @@
  *                  bit12  11..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F4]
  *                  bit12  11..5    4..0
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_H
 #define J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_H
@@ -98,8 +105,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_USER_SIZE_AND_BEHAVIOUR_GET_*() accessors instead.
- */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_USER_SIZE_AND_BEHAVIOUR_GET_*() accessors instead.                       */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_USER_SIZE_AND_BEHAVIOUR_UNAVAILABLE    0U
 #define J2735_INTERNAL_BIT_USER_SIZE_AND_BEHAVIOUR_SMALL_STATURE  1U
@@ -168,8 +175,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  *
  * @param[in] raw13 Value previously returned by J2735_INTERNAL_RAW_READ_USER_SIZE_AND_BEHAVIOUR().
  * @return Right-aligned flag bits as uint8_t:
- *         - 5 significant bits (0x0000-0x001F) if non-extended
- *         - 5 significant bits (0x0000-0x001F) if extended
+ *         - 5 significant bits (0x00-0x1F) if non-extended
+ *         - 5 significant bits (0x00-0x1F) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_USER_SIZE_AND_BEHAVIOUR_GET() for public API.

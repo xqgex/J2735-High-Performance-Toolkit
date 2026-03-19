@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 VehicleEventFlags Definition and Access Macros.
  *
+ * @verbatim
  * VehicleEventFlags ::= BIT STRING {
  *     eventHazardLights (0),
  *     eventStopLineViolation (1),
@@ -37,25 +38,30 @@
  *     eventAirBagDeployment (12),
  *     eventJackKnife (13)
  * } (SIZE (13, ..., 14))
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 13 and known extension size 14.
  *
- * Wire Format (non-extended, 14 bits total):
+ * @par Wire Format (non-extended, 14 bits total):
+ * @verbatim
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-13                                            │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..12] (13 bits)                               │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Wire Format (extended, 22 bits total):
+ * @par Wire Format (extended, 22 bits total):
+ * @verbatim
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-21                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=14 (7 bits) │ flags[0..13] (14 bits)          │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 22 bits ≤ 56-bit READ_BITS limit.
  * We read all 22 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 21 (MSB of 22-bit value)
@@ -66,6 +72,7 @@
  *                  bit21  20..8     7..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F13]
  *                  bit21  20..14    13..0
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_H
 #define J2735_INTERNAL_DE_VEHICLEEVENTFLAGS_H
@@ -107,7 +114,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_VEHICLE_EVENT_FLAGS_GET_*() accessors instead.  */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_VEHICLE_EVENT_FLAGS_GET_*() accessors instead.                           */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_HAZARD_LIGHTS              0U
 #define J2735_INTERNAL_BIT_VEHICLE_EVENT_FLAGS_EVENT_STOP_LINE_VIOLATION        1U

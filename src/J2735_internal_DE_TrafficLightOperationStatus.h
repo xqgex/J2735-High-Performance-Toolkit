@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 TrafficLightOperationStatus Definition and Access Macros.
  *
+ * @verbatim
  * TrafficLightOperationStatus ::= BIT STRING {
  *     manual (0),
  *     flashing (1),
@@ -31,25 +32,30 @@
  *     phase (6),
  *     reserved (7)
  * } (SIZE (8, ...))
+ * @endverbatim
  *
  * Extensible BIT STRING with root size 8 and known extension size 8.
  *
- * Wire Format (non-extended, 9 bits total):
+ * @par Wire Format (non-extended, 9 bits total):
+ * @verbatim
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-8                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..7] (8 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Wire Format (extended, 16 bits total):
+ * @par Wire Format (extended, 16 bits total):
+ * @verbatim
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-15                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=8 (7 bits)  │ flags[0..7] (8 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 16 bits ≤ 56-bit READ_BITS limit.
  * We read all 16 bits in ONE call, then use bit arithmetic to extract:
  *   - Extension bit at position 15 (MSB of 16-bit value)
@@ -60,6 +66,7 @@
  *                  bit15  14..7     6..0
  *   Extended:     [Ext=1][nsnnwn:7][F0..F7]
  *                  bit15  14..8    7..0
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H
 #define J2735_INTERNAL_DE_TRAFFICLIGHTOPERATIONSTATUS_H
@@ -101,8 +108,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET_*() accessors
- * instead.  */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET_*() accessors instead.                */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_TRAFFIC_LIGHT_OPERATION_STATUS_MANUAL     0U
 #define J2735_INTERNAL_BIT_TRAFFIC_LIGHT_OPERATION_STATUS_FLASHING   1U
@@ -176,8 +183,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  * @param[in] raw16 Value previously returned by
  * J2735_INTERNAL_RAW_READ_TRAFFIC_LIGHT_OPERATION_STATUS().
  * @return Right-aligned flag bits as uint8_t:
- *         - 8 significant bits (0x0000-0x00FF) if non-extended
- *         - 8 significant bits (0x0000-0x00FF) if extended
+ *         - 8 significant bits (0x00-0xFF) if non-extended
+ *         - 8 significant bits (0x00-0xFF) if extended
  * @note Uses 1ULL for bit shifts to prevent undefined behavior if size >= 32 bits.
  *       The compiler optimizes the truncation to uint8_t.
  * @note Internal use only. Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET() for public API.

@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for ApproachOrLane CHOICE type.
+ * @brief Tests for ApproachOrLane CHOICE type.
  *
  * ApproachOrLane is a non-extensible CHOICE with 2 alternatives.
  * This validates CHOICE index reading and alternative value extraction.
@@ -31,8 +31,6 @@
  * @endcode
  */
 
-#include <inttypes.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "unity.h"
@@ -41,9 +39,7 @@
 #include "J2735_internal_DF_ApproachOrLane.h"
 #include "J2735_internal_DF_ApproachOrLane_test.h"
 
-/* ============================================================================================== */
-/*  Happy Path Tests                                                                              */
-/* ============================================================================================== */
+/* cppcheck-suppress-begin misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 /**
  * @brief Test ApproachOrLane with 'approach' alternative selected (typical value).
@@ -79,7 +75,6 @@ void test_approach_or_lane_approach_typical(void) {
   };
 
   /* Single I/O read (9 bits) - all subsequent operations are pure computation */
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t const raw9 = J2735_APPROACH_OR_LANE_RAW_READ(payload);
 
   /* Verify WHICH returns the correct alternative index (1 bit) */
@@ -136,7 +131,6 @@ void test_approach_or_lane_lane_typical(void) {
   };
 
   /* Single I/O read (9 bits) - all subsequent operations are pure computation */
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t const raw9 = J2735_APPROACH_OR_LANE_RAW_READ(payload);
 
   /* Verify WHICH returns the correct alternative index (1 bit) */
@@ -152,10 +146,6 @@ void test_approach_or_lane_lane_typical(void) {
   uint8_t const size = J2735_APPROACH_OR_LANE_SIZE(raw9);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(9U, size, "size should be 9 bits (1 index + 8 value)");
 }
-
-/* ============================================================================================== */
-/*  Boundary Value Tests - Approach                                                               */
-/* ============================================================================================== */
 
 /**
  * @brief Test ApproachOrLane boundary: approach with minimum value 0.
@@ -190,7 +180,6 @@ void test_approach_or_lane_approach_boundary_min(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t const raw9 = J2735_APPROACH_OR_LANE_RAW_READ(payload);
 
   uint8_t const which = J2735_APPROACH_OR_LANE_WHICH(raw9);
@@ -237,7 +226,6 @@ void test_approach_or_lane_approach_boundary_max(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t const raw9 = J2735_APPROACH_OR_LANE_RAW_READ(payload);
 
   uint8_t const which = J2735_APPROACH_OR_LANE_WHICH(raw9);
@@ -250,10 +238,6 @@ void test_approach_or_lane_approach_boundary_max(void) {
   uint8_t const size = J2735_APPROACH_OR_LANE_SIZE(raw9);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(5U, size, "size should be 5 bits for approach");
 }
-
-/* ============================================================================================== */
-/*  Boundary Value Tests - Lane                                                                   */
-/* ============================================================================================== */
 
 /**
  * @brief Test ApproachOrLane boundary: lane with minimum value 0.
@@ -290,7 +274,6 @@ void test_approach_or_lane_lane_boundary_min(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t const raw9 = J2735_APPROACH_OR_LANE_RAW_READ(payload);
 
   uint8_t const which = J2735_APPROACH_OR_LANE_WHICH(raw9);
@@ -339,7 +322,6 @@ void test_approach_or_lane_lane_boundary_max(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t const raw9 = J2735_APPROACH_OR_LANE_RAW_READ(payload);
 
   uint8_t const which = J2735_APPROACH_OR_LANE_WHICH(raw9);
@@ -352,10 +334,6 @@ void test_approach_or_lane_lane_boundary_max(void) {
   uint8_t const size = J2735_APPROACH_OR_LANE_SIZE(raw9);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(9U, size, "size should be 9 bits for lane");
 }
-
-/* ============================================================================================== */
-/*  Misalignment Tests                                                                            */
-/* ============================================================================================== */
 
 /**
  * @brief Test ApproachOrLane with misaligned buffer access (approach alternative).
@@ -399,7 +377,6 @@ void test_approach_or_lane_misaligned_access(void) {
   /* Offset pointer by 1 byte to force misalignment */
   const uint8_t *unaligned_ptr = &payload[1];
 
-  /* cppcheck-suppress misra-c2012-11.3 ; Zero-copy macro uses packed-cast */
   uint16_t const raw9 = J2735_APPROACH_OR_LANE_RAW_READ(unaligned_ptr);
 
   uint8_t const which = J2735_APPROACH_OR_LANE_WHICH(raw9);
@@ -413,6 +390,8 @@ void test_approach_or_lane_misaligned_access(void) {
   uint8_t const size = J2735_APPROACH_OR_LANE_SIZE(raw9);
   TEST_ASSERT_EQUAL_UINT8_MESSAGE(5U, size, "size should be 5 bits for approach (misaligned)");
 }
+
+/* cppcheck-suppress-end misra-c2012-11.3 ; J2735_READ_BITS requires pointer cast */
 
 void run_testsuite_approach_or_lane(void) {
   /* Happy path tests */

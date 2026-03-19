@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 AllowedManeuvers Definition and Access Macros.
  *
+ * @verbatim
  * AllowedManeuvers ::= BIT STRING {
  *     maneuverStraightAllowed (0),
  *     maneuverLeftAllowed (1),
@@ -35,24 +36,28 @@
  *     caution (10),
  *     reserved1 (11)
  * } (SIZE (12))
+ * @endverbatim
  *
  * Fixed BIT STRING with size 12.
  *
- * Wire Format (12 bits total):
+ * @par Wire Format (12 bits total):
+ * @verbatim
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-11                                                    │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..11] (12 bits)                                       │
  * └──────────────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 12 bits ≤ 56-bit READ_BITS limit.
  * We read all 12 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-11
  *
  * 12-bit read layout (left-justified from bit 0):
  *   [F0..F11] (12 flag bits, no extension marker)
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_ALLOWEDMANEUVERS_H
 #define J2735_INTERNAL_DE_ALLOWEDMANEUVERS_H
@@ -60,21 +65,13 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of AllowedManeuvers in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_ALLOWED_MANEUVERS 12U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_ALLOWED_MANEUVERS_GET_*() accessors instead.    */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_ALLOWED_MANEUVERS_GET_*() accessors instead.                             */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_ALLOWED_MANEUVERS_MANEUVER_STRAIGHT_ALLOWED          0U
 #define J2735_INTERNAL_BIT_ALLOWED_MANEUVERS_MANEUVER_LEFT_ALLOWED              1U
@@ -107,7 +104,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_ALLOWED_MANEUVERS(buf)                                             \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_ALLOWED_MANEUVERS)
+  J2735_READ_BITS((buf), 0U, J2735_BW_ALLOWED_MANEUVERS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -174,7 +171,7 @@
  * @param[in] buf Pointer to the start of the AllowedManeuvers UPER encoding (const uint8_t*).
  * @return Always 12U.
  */
-#define J2735_ALLOWED_MANEUVERS_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_ALLOWED_MANEUVERS)
+#define J2735_ALLOWED_MANEUVERS_SIZE(buf) ((void)(buf), J2735_BW_ALLOWED_MANEUVERS)
 
 /**
  * @brief Get all AllowedManeuvers as a single uint16_t value.

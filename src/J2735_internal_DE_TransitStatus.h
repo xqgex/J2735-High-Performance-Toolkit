@@ -21,6 +21,7 @@
  * @author Yogev Neumann
  * @brief J2735 TransitStatus Definition and Access Macros.
  *
+ * @verbatim
  * TransitStatus ::= BIT STRING {
  *     none (0),
  *     anADAuse (1),
@@ -29,24 +30,28 @@
  *     occM (4),
  *     occL (5)
  * } (SIZE (6))
+ * @endverbatim
  *
  * Fixed BIT STRING with size 6.
  *
- * Wire Format (6 bits total):
+ * @par Wire Format (6 bits total):
+ * @verbatim
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-5                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..5] (6 bits)                                         │
  * └──────────────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 6 bits ≤ 56-bit READ_BITS limit.
  * We read all 6 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-5
  *
  * 6-bit read layout (left-justified from bit 0):
  *   [F0..F5] (6 flag bits, no extension marker)
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_TRANSITSTATUS_H
 #define J2735_INTERNAL_DE_TRANSITSTATUS_H
@@ -54,21 +59,13 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of TransitStatus in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS 6U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_TRANSIT_STATUS_GET_*() accessors instead.       */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_TRANSIT_STATUS_GET_*() accessors instead.                                */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_TRANSIT_STATUS_NONE        0U
 #define J2735_INTERNAL_BIT_TRANSIT_STATUS_AN_ADA_USE  1U
@@ -95,7 +92,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_TRANSIT_STATUS(buf)                                                \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS)
+  J2735_READ_BITS((buf), 0U, J2735_BW_TRANSIT_STATUS)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -121,7 +118,7 @@
  *
  * @param[in] raw6 Value previously returned by J2735_INTERNAL_RAW_READ_TRANSIT_STATUS().
  * @return Right-aligned flag bits as uint8_t:
- *         - 6 significant bits (0x0000-0x003F)
+ *         - 6 significant bits (0x00-0x3F)
  * @note Internal use only. Use J2735_TRANSIT_STATUS_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_TRANSIT_STATUS(raw6) ((uint8_t)((raw6) & 0x3FU))
@@ -162,7 +159,7 @@
  * @param[in] buf Pointer to the start of the TransitStatus UPER encoding (const uint8_t*).
  * @return Always 6U.
  */
-#define J2735_TRANSIT_STATUS_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_TRANSIT_STATUS)
+#define J2735_TRANSIT_STATUS_SIZE(buf) ((void)(buf), J2735_BW_TRANSIT_STATUS)
 
 /**
  * @brief Get all TransitStatus as a single uint8_t value.

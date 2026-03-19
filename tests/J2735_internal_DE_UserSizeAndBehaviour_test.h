@@ -25,8 +25,8 @@
  * 5-bit root and 5-bit extension (same size).
  */
 
-#ifndef J2735_DE_INTERNAL_USERSIZEANDBEHAVIOUR_TEST_H
-#define J2735_DE_INTERNAL_USERSIZEANDBEHAVIOUR_TEST_H
+#ifndef J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_TEST_H
+#define J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_TEST_H
 
 /* Basic form tests */
 void test_user_size_and_behaviour_non_extended(void);
@@ -55,4 +55,4 @@ void test_user_size_and_behaviour_misaligned_access(void);
 
 void run_testsuite_user_size_and_behaviour(void);
 
-#endif /* J2735_DE_INTERNAL_USERSIZEANDBEHAVIOUR_TEST_H */
+#endif /* J2735_INTERNAL_DE_USERSIZEANDBEHAVIOUR_TEST_H */

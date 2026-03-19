@@ -22,7 +22,7 @@
  * @brief J2735 BSMcoreData Definition and Access Macros.
  *
  * @par BSMcoreData Wire Format (UPER):
- * @code
+ * @verbatim
  * BSMcoreData ::= SEQUENCE {
  *     msgCnt        MsgCount,             --  7 bits (unsigned, 0..127)
  *     id            TemporaryID,          -- 32 bits
@@ -39,10 +39,10 @@
  *     brakes        BrakeSystemStatus,    -- 15 bits
  *     size          VehicleSize           -- 22 bits
  * }
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (290 bits):
- * @code
+ * @verbatim
  * ┌──────────────┬───────────────────────────────────────────────┐
  * │ Bits         │ Content                                       │
  * ├──────────────┼───────────────────────────────────────────────┤
@@ -61,7 +61,7 @@
  * │ 253-267      │ brakes (15)                                   │
  * │ 268-289      │ size (22)                                     │
  * └──────────────┴───────────────────────────────────────────────┘
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DF_BSMCOREDATA_H
 #define J2735_INTERNAL_DF_BSMCOREDATA_H
@@ -183,6 +183,10 @@
  */
 #define J2735_INTERNAL_OFF_BSM_CORE_DATA_SIZE(buf)                                                 \
   (J2735_INTERNAL_OFF_BSM_CORE_DATA_BRAKES(buf) + J2735_BW_BRAKE_SYSTEM_STATUS) /* 268 */
+
+_Static_assert((J2735_INTERNAL_OFF_BSM_CORE_DATA_SIZE(0) + J2735_BW_VEHICLE_SIZE) ==
+                   J2735_BW_BSM_CORE_DATA,
+               "BSMcoreData offset chain must sum to J2735_BW_BSM_CORE_DATA");
 
 /* ============================================================================================== */
 /*  PUBLIC API: Field Getters                                                                     */

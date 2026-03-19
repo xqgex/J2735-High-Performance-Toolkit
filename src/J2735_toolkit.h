@@ -42,7 +42,7 @@ J2735_PACK_START
  * @brief Container for BSMcoreData (37 bytes / 290 bits).
  *
  * @par BSMcoreData Wire Format (UPER):
- * @code
+ * @verbatim
  * | Offset | Bits 7-0                                                                             |
  * |:-------|:-------------------------------------------------------------------------------------|
  * | +0     | MsgCount(7) | TemporaryID (Bit 31)                                                   |
@@ -82,7 +82,7 @@ J2735_PACK_START
  * | +34    | VehicleSize (Bits 17-10)                                                             |
  * | +35    | VehicleSize (Bits 9-2)                                                               |
  * | +36    | VehicleSize (Bits 1-0)                                                               |
- * @endcode
+ * @endverbatim
  */
 struct J2735_BSMcoreData {
   uint8_t raw_bytes[J2735_SIZE_BSM_CORE_DATA];
@@ -93,11 +93,11 @@ typedef struct J2735_BSMcoreData J2735_BSMcoreData_t;
 /**
  * @struct J2735_SPAT_Header_t
  * @par SPAT Header Wire Format:
- * @code
+ * @verbatim
  * | Octet 0                                  | Octet 1                        |
  * |:-----------------------------------------|:-------------------------------|
  * | name_present(1) | intersections_pres(1)  | moy_pres(1) | ts_pres(1) | ... |
- * @endcode
+ * @endverbatim
  *
  * @todo Implement SPAT (Signal Phase and Timing) message parsing.
  *       Currently unused - reserved for future development.

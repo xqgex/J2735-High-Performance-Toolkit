@@ -39,18 +39,18 @@
       * Wire Format (N bits):
       * ┌─── ...table... ───┘
 #}
- * @code
+ * @verbatim
 {%  include 'asn1_definition.j2' %}
- * @endcode
+ * @endverbatim
 {%  for variant in sequence_variants %}
  *
  * @par Wire Format ({{ variant.name }}):
- * @code
+ * @verbatim
 {%    set segment_count = variant.fields | length + (1 if variant.ext_bit is not none else 0) + (1 if variant.opt_bitmap else 0) + (1 if variant.ext_bit == 1 else 0) %}
 {%    if segment_count > 6 %}
 {%      include 'wire_format_compact.j2' %}
 {%    else %}
 {%      include 'wire_format_table.j2' %}
 {%    endif %}
- * @endcode
+ * @endverbatim
 {%  endfor %}

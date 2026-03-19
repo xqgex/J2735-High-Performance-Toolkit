@@ -21,7 +21,7 @@
 
   Assembles all sub-templates into a complete C header file for a CHOICE type.
 
-  Template Context (from generator):
+  Context variables:
     - typedef: ASN1TypeDefinition for the CHOICE type
     - alternatives: List of dicts with name, type_ref, bit_width, index, shift, needs_shift
 
@@ -43,13 +43,9 @@
  * @brief J2735 {{ typedef_name }} Definition and Access Macros.
  *
  * @par {{ typedef_name }} Wire Format (UPER):
- * @code
- * {{ typedef_name }} ::= CHOICE {
-{% for alt in alternatives %}
- *     {{ alt.name }}  {{ alt.type_ref }}{{ "," if not loop.last else "" }}  -- {{ alt.bit_width }} bits (J2735_BW_{{ alt.type_ref | screaming_snake }})
-{% endfor %}
- * }
- * @endcode
+ * @verbatim
+{%  include 'asn1_definition.j2' %}
+ * @endverbatim
  *
  * This is a {{ "extensible" if typedef.constraint.is_extensible else "non-extensible" }} CHOICE with {{ alternatives | length }} alternatives.
  * Per ITU-T X.691 §23, the choice index uses ceil(log2({{ alternatives | length }})) = {{ index_bits }} bit{{ "s" if index_bits != 1 else "" }}.
@@ -88,6 +84,9 @@
 /*  INTERNAL: CHOICE Index Bits                                                                   */
 /* ============================================================================================== */
 {% include 'choice/choice_internal_choice_index_bits.j2' %}
+
+_Static_assert(J2735_INTERNAL_CHOICE_INDEX_BITS_{{ typedef_name_upper }} == J2735_BW_{{ typedef_name_upper }},
+               "CHOICE index bits must match J2735_BW_{{ typedef_name_upper }}");
 
 /* ============================================================================================== */
 /*  INTERNAL: Structure Metadata                                                                  */

@@ -22,31 +22,31 @@
  * @brief J2735 PathPrediction Definition and Access Macros.
  *
  * @par PathPrediction Wire Format (UPER):
- * @code
+ * @verbatim
  * PathPrediction ::= SEQUENCE {
  *     radiusOfCurve  RadiusOfCurvature,    -- 16 bits (signed, -32767..32767)
  *     confidence     Confidence,           --  8 bits (unsigned, 0..200)
  *     ...
  * }
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (no extensions, 25 bits):
- * @code
+ * @verbatim
  * ┌─────────┬─────────────────────┬──────────────────┐
  * │ Bit 0   │ Bits 1-16           │ Bits 17-24       │
  * ├─────────┼─────────────────────┼──────────────────┤
  * │ Ext=0   │ radiusOfCurve (16)  │ confidence (8)   │
  * └─────────┴─────────────────────┴──────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (with extensions, variable):
- * @code
+ * @verbatim
  * ┌─────────┬─────────────────────┬──────────────────┬──────────────────┐
  * │ Bit 0   │ Bits 1-16           │ Bits 17-24       │ Bits 25+         │
  * ├─────────┼─────────────────────┼──────────────────┼──────────────────┤
  * │ Ext=1   │ radiusOfCurve (16)  │ confidence (8)   │ (extension data) │
  * └─────────┴─────────────────────┴──────────────────┴──────────────────┘
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DF_PATHPREDICTION_H
 #define J2735_INTERNAL_DF_PATHPREDICTION_H
@@ -76,6 +76,10 @@
 #define J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION                                              \
   (J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION + J2735_BW_RADIUS_OF_CURVATURE +                     \
    J2735_BW_CONFIDENCE) /* 25 bits */
+
+_Static_assert(J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION ==
+                   (J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION + J2735_BW_PATH_PREDICTION),
+               "ROOT_SIZE_BITS must equal prefix + J2735_BW_PATH_PREDICTION");
 
 /* ============================================================================================== */
 /*  INTERNAL: Field Offsets                                                                       */

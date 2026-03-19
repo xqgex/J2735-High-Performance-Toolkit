@@ -24,8 +24,8 @@
  * LaneSharing is SIZE(10): a fixed BIT STRING with 10 bits.
  */
 
-#ifndef J2735_DE_INTERNAL_LANESHARING_TEST_H
-#define J2735_DE_INTERNAL_LANESHARING_TEST_H
+#ifndef J2735_INTERNAL_DE_LANESHARING_TEST_H
+#define J2735_INTERNAL_DE_LANESHARING_TEST_H
 
 /* Core tests */
 void test_lane_sharing_all_zeros(void);
@@ -45,4 +45,4 @@ void test_lane_sharing_misaligned_access(void);
 
 void run_testsuite_lane_sharing(void);
 
-#endif /* J2735_DE_INTERNAL_LANESHARING_TEST_H */
+#endif /* J2735_INTERNAL_DE_LANESHARING_TEST_H */

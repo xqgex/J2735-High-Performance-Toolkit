@@ -20,12 +20,19 @@ J2735 Jinja2 Template Utilities.
 Provides Jinja2 environment setup and template loading for C code generation.
 """
 
+from functools import lru_cache
 from pathlib import Path
 from re import sub
 
-from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+from jinja2 import (
+    Environment,
+    FileSystemLoader,
+    StrictUndefined,
+    Template,
+    select_autoescape,
+)
 
-from .j2735_spec_constraints import SequenceField
+from .j2735_spec_constraints import IntegerConstraint, SequenceField
 
 # =============================================================================
 # Constants
@@ -128,11 +135,8 @@ def filter_format_range(field: SequenceField) -> str:
         >>> filter_format_range(f)
         '-900000000..900000001'
     """
-    if hasattr(field.type, "min_value") and hasattr(field.type, "max_value"):
-        min_val = getattr(field.type, "min_value", None)
-        max_val = getattr(field.type, "max_value", None)
-        if min_val is not None and max_val is not None:
-            return f"{min_val}..{max_val}"
+    if isinstance(field.type, IntegerConstraint):
+        return f"{field.type.min_value}..{field.type.max_value}"
     return ""
 
 
@@ -157,9 +161,8 @@ def filter_is_signed(field: SequenceField) -> bool:
         >>> filter_is_signed(f)
         True
     """
-    if hasattr(field.type, "min_value"):
-        min_val = getattr(field.type, "min_value", None)
-        return min_val is not None and min_val < 0
+    if isinstance(field.type, IntegerConstraint):
+        return field.type.min_value < 0
     return False
 
 
@@ -186,14 +189,22 @@ def filter_screaming_snake(name: str) -> str:
         'BSM_CORE_DATA'
         >>> filter_screaming_snake("AccelerationSet4Way")
         'ACCELERATION_SET_4_WAY'
+        >>> filter_screaming_snake("Offset-B10")
+        'OFFSET_B_10'
+        >>> filter_screaming_snake("Node-LL-24B")
+        'NODE_LL_24_B'
+        >>> filter_screaming_snake("NMEA-MsgType")
+        'NMEA_MSG_TYPE'
     """
-    # Step 1: Insert underscore after abbreviation (2+ uppercase) before lowercase
+    # Step 1: Replace hyphens with underscores (ASN.1 names like Offset-B10, Node-LL-24B)
+    name = name.replace("-", "_")
+    # Step 2: Insert underscore after abbreviation (2+ uppercase) before lowercase
     result = sub(r"([A-Z]{2,})([a-z])", r"\1_\2", name)
-    # Step 2: Insert underscore between lowercase and uppercase
+    # Step 3: Insert underscore between lowercase and uppercase
     result = sub(r"([a-z])([A-Z])", r"\1_\2", result)
-    # Step 3: Insert underscore between letter and digit
+    # Step 4: Insert underscore between letter and digit
     result = sub(r"([a-zA-Z])([0-9])", r"\1_\2", result)
-    # Step 4: Insert underscore between digit and letter
+    # Step 5: Insert underscore between digit and letter
     result = sub(r"([0-9])([a-zA-Z])", r"\1_\2", result)
     return result.upper()
 
@@ -220,6 +231,10 @@ def filter_snake_case(name: str) -> str:
         'bsm_core_data'
         >>> filter_snake_case("AccelerationSet4Way")
         'acceleration_set_4_way'
+        >>> filter_snake_case("Offset-B10")
+        'offset_b_10'
+        >>> filter_snake_case("Node-LL-24B")
+        'node_ll_24_b'
     """
     return filter_screaming_snake(name).lower()
 
@@ -229,14 +244,20 @@ def filter_snake_case(name: str) -> str:
 # =============================================================================
 
 
+@lru_cache(maxsize=1)
 def create_jinja_env() -> Environment:
-    """Create and configure the Jinja2 environment."""
+    """Create and configure the Jinja2 environment.
+
+    The result is cached - the Environment and its filters are never mutated
+    after construction, so a single shared instance is safe.
+    """
     env = Environment(
-        loader=FileSystemLoader(_TEMPLATES_DIR),
         autoescape=select_autoescape(default=False),
-        trim_blocks=True,
-        lstrip_blocks=True,
         keep_trailing_newline=True,
+        loader=FileSystemLoader(_TEMPLATES_DIR),
+        lstrip_blocks=True,
+        trim_blocks=True,
+        undefined=StrictUndefined,
     )
     env.filters[_FILTER_BYTES_FROM_BITS] = filter_bytes_from_bits
     env.filters[_FILTER_C_TYPE] = filter_c_type

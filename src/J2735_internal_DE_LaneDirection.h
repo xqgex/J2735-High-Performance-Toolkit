@@ -21,28 +21,33 @@
  * @author Yogev Neumann
  * @brief J2735 LaneDirection Definition and Access Macros.
  *
+ * @verbatim
  * LaneDirection ::= BIT STRING {
  *     ingressPath (0),
  *     egressPath (1)
  * } (SIZE (2))
+ * @endverbatim
  *
  * Fixed BIT STRING with size 2.
  *
- * Wire Format (2 bits total):
+ * @par Wire Format (2 bits total):
+ * @verbatim
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-1                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..1] (2 bits)                                         │
  * └──────────────────────────────────────────────────────────────┘
+ * @endverbatim
  *
- * Optimization: Single-Read Strategy
- * ──────────────────────────────────────────────────────────────────────────────────────────
+ * @par Optimization: Single-Read Strategy
+ * @verbatim
  * Max wire size = 2 bits ≤ 56-bit READ_BITS limit.
  * We read all 2 bits in ONE call, then use bit arithmetic to extract:
  *   - Flags at positions 0-1
  *
  * 2-bit read layout (left-justified from bit 0):
  *   [F0..F1] (2 flag bits, no extension marker)
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DE_LANEDIRECTION_H
 #define J2735_INTERNAL_DE_LANEDIRECTION_H
@@ -50,21 +55,13 @@
 #include "J2735_internal_common.h"
 
 /* ============================================================================================== */
-/*  Constants                                                                                     */
-/* ============================================================================================== */
-/**
- * @internal
- * @brief Root size of LaneDirection in bits.
- */
-#define J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION 2U
-
-/* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
 /*  ASN.1 BIT STRING numbering convention: bit 0 = MSB (leftmost in wire order).                  */
 /*  These constants map semantic flag names to their ASN.1 bit positions.                         */
 /*                                                                                                */
-/*  @note Internal use only. Use the public J2735_LANE_DIRECTION_GET_*() accessors instead.       */
+/*  @note Internal use only.                                                                      */
+/*  Use the public J2735_LANE_DIRECTION_GET_*() accessors instead.                                */
 /* ============================================================================================== */
 #define J2735_INTERNAL_BIT_LANE_DIRECTION_INGRESS_PATH 0U
 #define J2735_INTERNAL_BIT_LANE_DIRECTION_EGRESS_PATH  1U
@@ -87,7 +84,7 @@
  * @note Internal use only. Not part of the public API.
  */
 #define J2735_INTERNAL_RAW_READ_LANE_DIRECTION(buf)                                                \
-  J2735_READ_BITS((buf), 0U, J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION)
+  J2735_READ_BITS((buf), 0U, J2735_BW_LANE_DIRECTION)
 
 /* ============================================================================================== */
 /*  INTERNAL: Extension Bit Check                                                                 */
@@ -113,7 +110,7 @@
  *
  * @param[in] raw2 Value previously returned by J2735_INTERNAL_RAW_READ_LANE_DIRECTION().
  * @return Right-aligned flag bits as uint8_t:
- *         - 2 significant bits (0x0000-0x0003)
+ *         - 2 significant bits (0x00-0x03)
  * @note Internal use only. Use J2735_LANE_DIRECTION_GET() for public API.
  */
 #define J2735_INTERNAL_GET_ALL_LANE_DIRECTION(raw2) ((uint8_t)((raw2) & 0x3U))
@@ -154,7 +151,7 @@
  * @param[in] buf Pointer to the start of the LaneDirection UPER encoding (const uint8_t*).
  * @return Always 2U.
  */
-#define J2735_LANE_DIRECTION_SIZE(buf) ((void)(buf), J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION)
+#define J2735_LANE_DIRECTION_SIZE(buf) ((void)(buf), J2735_BW_LANE_DIRECTION)
 
 /**
  * @brief Get all LaneDirection as a single uint8_t value.

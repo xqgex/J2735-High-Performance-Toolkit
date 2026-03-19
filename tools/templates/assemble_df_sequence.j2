@@ -22,14 +22,14 @@
   Main assembly template for SEQUENCE types. Generates a complete C header file
   by including sub-templates from the sequence/ directory.
 
-  Template Context (from generator):
+  Context variables:
     - typedef:   ASN1TypeDefinition for the SEQUENCE type
     - sequence_variants: list[SequenceWireVariant] from get_sequence_variants()
     - opt_count: Number of OPTIONAL fields (for bitmap width)
 -#}
 {%- set has_optional = typedef.constraint.optional_count > 0 -%}
 {%- set typedef_name = typedef.name -%}
-{% include 'license.j2' %}
+{%  include 'license.j2' %}
 /**
  * @file
  * @author Yogev Neumann
@@ -43,66 +43,77 @@
 
 #include "J2735_internal_common.h"
 #include "J2735_internal_constants.h"
-{% if typedef.constraint.is_extensible %}
+{%  if typedef.constraint.is_extensible %}
 #include "J2735_internal_inline.h"
-{% endif %}
+{%  endif %}
 
 /* ============================================================================================== */
 /*  INTERNAL: Structure Metadata                                                                  */
 /* ============================================================================================== */
-{% include 'sequence/sequence_internal_prefix_bits.j2' %}
+{%  include 'sequence/sequence_internal_prefix_bits.j2' %}
 
-{% if typedef.constraint.is_extensible %}
-{% include 'sequence/sequence_internal_root_size_bits.j2' %}
+{%  if typedef.constraint.is_extensible %}
+{%    include 'sequence/sequence_internal_root_size_bits.j2' %}
 
-{% endif %}
-{% if has_optional %}
+_Static_assert(J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name | screaming_snake }} ==
+                   (J2735_INTERNAL_PREFIX_BITS_{{ typedef_name | screaming_snake }} + J2735_BW_{{ typedef_name | screaming_snake }}),
+               "ROOT_SIZE_BITS must equal prefix + J2735_BW_{{ typedef_name | screaming_snake }}");
+
+{%  endif %}
+{%  if has_optional %}
 /* ============================================================================================== */
 /*  INTERNAL: Optional Field Indices                                                              */
 /*  (Bitmap position for each OPTIONAL field, 0-indexed from MSB)                                 */
 /* ============================================================================================== */
-{% include 'sequence/sequence_internal_opt.j2' %}
+{%    include 'sequence/sequence_internal_opt.j2' %}
 
-{% endif %}
-{% if has_optional %}
+{%  endif %}
+{%  if has_optional %}
 /* ============================================================================================== */
 /*  INTERNAL: Dynamic Widths                                                                      */
 /*  (Returns 0 if field absent, else J2735_BW_<FieldType> or computed width)                      */
 /* ============================================================================================== */
-{% include 'sequence/sequence_internal_width.j2' %}
+{%    include 'sequence/sequence_internal_width.j2' %}
 
-{% endif %}
+{%  endif %}
 /* ============================================================================================== */
 /*  INTERNAL: Field Offsets                                                                       */
 /*  (Cumulative bit offset: prev_offset + prev_width)                                             */
 /* ============================================================================================== */
-{% include 'sequence/sequence_internal_off.j2' %}
+{%  include 'sequence/sequence_internal_off.j2' %}
 
-{% if has_optional %}
+{%  if not typedef.constraint.is_extensible and not has_optional and typedef.constraint.uper_bit_width is not none %}
+{%-   set last_field = typedef.constraint.fields[-1] -%}
+_Static_assert((J2735_INTERNAL_OFF_{{ typedef_name | screaming_snake }}_{{ last_field.name | screaming_snake }}(0) + J2735_BW_{{ last_field.type_name | screaming_snake }}) ==
+                   J2735_BW_{{ typedef_name | screaming_snake }},
+               "{{ typedef_name }} offset chain must sum to J2735_BW_{{ typedef_name | screaming_snake }}");
+
+{%  endif %}
+{%  if has_optional %}
 /* ============================================================================================== */
 /*  PUBLIC API: Has-Checkers (OPTIONAL Fields)                                                    */
 /* ============================================================================================== */
-{% include 'sequence/sequence_has_field.j2' %}
+{%    include 'sequence/sequence_has_field.j2' %}
 
-{% endif %}
-{% if typedef.constraint.is_extensible %}
+{%  endif %}
+{%  if typedef.constraint.is_extensible %}
 /* ============================================================================================== */
 /*  PUBLIC API: Has-Extension Checker                                                             */
 /* ============================================================================================== */
-{% include 'sequence/sequence_has_extension.j2' %}
+{%    include 'sequence/sequence_has_extension.j2' %}
 
-{% endif %}
+{%  endif %}
 /* ============================================================================================== */
 /*  PUBLIC API: Field Getters                                                                     */
 /* ============================================================================================== */
-{% include 'sequence/sequence_get.j2' %}
+{%  include 'sequence/sequence_get.j2' %}
 
-{% if typedef.constraint.is_extensible %}
+{%  if typedef.constraint.is_extensible %}
 /* ============================================================================================== */
 /*  PUBLIC API: Size Function                                                                     */
 /* ============================================================================================== */
-{% include 'sequence/sequence_size.j2' %}
+{%    include 'sequence/sequence_size.j2' %}
 
-{% endif %}
+{%  endif %}
 #endif /* J2735_INTERNAL_DF_{{ typedef_name | upper }}_H */
 {# Blank Line #}

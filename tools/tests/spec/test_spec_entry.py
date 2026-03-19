@@ -32,7 +32,7 @@ from tools.j2735_spec_parser import (
 )
 
 # =============================================================================
-# Synthetic Blocks — Data Elements (Section 7)
+# Synthetic Blocks - Data Elements (Section 7)
 # =============================================================================
 
 _DE_FULL_BLOCK = """\
@@ -102,7 +102,7 @@ _DE_INVALID_HEADER = "This is not a valid block at all."
 
 
 # =============================================================================
-# Synthetic Blocks — Data Frames (Section 6)
+# Synthetic Blocks - Data Frames (Section 6)
 # =============================================================================
 
 _DF_FULL_BLOCK = """\
@@ -140,7 +140,7 @@ _DF_INVALID_HEADER = "No data frame header here."
 
 
 # =============================================================================
-# Synthetic Blocks — Messages (Section 5)
+# Synthetic Blocks - Messages (Section 5)
 # =============================================================================
 
 _MSG_WITH_ABBREVIATION_BLOCK = """\
@@ -182,7 +182,7 @@ _MSG_INVALID_HEADER = "Not a message block."
 
 
 # =============================================================================
-# Test Cases — from_data_element_block
+# Test Cases - from_data_element_block
 # =============================================================================
 
 
@@ -300,7 +300,7 @@ class TestFromDataElementBlock(TestCase):
 
 
 # =============================================================================
-# Test Cases — from_data_frame_block
+# Test Cases - from_data_frame_block
 # =============================================================================
 
 
@@ -385,7 +385,7 @@ class TestFromDataFrameBlock(TestCase):
 
 
 # =============================================================================
-# Test Cases — from_message_block
+# Test Cases - from_message_block
 # =============================================================================
 
 

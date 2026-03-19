@@ -24,8 +24,8 @@
  * TransitStatus is SIZE(6): a fixed BIT STRING with 6 bits.
  */
 
-#ifndef J2735_DE_INTERNAL_TRANSITSTATUS_TEST_H
-#define J2735_DE_INTERNAL_TRANSITSTATUS_TEST_H
+#ifndef J2735_INTERNAL_DE_TRANSITSTATUS_TEST_H
+#define J2735_INTERNAL_DE_TRANSITSTATUS_TEST_H
 
 /* Core tests */
 void test_transit_status_all_zeros(void);
@@ -44,4 +44,4 @@ void test_transit_status_misaligned_access(void);
 
 void run_testsuite_transit_status(void);
 
-#endif /* J2735_DE_INTERNAL_TRANSITSTATUS_TEST_H */
+#endif /* J2735_INTERNAL_DE_TRANSITSTATUS_TEST_H */

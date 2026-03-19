@@ -23,13 +23,21 @@ All complex formatting logic lives in Jinja templates + filters.
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import TypedDict
+from typing import Final, TypedDict
 
-from .j2735_spec_constraints import SequenceField, SequenceType
+from .j2735_spec_constraints import (
+    SequenceField,
+    SequenceType,
+    TypeReference,
+)
 
 # =============================================================================
 # SEQUENCE Wire Format
 # =============================================================================
+
+_VARIABLE_BITS: Final[str] = (
+    "variable"  # Sentinel for ``total_bits`` when wire size cannot be computed
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +54,81 @@ class SequenceWireVariant:
     ext_bit: int | None  # None = no ext bit, 0/1 = ext bit value
     opt_bitmap: str  # "" = no bitmap, "0" or "1" or "0..0" etc.
     total_bits: int | str  # int for fixed, "variable" for ext=1
+
+
+def _build_optional_variants(
+    all_fields: tuple[SequenceField, ...],
+    is_ext: bool,
+) -> list[SequenceWireVariant]:
+    """Build ABSENT / PRESENT variants for a SEQUENCE with OPTIONAL fields.
+
+    Args:
+        all_fields: All fields in the SEQUENCE.
+        is_ext: Whether the SEQUENCE is extensible.
+
+    Returns:
+        Two-element list: [absent_variant, present_variant].
+    """
+    opt_count = sum(1 for f in all_fields if f.is_optional)
+    required_fields = tuple(f for f in all_fields if not f.is_optional)
+    optional_names = [f.name for f in all_fields if f.is_optional]
+    preamble = (1 if is_ext else 0) + opt_count
+    ext_bit = 0 if is_ext else None
+
+    absent_opt = "0" if opt_count == 1 else f"0..0 ({opt_count})"
+    present_opt = "1" if opt_count == 1 else f"1..1 ({opt_count})"
+
+    if len(optional_names) == 1:
+        absent_name = f"{optional_names[0]} ABSENT"
+        present_name = f"{optional_names[0]} PRESENT"
+    else:
+        absent_name = "all optional ABSENT"
+        present_name = "all optional PRESENT"
+
+    absent_total, absent_label = _total_and_label(
+        required_fields,
+        preamble,
+        absent_name,
+    )
+    present_total, present_label = _total_and_label(
+        all_fields,
+        preamble,
+        present_name,
+    )
+
+    return [
+        SequenceWireVariant(
+            name=absent_label,
+            fields=required_fields,
+            ext_bit=ext_bit,
+            opt_bitmap=absent_opt,
+            total_bits=absent_total,
+        ),
+        SequenceWireVariant(
+            name=present_label,
+            fields=all_fields,
+            ext_bit=ext_bit,
+            opt_bitmap=present_opt,
+            total_bits=present_total,
+        ),
+    ]
+
+
+def _has_variable_width(
+    fields: tuple[SequenceField, ...],
+) -> bool:
+    """Return True when any field has a variable-width type.
+
+    Variable-width types (e.g. ``SequenceOfType``) legitimately
+    have ``uper_bit_width is None`` even after resolution.
+
+    Args:
+        fields: Tuple of SequenceField objects.
+
+    Returns:
+        ``True`` if at least one field has ``None`` bit width.
+    """
+    return any(f.type.uper_bit_width is None for f in fields)
 
 
 def _pluralize_bits(n: int) -> str:
@@ -68,20 +151,97 @@ def _pluralize_bits(n: int) -> str:
     return f"{n} bit" if n == 1 else f"{n} bits"
 
 
-def _sum_field_bits(fields: tuple[SequenceField, ...]) -> int:
+def _sum_field_bits(
+    fields: tuple[SequenceField, ...],
+) -> int:
     """Sum the UPER bit widths of the given fields.
+
+    Callers **must** check ``_has_variable_width()`` first; calling
+    this function on variable-width fields is a programming error.
 
     Args:
         fields: Tuple of SequenceField objects.
 
     Returns:
-        Total bit width (treating ``None`` widths as 0).
+        Total bit width.
+
+    Raises:
+        TypeError: If any ``uper_bit_width`` is ``None``
+            (variable-width field present).
 
     Examples:
         >>> _sum_field_bits(())
         0
     """
-    return sum(f.type.uper_bit_width or 0 for f in fields)
+    total = 0
+    for f in fields:
+        bw = f.type.uper_bit_width
+        if bw is None:
+            raise TypeError(
+                f"Field '{f.name}' has variable-width "
+                "type - call _has_variable_width() "
+                "before _sum_field_bits()."
+            )
+        total += bw
+    return total
+
+
+def _total_and_label(
+    fields: tuple[SequenceField, ...],
+    prefix_bits: int,
+    name: str,
+) -> tuple[int | str, str]:
+    """Compute ``(total_bits, label)`` for a set of fields.
+
+    If *fields* contain a variable-width type the total is
+    ``_VARIABLE_BITS``; otherwise it is the numeric sum of
+    *prefix_bits* + field bit widths.
+
+    When *name* is non-empty the label is ``"<name>, <total>"``;
+    when empty the label is just the total portion.
+
+    Args:
+        fields: Tuple of SequenceField objects.
+        prefix_bits: Fixed overhead (ext bit, opt bitmap, etc.).
+        name: Human-readable variant name prefix.
+
+    Returns:
+        ``(total_bits, label)`` pair.
+    """
+    if _has_variable_width(fields):
+        suffix = _VARIABLE_BITS
+        total: int | str = _VARIABLE_BITS
+    else:
+        total = prefix_bits + _sum_field_bits(fields)
+        suffix = _pluralize_bits(total)
+    label = f"{name}, {suffix}" if name else suffix
+    return total, label
+
+
+def _validate_fields_resolved(
+    fields: tuple[SequenceField, ...],
+) -> None:
+    """Reject fields whose type is still an unresolved TypeReference.
+
+    This is a **precondition guard** -- it catches programming errors
+    where type resolution was skipped or failed *before* any
+    computation is attempted.
+
+    Args:
+        fields: Tuple of SequenceField objects.
+
+    Raises:
+        ValueError: If any field's type is an unresolved
+            ``TypeReference``.
+    """
+    for f in fields:
+        if isinstance(f.type, TypeReference):
+            raise ValueError(
+                f"Field '{f.name}' (type '{f.type_name}') "
+                "still has an unresolved TypeReference. "
+                "All type references must be resolved "
+                "before computing wire format."
+            )
 
 
 def get_sequence_variants(constraint: SequenceType) -> list[SequenceWireVariant]:
@@ -112,15 +272,15 @@ def get_sequence_variants(constraint: SequenceType) -> list[SequenceWireVariant]
     is_ext = constraint.is_extensible
     opt_count = constraint.optional_count
     all_fields = constraint.fields
-    required_fields = tuple(f for f in all_fields if not f.is_optional)
-    optional_names = [f.name for f in all_fields if f.is_optional]
+
+    _validate_fields_resolved(all_fields)
 
     # Case 1: Fixed SEQUENCE (no OPTIONAL, not extensible)
     if not is_ext and opt_count == 0:
-        total = _sum_field_bits(all_fields)
+        total, label = _total_and_label(all_fields, 0, "")
         return [
             SequenceWireVariant(
-                name=_pluralize_bits(total),
+                name=label,
                 fields=all_fields,
                 ext_bit=None,
                 opt_bitmap="",
@@ -130,57 +290,26 @@ def get_sequence_variants(constraint: SequenceType) -> list[SequenceWireVariant]
 
     # Case 2: Extensible SEQUENCE with no OPTIONAL
     if is_ext and opt_count == 0:
-        total_no_ext = 1 + _sum_field_bits(all_fields)  # 1 for ext bit
+        total, label = _total_and_label(all_fields, 1, "no extensions")
         return [
             SequenceWireVariant(
-                name=f"no extensions, {_pluralize_bits(total_no_ext)}",
+                name=label,
                 fields=all_fields,
                 ext_bit=0,
                 opt_bitmap="",
-                total_bits=total_no_ext,
+                total_bits=total,
             ),
             SequenceWireVariant(
-                name="with extensions, variable",
+                name=f"with extensions, {_VARIABLE_BITS}",
                 fields=all_fields,
                 ext_bit=1,
                 opt_bitmap="",
-                total_bits="variable",
+                total_bits=_VARIABLE_BITS,
             ),
         ]
 
     # Case 3: SEQUENCE with OPTIONAL fields (may also be extensible)
-    ext_prefix = 1 if is_ext else 0
-
-    # Variant: all optional ABSENT
-    absent_bits = ext_prefix + opt_count + _sum_field_bits(required_fields)
-    absent_opt = "0" if opt_count == 1 else f"0..0 ({opt_count})"
-    absent_name = (
-        f"{optional_names[0]} ABSENT" if len(optional_names) == 1 else "all optional ABSENT"
-    )
-
-    # Variant: all optional PRESENT
-    present_bits = ext_prefix + opt_count + _sum_field_bits(all_fields)
-    present_opt = "1" if opt_count == 1 else f"1..1 ({opt_count})"
-    present_name = (
-        f"{optional_names[0]} PRESENT" if len(optional_names) == 1 else "all optional PRESENT"
-    )
-
-    return [
-        SequenceWireVariant(
-            name=f"{absent_name}, {_pluralize_bits(absent_bits)}",
-            fields=required_fields,
-            ext_bit=0 if is_ext else None,
-            opt_bitmap=absent_opt,
-            total_bits=absent_bits,
-        ),
-        SequenceWireVariant(
-            name=f"{present_name}, {_pluralize_bits(present_bits)}",
-            fields=all_fields,
-            ext_bit=0 if is_ext else None,
-            opt_bitmap=present_opt,
-            total_bits=present_bits,
-        ),
-    ]
+    return _build_optional_variants(all_fields, is_ext)
 
 
 # =============================================================================

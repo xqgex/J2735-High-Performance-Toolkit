@@ -19,7 +19,7 @@
 /**
  * @file
  * @author Yogev Neumann
- * @brief Sanity tests for BSMcoreData.
+ * @brief Tests for BSMcoreData non-extensible SEQUENCE.
  *
  * The data frame BSMcoreData is a simple case with no extensions or optional fields.
  */

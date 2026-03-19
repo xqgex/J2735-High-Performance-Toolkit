@@ -22,33 +22,33 @@
  * @brief J2735 ApproachOrLane Definition and Access Macros.
  *
  * @par ApproachOrLane Wire Format (UPER):
- * @code
+ * @verbatim
  * ApproachOrLane ::= CHOICE {
  *     approach  ApproachID,  -- 4 bits (J2735_BW_APPROACH_ID)
  *     lane  LaneID  -- 8 bits (J2735_BW_LANE_ID)
  * }
- * @endcode
+ * @endverbatim
  *
  * This is a non-extensible CHOICE with 2 alternatives.
  * Per ITU-T X.691 §23, the choice index uses ceil(log2(2)) = 1 bit.
  *
  * @par Wire Format (approach selected, 5 bits total):
- * @code
+ * @verbatim
  * ┌───────────┬───────────────────────────┐
  * │ Bit 0     │ Bits 1-4                  │
  * ├───────────┼───────────────────────────┤
  * │ Index = 0 │ ApproachID value (4 bits) │
  * └───────────┴───────────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (lane selected, 9 bits total):
- * @code
+ * @verbatim
  * ┌───────────┬───────────────────────┐
  * │ Bit 0     │ Bits 1-8              │
  * ├───────────┼───────────────────────┤
  * │ Index = 1 │ LaneID value (8 bits) │
  * └───────────┴───────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * Performance Rationale (Single I/O Pattern):
  * Reading 9 bits unconditionally (even when smaller alternatives use less) is faster than
@@ -91,6 +91,9 @@
  * This is a non-extensible CHOICE.
  */
 #define J2735_INTERNAL_CHOICE_INDEX_BITS_APPROACH_OR_LANE 1U
+
+_Static_assert(J2735_INTERNAL_CHOICE_INDEX_BITS_APPROACH_OR_LANE == J2735_BW_APPROACH_OR_LANE,
+               "CHOICE index bits must match J2735_BW_APPROACH_OR_LANE");
 
 /* ============================================================================================== */
 /*  INTERNAL: Structure Metadata                                                                  */
