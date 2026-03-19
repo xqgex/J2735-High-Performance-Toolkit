@@ -31,22 +31,22 @@
  * @endverbatim
  *
  * @par Wire Format (no extensions, 25 bits):
- * @code
+ * @verbatim
  * ┌─────────┬─────────────────────┬──────────────────┐
  * │ Bit 0   │ Bits 1-16           │ Bits 17-24       │
  * ├─────────┼─────────────────────┼──────────────────┤
  * │ Ext=0   │ radiusOfCurve (16)  │ confidence (8)   │
  * └─────────┴─────────────────────┴──────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (with extensions, variable):
- * @code
+ * @verbatim
  * ┌─────────┬─────────────────────┬──────────────────┬──────────────────┐
  * │ Bit 0   │ Bits 1-16           │ Bits 17-24       │ Bits 25+         │
  * ├─────────┼─────────────────────┼──────────────────┼──────────────────┤
  * │ Ext=1   │ radiusOfCurve (16)  │ confidence (8)   │ (extension data) │
  * └─────────┴─────────────────────┴──────────────────┴──────────────────┘
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DF_PATHPREDICTION_H
 #define J2735_INTERNAL_DF_PATHPREDICTION_H

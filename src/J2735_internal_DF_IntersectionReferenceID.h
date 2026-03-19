@@ -30,22 +30,22 @@
  * @endverbatim
  *
  * @par Wire Format (region ABSENT, 17 bits):
- * @code
+ * @verbatim
  * ┌────────────┬──────────────┐
  * │ Bit 0      │ Bits 1-16    │
  * ├────────────┼──────────────┤
  * │ Opt=0      │ id (16)      │
  * └────────────┴──────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (region PRESENT, 33 bits):
- * @code
+ * @verbatim
  * ┌────────────┬──────────────┬──────────────┐
  * │ Bit 0      │ Bits 1-16    │ Bits 17-32   │
  * ├────────────┼──────────────┼──────────────┤
  * │ Opt=1      │ region (16)  │ id (16)      │
  * └────────────┴──────────────┴──────────────┘
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DF_INTERSECTIONREFERENCEID_H
 #define J2735_INTERNAL_DF_INTERSECTIONREFERENCEID_H

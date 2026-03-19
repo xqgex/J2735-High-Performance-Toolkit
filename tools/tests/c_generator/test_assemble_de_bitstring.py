@@ -86,18 +86,23 @@ class TestAssembleBitstringWireFormatDocs(SpecLoadingTestBase):
         code = generate_data_element("VehicleEventFlags", self.spec)
         self.assertIn("J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS", code)
 
-    def test_wire_format_uses_doxygen_code_blocks(self) -> None:
-        """Wire format diagrams must be wrapped in @par + @code/@endcode."""
+    def test_wire_format_uses_doxygen_verbatim_blocks(self) -> None:
+        """Wire format diagrams must be wrapped in @par + @verbatim/@endverbatim."""
         for type_name, _prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
                 code = generate_data_element(type_name, self.spec)
                 self.assertIn("@par Wire Format", code)
-                self.assertIn("@code", code)
-                self.assertIn("@endcode", code)
-                self.assertEqual(
-                    code.count("@code"),
-                    code.count("@endcode"),
-                    f"{type_name}: @code/@endcode tags must be paired",
+                self.assertIn("@verbatim", code)
+                self.assertIn("@endverbatim", code)
+                self.assertNotIn(
+                    "@code",
+                    code,
+                    f"{type_name}: wire-format diagrams should use @verbatim, not @code",
+                )
+                self.assertNotIn(
+                    "@endcode",
+                    code,
+                    f"{type_name}: wire-format diagrams should use @endverbatim, not @endcode",
                 )
                 self.assertEqual(
                     code.count("@verbatim"),

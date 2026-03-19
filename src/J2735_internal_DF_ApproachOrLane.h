@@ -33,22 +33,22 @@
  * Per ITU-T X.691 §23, the choice index uses ceil(log2(2)) = 1 bit.
  *
  * @par Wire Format (approach selected, 5 bits total):
- * @code
+ * @verbatim
  * ┌───────────┬───────────────────────────┐
  * │ Bit 0     │ Bits 1-4                  │
  * ├───────────┼───────────────────────────┤
  * │ Index = 0 │ ApproachID value (4 bits) │
  * └───────────┴───────────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (lane selected, 9 bits total):
- * @code
+ * @verbatim
  * ┌───────────┬───────────────────────┐
  * │ Bit 0     │ Bits 1-8              │
  * ├───────────┼───────────────────────┤
  * │ Index = 1 │ LaneID value (8 bits) │
  * └───────────┴───────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * Performance Rationale (Single I/O Pattern):
  * Reading 9 bits unconditionally (even when smaller alternatives use less) is faster than

@@ -61,34 +61,34 @@
  * Extensible BIT STRING with root size {{ root_size }} and known extension size {{ ext_bits }}.
  *
  * @par Wire Format (non-extended, {{ root_wire_size }} bits total):
- * @code
+ * @verbatim
  * ┌{{ "─" * (COL1 + 2) }}┬{{ "─" * (COL2_NONEXT + 2) }}┐
  * │ {{ "%-*s"|format(COL1, "Bit 0") }} │ {{ "%-*s"|format(COL2_NONEXT, "Bits 1-" ~ root_size) }} │
  * ├{{ "─" * (COL1 + 2) }}┼{{ "─" * (COL2_NONEXT + 2) }}┤
  * │ {{ "%-*s"|format(COL1, "Ext=0") }} │ {{ "%-*s"|format(COL2_NONEXT, "flags[0.." ~ (root_size - 1) ~ "] (" ~ root_size ~ " bits)") }} │
  * └{{ "─" * (COL1 + 2) }}┴{{ "─" * (COL2_NONEXT + 2) }}┘
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (extended, {{ read_bits }} bits total):
- * @code
+ * @verbatim
  * ┌{{ "─" * (COL1 + 2) }}┬{{ "─" * (COL2_EXT + 2) }}┬{{ "─" * (COL3_EXT + 2) }}┐
  * │ {{ "%-*s"|format(COL1, "Bit 0") }} │ {{ "%-*s"|format(COL2_EXT, "Bits 1-7") }} │ {{ "%-*s"|format(COL3_EXT, "Bits 8-" ~ (read_bits - 1)) }} │
  * ├{{ "─" * (COL1 + 2) }}┼{{ "─" * (COL2_EXT + 2) }}┼{{ "─" * (COL3_EXT + 2) }}┤
  * │ {{ "%-*s"|format(COL1, "Ext=1") }} │ {{ "%-*s"|format(COL2_EXT, "nsnnwn=" ~ ext_bits ~ " (7 bits)") }} │ {{ "%-*s"|format(COL3_EXT, "flags[0.." ~ (ext_bits - 1) ~ "] (" ~ ext_bits ~ " bits)") }} │
  * └{{ "─" * (COL1 + 2) }}┴{{ "─" * (COL2_EXT + 2) }}┴{{ "─" * (COL3_EXT + 2) }}┘
- * @endcode
+ * @endverbatim
 {% else %}
 {%- set COL_FIXED = 60 %}
  * Fixed BIT STRING with size {{ root_size }}.
  *
  * @par Wire Format ({{ root_wire_size }} bits total):
- * @code
+ * @verbatim
  * ┌{{ "─" * (COL_FIXED + 2) }}┐
  * │ {{ "%-*s"|format(COL_FIXED, "Bits 0-" ~ (root_size - 1)) }} │
  * ├{{ "─" * (COL_FIXED + 2) }}┤
  * │ {{ "%-*s"|format(COL_FIXED, "flags[0.." ~ (root_size - 1) ~ "] (" ~ root_size ~ " bits)") }} │
  * └{{ "─" * (COL_FIXED + 2) }}┘
- * @endcode
+ * @endverbatim
 {% endif %}
  *
  * @par Optimization: Single-Read Strategy

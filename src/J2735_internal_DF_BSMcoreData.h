@@ -42,7 +42,7 @@
  * @endverbatim
  *
  * @par Wire Format (290 bits):
- * @code
+ * @verbatim
  * ┌──────────────┬───────────────────────────────────────────────┐
  * │ Bits         │ Content                                       │
  * ├──────────────┼───────────────────────────────────────────────┤
@@ -61,7 +61,7 @@
  * │ 253-267      │ brakes (15)                                   │
  * │ 268-289      │ size (22)                                     │
  * └──────────────┴───────────────────────────────────────────────┘
- * @endcode
+ * @endverbatim
  */
 #ifndef J2735_INTERNAL_DF_BSMCOREDATA_H
 #define J2735_INTERNAL_DF_BSMCOREDATA_H

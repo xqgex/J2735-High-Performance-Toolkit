@@ -37,22 +37,22 @@
  * Extensible BIT STRING with root size 8 and known extension size 8.
  *
  * @par Wire Format (non-extended, 9 bits total):
- * @code
+ * @verbatim
  * ┌───────┬──────────────────────────────────────────────────────┐
  * │ Bit 0 │ Bits 1-8                                             │
  * ├───────┼──────────────────────────────────────────────────────┤
  * │ Ext=0 │ flags[0..7] (8 bits)                                 │
  * └───────┴──────────────────────────────────────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Wire Format (extended, 16 bits total):
- * @code
+ * @verbatim
  * ┌───────┬────────────────────┬─────────────────────────────────┐
  * │ Bit 0 │ Bits 1-7           │ Bits 8-15                       │
  * ├───────┼────────────────────┼─────────────────────────────────┤
  * │ Ext=1 │ nsnnwn=8 (7 bits)  │ flags[0..7] (8 bits)            │
  * └───────┴────────────────────┴─────────────────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Optimization: Single-Read Strategy
  * @verbatim

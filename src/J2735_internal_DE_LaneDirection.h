@@ -31,13 +31,13 @@
  * Fixed BIT STRING with size 2.
  *
  * @par Wire Format (2 bits total):
- * @code
+ * @verbatim
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-1                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..1] (2 bits)                                         │
  * └──────────────────────────────────────────────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Optimization: Single-Read Strategy
  * @verbatim

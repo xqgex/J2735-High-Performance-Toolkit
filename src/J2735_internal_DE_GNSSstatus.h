@@ -37,13 +37,13 @@
  * Fixed BIT STRING with size 8.
  *
  * @par Wire Format (8 bits total):
- * @code
+ * @verbatim
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-7                                                     │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..7] (8 bits)                                         │
  * └──────────────────────────────────────────────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Optimization: Single-Read Strategy
  * @verbatim

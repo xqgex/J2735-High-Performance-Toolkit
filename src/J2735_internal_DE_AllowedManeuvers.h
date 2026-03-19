@@ -41,13 +41,13 @@
  * Fixed BIT STRING with size 12.
  *
  * @par Wire Format (12 bits total):
- * @code
+ * @verbatim
  * ┌──────────────────────────────────────────────────────────────┐
  * │ Bits 0-11                                                    │
  * ├──────────────────────────────────────────────────────────────┤
  * │ flags[0..11] (12 bits)                                       │
  * └──────────────────────────────────────────────────────────────┘
- * @endcode
+ * @endverbatim
  *
  * @par Optimization: Single-Read Strategy
  * @verbatim
