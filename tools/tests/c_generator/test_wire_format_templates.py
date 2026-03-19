@@ -32,7 +32,9 @@ from tools.j2735_c_generator_wire_format import (
     get_sequence_variants,
 )
 from tools.j2735_spec_constraints import (
+    IntegerConstraint,
     SequenceField,
+    SequenceOfType,
     SequenceType,
 )
 from tools.j2735_spec_parser import (
@@ -357,6 +359,38 @@ class TestASN1DefinitionTemplate(TestCase):
                 self.assertIn(",", type_part)
             elif "TypeC" in type_part:
                 self.assertNotIn(",", type_part)
+
+    def test_variable_width_field_shows_variable(self) -> None:
+        """Variable-width field shows '-- variable' comment."""
+        typedef = _make_typedef(
+            "TestType",
+            fields=(
+                make_integer_field(
+                    "a",
+                    "TypeA",
+                    0,
+                    127,
+                ),
+                SequenceField(
+                    name="items",
+                    type_name="NodeList",
+                    type=SequenceOfType(
+                        element_type=IntegerConstraint(
+                            min_value=0,
+                            max_value=255,
+                        ),
+                        min_size=1,
+                        max_size=10,
+                    ),
+                    is_optional=False,
+                    section_comment="",
+                    inline_comment="",
+                ),
+            ),
+        )
+        output = _render_asn1(typedef)
+
+        self.assertIn("-- variable", output)
 
     def test_doxygen_prefix(self) -> None:
         """Every content line starts with ' * '."""

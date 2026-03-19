@@ -67,8 +67,10 @@
 {%-     set type_part = field.type_name ~ optional_marker ~ comma -%}
 {%-     set sign_str = "signed" if field | is_signed else "unsigned" -%}
 {%-     set range_str = field | format_range -%}
-{%-     set bits = field.type.uper_bit_width or 0 -%}
-{%-     if range_str -%}
+{%-     set bits = field.type.uper_bit_width -%}
+{%-     if bits is none -%}
+{%-       set comment = "-- variable" -%}
+{%-     elif range_str -%}
 {%-       set comment = "-- " ~ "%2d" | format(bits) ~ " bits (" ~ sign_str ~ ", " ~ range_str ~ ")" -%}
 {%-     else -%}
 {%-       set comment = "-- " ~ "%2d" | format(bits) ~ " bits" -%}
