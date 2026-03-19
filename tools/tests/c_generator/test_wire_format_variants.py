@@ -25,13 +25,18 @@ Tests cover:
 from unittest import TestCase
 
 from tools.j2735_c_generator_wire_format import (
+    _VARIABLE_BITS,  # pyright: ignore[reportPrivateUsage]
     SequenceWireVariant,
+    _has_variable_width,  # pyright: ignore[reportPrivateUsage]
     _pluralize_bits,  # pyright: ignore[reportPrivateUsage]
     _sum_field_bits,  # pyright: ignore[reportPrivateUsage]
+    _validate_fields_resolved,  # pyright: ignore[reportPrivateUsage]
     get_sequence_variants,
 )
 from tools.j2735_spec_constraints import (
+    IntegerConstraint,
     SequenceField,
+    SequenceOfType,
     SequenceType,
     TypeReference,
 )
@@ -70,8 +75,103 @@ def _get_variants(type_name: str, spec: J2735Specification) -> list[SequenceWire
 # =============================================================================
 
 
+class TestValidateFieldsResolved(TestCase):
+    """Tests for _validate_fields_resolved() — precondition guard."""
+
+    def test_resolved_fields_pass(self) -> None:
+        """Fields with resolved types do not raise."""
+        fields = (
+            make_integer_field("a", "TypeA", 0, 127),
+            make_integer_field("b", "TypeB", 0, 255),
+        )
+        _validate_fields_resolved(fields)  # Should not raise
+
+    def test_empty_tuple_passes(self) -> None:
+        """Empty field tuple does not raise."""
+        _validate_fields_resolved(())  # Should not raise
+
+    def test_unresolved_type_reference_raises(self) -> None:
+        """An unresolved TypeReference raises ValueError.
+
+        This catches programming errors where type resolution was
+        skipped or failed before computing wire format.
+        """
+        fields = (
+            make_integer_field("a", "TypeA", 0, 127),
+            SequenceField(
+                name="b",
+                type_name="UnresolvedType",
+                type=TypeReference(name="UnresolvedType"),
+                is_optional=False,
+                section_comment="",
+                inline_comment="",
+            ),
+        )
+        with self.assertRaises(ValueError):
+            _validate_fields_resolved(fields)
+
+    def test_variable_width_field_passes(self) -> None:
+        """A resolved variable-width type does not raise."""
+        fields = (
+            SequenceField(
+                name="items",
+                type_name="NodeList",
+                type=SequenceOfType(
+                    element_type=IntegerConstraint(
+                        min_value=0,
+                        max_value=255,
+                    ),
+                    min_size=1,
+                    max_size=10,
+                ),
+                is_optional=False,
+                section_comment="",
+                inline_comment="",
+            ),
+        )
+        _validate_fields_resolved(fields)  # Should not raise
+
+
+class TestHasVariableWidth(TestCase):
+    """Tests for _has_variable_width() — classification."""
+
+    def test_all_fixed_returns_false(self) -> None:
+        """All fixed-width fields return False."""
+        fields = (
+            make_integer_field("a", "TypeA", 0, 127),
+            make_integer_field("b", "TypeB", 0, 255),
+        )
+        self.assertFalse(_has_variable_width(fields))
+
+    def test_empty_tuple_returns_false(self) -> None:
+        """Empty field tuple returns False."""
+        self.assertFalse(_has_variable_width(()))
+
+    def test_variable_width_returns_true(self) -> None:
+        """A SequenceOfType field returns True."""
+        fields = (
+            make_integer_field("a", "TypeA", 0, 127),
+            SequenceField(
+                name="items",
+                type_name="NodeList",
+                type=SequenceOfType(
+                    element_type=IntegerConstraint(
+                        min_value=0,
+                        max_value=255,
+                    ),
+                    min_size=1,
+                    max_size=10,
+                ),
+                is_optional=False,
+                section_comment="",
+                inline_comment="",
+            ),
+        )
+        self.assertTrue(_has_variable_width(fields))
+
+
 class TestSumFieldBits(TestCase):
-    """Tests for _sum_field_bits() — must reject unresolved fields."""
+    """Tests for _sum_field_bits() — sums fixed-width only."""
 
     def test_resolved_fields_sum_correctly(self) -> None:
         """Fields with known bit-widths sum to the correct total."""
@@ -85,25 +185,30 @@ class TestSumFieldBits(TestCase):
         """Empty field tuple returns 0."""
         self.assertEqual(_sum_field_bits(()), 0)
 
-    def test_unresolved_type_reference_raises(self) -> None:
-        """A field with unresolved TypeReference (uper_bit_width=None) must raise.
+    def test_variable_width_raises_type_error(self) -> None:
+        """Variable-width fields raise TypeError.
 
-        _sum_field_bits must reject fields whose bit-width has not been
-        resolved, rather than silently treating None as 0 and producing
-        an incorrect undercount.
+        Callers must check _has_variable_width() first.
         """
         fields = (
-            make_integer_field("a", "TypeA", 0, 127),  # 7 bits
+            make_integer_field("a", "TypeA", 0, 127),
             SequenceField(
-                name="b",
-                type_name="UnresolvedType",
-                type=TypeReference(name="UnresolvedType"),
+                name="items",
+                type_name="NodeList",
+                type=SequenceOfType(
+                    element_type=IntegerConstraint(
+                        min_value=0,
+                        max_value=255,
+                    ),
+                    min_size=1,
+                    max_size=10,
+                ),
                 is_optional=False,
                 section_comment="",
                 inline_comment="",
             ),
         )
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             _sum_field_bits(fields)
 
 
@@ -265,7 +370,7 @@ class TestExtensibleSequence(TestCase):
         )
         variants = get_sequence_variants(seq)
 
-        self.assertEqual(variants[1].total_bits, "variable")
+        self.assertEqual(variants[1].total_bits, _VARIABLE_BITS)
 
     def test_both_variants_have_all_fields(self) -> None:
         """Both variants contain all fields."""
