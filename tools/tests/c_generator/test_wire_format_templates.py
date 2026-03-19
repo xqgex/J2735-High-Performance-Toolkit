@@ -139,7 +139,7 @@ def _render_real_asn1(type_name: str, spec: J2735Specification) -> str:
 
 
 # =============================================================================
-# Test Helpers — Synthetic Type Builders
+# Test Helpers - Synthetic Type Builders
 # =============================================================================
 
 
@@ -198,12 +198,12 @@ def _extract_row_widths(line: str) -> list[int]:
     Returns:
         List of cell widths (number of '─' chars per cell).
     """
-    # Find all runs of ─ characters
+    # Find all runs of `─` characters
     return [len(m.group()) for m in re.finditer(r"─+", line)]
 
 
 # =============================================================================
-# Tests — ASN.1 Definition Template
+# Tests - ASN.1 Definition Template
 # =============================================================================
 
 
@@ -409,7 +409,7 @@ class TestASN1DefinitionTemplate(TestCase):
 
 
 # =============================================================================
-# Tests — Wire Format Table Template (Column-Based)
+# Tests - Wire Format Table Template (Column-Based)
 # =============================================================================
 
 
@@ -568,7 +568,7 @@ class TestWireFormatTableTemplate(TestCase):
 
 
 # =============================================================================
-# Tests — Wire Format Compact Template (Row-Based)
+# Tests - Wire Format Compact Template (Row-Based)
 # =============================================================================
 
 
@@ -716,7 +716,7 @@ class TestWireFormatCompactTemplate(TestCase):
 
 
 # =============================================================================
-# Tests — Bit Position Continuity (Regression)
+# Tests - Bit Position Continuity (Regression)
 # =============================================================================
 
 
@@ -888,7 +888,7 @@ class TestBitPositionContinuity(TestCase):
 
 
 # =============================================================================
-# Tests — Template Selection Logic
+# Tests - Template Selection Logic
 # =============================================================================
 
 
@@ -925,7 +925,7 @@ class TestTemplateSelection(TestCase):
 
 
 # =============================================================================
-# Tests — With Real Spec Fixtures
+# Tests - With Real Spec Fixtures
 # =============================================================================
 
 

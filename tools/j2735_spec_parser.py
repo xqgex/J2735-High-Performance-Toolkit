@@ -184,10 +184,10 @@ class ASN1TypeDefinition:
 
     All type information is stored in the unified `constraint` field,
     which holds the appropriate constraint class for each type:
-    - INTEGER → IntegerConstraint
-    - BIT STRING → BitStringConstraint
-    - BOOLEAN → BooleanType
-    - SEQUENCE → SequenceType (with resolved SequenceField.type)
+    - INTEGER -> IntegerConstraint
+    - BIT STRING -> BitStringConstraint
+    - BOOLEAN -> BooleanType
+    - SEQUENCE -> SequenceType (with resolved SequenceField.type)
     - etc.
 
     Attributes:

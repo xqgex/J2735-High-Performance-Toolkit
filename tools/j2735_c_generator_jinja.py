@@ -248,7 +248,7 @@ def filter_snake_case(name: str) -> str:
 def create_jinja_env() -> Environment:
     """Create and configure the Jinja2 environment.
 
-    The result is cached — the Environment and its filters are never mutated
+    The result is cached - the Environment and its filters are never mutated
     after construction, so a single shared instance is safe.
     """
     env = Environment(

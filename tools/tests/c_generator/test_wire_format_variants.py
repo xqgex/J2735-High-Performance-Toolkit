@@ -71,12 +71,12 @@ def _get_variants(type_name: str, spec: J2735Specification) -> list[SequenceWire
 
 
 # =============================================================================
-# Tests — _pluralize_bits()
+# Tests - _pluralize_bits()
 # =============================================================================
 
 
 class TestValidateFieldsResolved(TestCase):
-    """Tests for _validate_fields_resolved() — precondition guard."""
+    """Tests for _validate_fields_resolved() - precondition guard."""
 
     def test_resolved_fields_pass(self) -> None:
         """Fields with resolved types do not raise."""
@@ -133,7 +133,7 @@ class TestValidateFieldsResolved(TestCase):
 
 
 class TestHasVariableWidth(TestCase):
-    """Tests for _has_variable_width() — classification."""
+    """Tests for _has_variable_width() - classification."""
 
     def test_all_fixed_returns_false(self) -> None:
         """All fixed-width fields return False."""
@@ -171,7 +171,7 @@ class TestHasVariableWidth(TestCase):
 
 
 class TestSumFieldBits(TestCase):
-    """Tests for _sum_field_bits() — sums fixed-width only."""
+    """Tests for _sum_field_bits() - sums fixed-width only."""
 
     def test_resolved_fields_sum_correctly(self) -> None:
         """Fields with known bit-widths sum to the correct total."""
@@ -233,7 +233,7 @@ class TestPluralizeBits(TestCase):
 
 
 # =============================================================================
-# Tests — get_sequence_variants()
+# Tests - get_sequence_variants()
 # =============================================================================
 
 
@@ -621,7 +621,7 @@ class TestBitWidthAccumulation(TestCase):
         self.assertEqual(variants[0].total_bits, 48)
 
     def test_signed_fields_dont_affect_bit_width(self) -> None:
-        """Signed vs unsigned with same range size → same bit width."""
+        """Signed vs unsigned with same range size -> same bit width."""
         seq_unsigned = make_sequence(
             fields=(make_integer_field("u", "U", 0, 65534),),  # 16 bits
         )
@@ -648,7 +648,7 @@ class TestBitWidthAccumulation(TestCase):
 
 
 class TestSequenceWireVariantImmutability(TestCase):
-    """SequenceWireVariant is a frozen dataclass — verify immutability."""
+    """SequenceWireVariant is a frozen dataclass - verify immutability."""
 
     def test_frozen(self) -> None:
         """SequenceWireVariant raises on attribute assignment."""
@@ -671,7 +671,7 @@ class TestSequenceWireVariantImmutability(TestCase):
 
 
 # =============================================================================
-# Tests — Regression: Variants Match SequenceType Properties
+# Tests - Regression: Variants Match SequenceType Properties
 # =============================================================================
 
 
@@ -734,7 +734,7 @@ class TestVariantsMatchSequenceType(TestCase):
 
 
 # =============================================================================
-# Tests — Real Spec Fixtures
+# Tests - Real Spec Fixtures
 # =============================================================================
 
 

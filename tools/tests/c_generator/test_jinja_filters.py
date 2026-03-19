@@ -19,8 +19,8 @@
 Tests cover all filters registered in create_jinja_env():
     - filter_format_range: value range formatting for SequenceField
     - filter_is_signed: signed/unsigned detection for SequenceField
-    - filter_screaming_snake: CamelCase → SCREAMING_SNAKE_CASE
-    - filter_snake_case: CamelCase → snake_case
+    - filter_screaming_snake: CamelCase -> SCREAMING_SNAKE_CASE
+    - filter_snake_case: CamelCase -> snake_case
 """
 
 from unittest import TestCase
@@ -116,7 +116,7 @@ class TestSnakeCaseConversion(TestCase):
 
 
 # =============================================================================
-# Tests — filter_is_signed()
+# Tests - filter_is_signed()
 # =============================================================================
 
 
@@ -162,7 +162,7 @@ class TestIsSigned(TestCase):
 
 
 # =============================================================================
-# Tests — filter_format_range()
+# Tests - filter_format_range()
 # =============================================================================
 
 
@@ -190,7 +190,7 @@ class TestFormatRange(TestCase):
         self.assertEqual(filter_format_range(field), "42..42")
 
     def test_bitstring_returns_empty(self) -> None:
-        """BIT STRING field has no range → returns empty string."""
+        """BIT STRING field has no range -> returns empty string."""
         field = make_bitstring_field("flags", "Flags", 8)
         self.assertEqual(filter_format_range(field), "")
 
