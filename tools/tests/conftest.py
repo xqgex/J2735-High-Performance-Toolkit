@@ -32,6 +32,7 @@ from tools.j2735_spec_constraints import (
     BitStringConstraint,
     IntegerConstraint,
     SequenceField,
+    SequenceOfType,
     SequenceType,
 )
 from tools.j2735_spec_parser import (
@@ -530,6 +531,51 @@ def make_bitstring_field(
             is_extensible=False,
             extension_size=None,
             named_bits=named_bits,
+        ),
+        is_optional=is_optional,
+        section_comment="",
+        inline_comment="",
+    )
+
+
+def make_variable_width_field(
+    name: str,
+    type_name: str,
+    *,
+    is_optional: bool = False,
+) -> SequenceField:
+    """Create a SequenceField with a SequenceOfType (variable-width).
+
+    Args:
+        name: Field name.
+        type_name: ASN.1 type name.
+        is_optional: Whether the field is OPTIONAL.
+
+    Returns:
+        A SequenceField with ``uper_bit_width is None``.
+
+    Examples:
+        >>> field = make_variable_width_field("items", "NodeList")
+        >>> field.name
+        'items'
+        >>> field.type.uper_bit_width is None
+        True
+        >>> field.is_optional
+        False
+        >>> opt = make_variable_width_field("x", "T", is_optional=True)
+        >>> opt.is_optional
+        True
+    """
+    return SequenceField(
+        name=name,
+        type_name=type_name,
+        type=SequenceOfType(
+            element_type=IntegerConstraint(
+                min_value=0,
+                max_value=255,
+            ),
+            min_size=1,
+            max_size=10,
         ),
         is_optional=is_optional,
         section_comment="",

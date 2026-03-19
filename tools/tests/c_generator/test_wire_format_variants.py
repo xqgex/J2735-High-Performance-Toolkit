@@ -34,9 +34,7 @@ from tools.j2735_c_generator_wire_format import (
     get_sequence_variants,
 )
 from tools.j2735_spec_constraints import (
-    IntegerConstraint,
     SequenceField,
-    SequenceOfType,
     SequenceType,
     TypeReference,
 )
@@ -49,6 +47,7 @@ from tools.tests.conftest import (
     make_nested_mock_spec,
     make_optional_mock_spec,
     make_sequence,
+    make_variable_width_field,
 )
 
 
@@ -112,23 +111,7 @@ class TestValidateFieldsResolved(TestCase):
 
     def test_variable_width_field_passes(self) -> None:
         """A resolved variable-width type does not raise."""
-        fields = (
-            SequenceField(
-                name="items",
-                type_name="NodeList",
-                type=SequenceOfType(
-                    element_type=IntegerConstraint(
-                        min_value=0,
-                        max_value=255,
-                    ),
-                    min_size=1,
-                    max_size=10,
-                ),
-                is_optional=False,
-                section_comment="",
-                inline_comment="",
-            ),
-        )
+        fields = (make_variable_width_field("items", "NodeList"),)
         _validate_fields_resolved(fields)  # Should not raise
 
 
@@ -151,21 +134,7 @@ class TestHasVariableWidth(TestCase):
         """A SequenceOfType field returns True."""
         fields = (
             make_integer_field("a", "TypeA", 0, 127),
-            SequenceField(
-                name="items",
-                type_name="NodeList",
-                type=SequenceOfType(
-                    element_type=IntegerConstraint(
-                        min_value=0,
-                        max_value=255,
-                    ),
-                    min_size=1,
-                    max_size=10,
-                ),
-                is_optional=False,
-                section_comment="",
-                inline_comment="",
-            ),
+            make_variable_width_field("items", "NodeList"),
         )
         self.assertTrue(_has_variable_width(fields))
 
@@ -192,21 +161,7 @@ class TestSumFieldBits(TestCase):
         """
         fields = (
             make_integer_field("a", "TypeA", 0, 127),
-            SequenceField(
-                name="items",
-                type_name="NodeList",
-                type=SequenceOfType(
-                    element_type=IntegerConstraint(
-                        min_value=0,
-                        max_value=255,
-                    ),
-                    min_size=1,
-                    max_size=10,
-                ),
-                is_optional=False,
-                section_comment="",
-                inline_comment="",
-            ),
+            make_variable_width_field("items", "NodeList"),
         )
         with self.assertRaises(TypeError):
             _sum_field_bits(fields)

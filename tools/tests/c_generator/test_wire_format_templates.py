@@ -32,9 +32,7 @@ from tools.j2735_c_generator_wire_format import (
     get_sequence_variants,
 )
 from tools.j2735_spec_constraints import (
-    IntegerConstraint,
     SequenceField,
-    SequenceOfType,
     SequenceType,
 )
 from tools.j2735_spec_parser import (
@@ -49,6 +47,7 @@ from tools.tests.conftest import (
     make_nested_mock_spec,
     make_optional_mock_spec,
     make_sequence,
+    make_variable_width_field,
 )
 
 # =============================================================================
@@ -371,21 +370,7 @@ class TestASN1DefinitionTemplate(TestCase):
                     0,
                     127,
                 ),
-                SequenceField(
-                    name="items",
-                    type_name="NodeList",
-                    type=SequenceOfType(
-                        element_type=IntegerConstraint(
-                            min_value=0,
-                            max_value=255,
-                        ),
-                        min_size=1,
-                        max_size=10,
-                    ),
-                    is_optional=False,
-                    section_comment="",
-                    inline_comment="",
-                ),
+                make_variable_width_field("items", "NodeList"),
             ),
         )
         output = _render_asn1(typedef)
