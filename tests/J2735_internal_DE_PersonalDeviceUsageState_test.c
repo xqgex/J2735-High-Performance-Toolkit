@@ -69,8 +69,8 @@ void test_personal_device_usage_state_non_extended(void) {
       0x55, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Extension bit should be 0 for non-extended form");
+  bool has_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension bit should be 0 for non-extended form");
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x0155U, J2735_PERSONAL_DEVICE_USAGE_STATE_GET(payload),
                                   "Flags should be 0x0155 for non-extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(10U, J2735_PERSONAL_DEVICE_USAGE_STATE_SIZE(payload),
@@ -97,8 +97,8 @@ void test_personal_device_usage_state_extended(void) {
       0x89, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Extension bit should be 1 for extended form");
+  bool has_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension bit should be 1 for extended form");
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x01FFU, J2735_PERSONAL_DEVICE_USAGE_STATE_GET(payload),
                                   "Flags should be 0x01FF for extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(17U, J2735_PERSONAL_DEVICE_USAGE_STATE_SIZE(payload),
@@ -176,8 +176,8 @@ void test_personal_device_usage_state_all_zeros_non_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x0000U, J2735_PERSONAL_DEVICE_USAGE_STATE_GET(payload),
                                   "All flags should be zero");
 }
@@ -197,8 +197,8 @@ void test_personal_device_usage_state_non_extended_all_flags_on(void) {
       0x7F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x01FFU, J2735_PERSONAL_DEVICE_USAGE_STATE_GET(payload),
                                   "All 9 flags should be ON (0x01FF)");
 }
@@ -212,8 +212,8 @@ void test_personal_device_usage_state_extended_all_zeros(void) {
       0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Should be extended");
+  bool has_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Should be extended");
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x0000U, J2735_PERSONAL_DEVICE_USAGE_STATE_GET(payload),
                                   "All flags should be zero in extended form");
 }
@@ -326,8 +326,8 @@ void test_personal_device_usage_state_misaligned_access(void) {
   };
   const uint8_t *unaligned_ptr = &payload[1];
 
-  bool is_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Misaligned: should be non-extended");
+  bool has_ext = J2735_PERSONAL_DEVICE_USAGE_STATE_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Misaligned: should be non-extended");
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x01FFU, J2735_PERSONAL_DEVICE_USAGE_STATE_GET(unaligned_ptr),
                                   "Misaligned: all flags should be ON");
 }

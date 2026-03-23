@@ -77,7 +77,7 @@
  * @internal
  * @brief Root size of UserSizeAndBehaviour in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_USER_SIZE_AND_BEHAVIOUR 5U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_USER_SIZE_AND_BEHAVIOUR 5U
 
 /**
  * @internal
@@ -149,7 +149,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  *
  * @param[in] raw13 Value previously returned by J2735_INTERNAL_RAW_READ_USER_SIZE_AND_BEHAVIOUR().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED() for public API.
+ * @note Internal use only. Use J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION() for public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_USER_SIZE_AND_BEHAVIOUR(raw13)                                 \
   (((raw13) >> (J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR - 1U)) != 0U)
@@ -186,8 +186,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
        ((uint8_t)((raw13) & ((1ULL << J2735_INTERNAL_EXT_SIZE_USER_SIZE_AND_BEHAVIOUR) - 1ULL)))   \
                                                               : /* Non-ext: bits 11..7 = 5 bits */ \
        ((uint8_t)(((raw13) >> (J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR - 1U -         \
-                               J2735_INTERNAL_ROOT_SIZE_USER_SIZE_AND_BEHAVIOUR)) &                \
-                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_USER_SIZE_AND_BEHAVIOUR) - 1ULL))))
+                               J2735_INTERNAL_ROOT_SIZE_BITS_USER_SIZE_AND_BEHAVIOUR)) &           \
+                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_BITS_USER_SIZE_AND_BEHAVIOUR) - 1ULL))))
 
 /**
  * @internal
@@ -209,7 +209,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  *                    constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= 5 reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_USER_SIZE_AND_BEHAVIOUR_GET_*() accessors for public API.
  */
 #define J2735_INTERNAL_GET_ONE_USER_SIZE_AND_BEHAVIOUR(raw13, bit_pos)                             \
@@ -227,7 +227,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
 /*  PUBLIC API: UserSizeAndBehaviour Accessors                                                    */
 /* ============================================================================================== */
 /**
- * @brief Check if UserSizeAndBehaviour is in extended form.
+ * @brief Check if UserSizeAndBehaviour has an extension.
  *
  * Extended form includes 5 flags (bits 0-4).
  * Root form has only 5 flags (bits 0-4).
@@ -236,7 +236,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  * @pre @p buf must point to valid UserSizeAndBehaviour encoding with +7 byte padding.
  * @return Non-zero (true) if extended (5 flags), zero (false) if root (5 flags).
  */
-#define J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED(buf)                                             \
+#define J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION(buf)                                           \
   J2735_INTERNAL_IS_EXTENSION_USER_SIZE_AND_BEHAVIOUR(                                             \
       J2735_INTERNAL_RAW_READ_USER_SIZE_AND_BEHAVIOUR(buf))
 
@@ -254,7 +254,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
        J2735_INTERNAL_RAW_READ_USER_SIZE_AND_BEHAVIOUR(buf))                                       \
        ? J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR                                      \
        : (J2735_INTERNAL_EXTENSION_MARKER_BITS +                                                   \
-          J2735_INTERNAL_ROOT_SIZE_USER_SIZE_AND_BEHAVIOUR))
+          J2735_INTERNAL_ROOT_SIZE_BITS_USER_SIZE_AND_BEHAVIOUR))
 
 /**
  * @brief Get all UserSizeAndBehaviour as a single uint8_t value.
@@ -267,7 +267,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
  * @param[in] buf Pointer to the start of the UserSizeAndBehaviour UPER encoding (const uint8_t*).
  * @pre @p buf must point to valid UserSizeAndBehaviour encoding with +7 byte padding.
  * @return Right-aligned flag value (uint8_t). Bit 0 of result = first named bit.
- * @note Use J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED() to determine if bit 5 is meaningful.
+ * @note Use J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION() to determine if bit 5 is meaningful.
  */
 #define J2735_USER_SIZE_AND_BEHAVIOUR_GET(buf)                                                     \
   J2735_INTERNAL_GET_ALL_USER_SIZE_AND_BEHAVIOUR(                                                  \

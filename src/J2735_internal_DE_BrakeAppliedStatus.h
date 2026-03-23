@@ -142,7 +142,7 @@ _Static_assert(J2735_BW_BRAKE_APPLIED_STATUS <= 56U,
 /*  PUBLIC API: BrakeAppliedStatus Accessors                                                      */
 /* ============================================================================================== */
 /**
- * @brief Check if BrakeAppliedStatus is in extended form.
+ * @brief Check if BrakeAppliedStatus has an extension.
  *
  * BrakeAppliedStatus is a fixed-size BIT STRING with 5 bits.
  * It does not have an extension marker, so this always returns 0 (false).
@@ -150,7 +150,7 @@ _Static_assert(J2735_BW_BRAKE_APPLIED_STATUS <= 56U,
  * @param[in] buf Pointer to the start of the BrakeAppliedStatus UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_BRAKE_APPLIED_STATUS_IS_EXTENDED(buf) ((void)(buf), 0)
+#define J2735_BRAKE_APPLIED_STATUS_HAS_EXTENSION(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of BrakeAppliedStatus in bits.

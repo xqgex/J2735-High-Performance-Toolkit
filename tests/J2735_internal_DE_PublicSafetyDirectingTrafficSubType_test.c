@@ -72,8 +72,8 @@ void test_public_safety_directing_traffic_sub_type_non_extended(void) {
       0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Extension bit should be 0 for non-extended form");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension bit should be 0 for non-extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x55U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "Flags should be 0x55 for non-extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(8U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_SIZE(payload),
@@ -99,8 +99,8 @@ void test_public_safety_directing_traffic_sub_type_extended(void) {
       0x87, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Extension bit should be 1 for extended form");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension bit should be 1 for extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x7FU, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "Flags should be 0x7F for extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(15U,
@@ -185,8 +185,8 @@ void test_public_safety_directing_traffic_sub_type_all_zeros_non_extended(void) 
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "All flags should be zero");
 }
@@ -205,8 +205,8 @@ void test_public_safety_directing_traffic_sub_type_non_extended_all_flags_on(voi
       0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x7FU, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "All 7 flags should be ON (0x7F)");
 }
@@ -220,8 +220,8 @@ void test_public_safety_directing_traffic_sub_type_extended_all_zeros(void) {
       0x87, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Should be extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Should be extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "All flags should be zero in extended form");
 }
@@ -342,8 +342,8 @@ void test_public_safety_directing_traffic_sub_type_misaligned_access(void) {
   };
   const uint8_t *unaligned_ptr = &payload[1];
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Misaligned: should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Misaligned: should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x7FU,
                                  J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(unaligned_ptr),
                                  "Misaligned: all flags should be ON");

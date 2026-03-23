@@ -54,7 +54,7 @@ SPEC_FILE_PATH: Path = _REPOSITORY_ROOT / "J2735_202409_pdf_content.txt"
 
 # BIT STRING Data Element types that have no UPER extension marker on the wire.
 # These types take a different template code path than extensible types: no
-# extension bit, no nsnnwn length field, and SIZE == ROOT_SIZE (not 1+ROOT_SIZE).
+# extension bit, no nsnnwn length field, and SIZE == ROOT_SIZE_BITS (not 1+ROOT_SIZE_BITS).
 # Each tuple is (ASN.1 type name, C macro prefix).
 NON_EXTENSIBLE_BITSTRING_TYPES: list[tuple[str, str]] = [
     ("LaneDirection", "LANE_DIRECTION"),

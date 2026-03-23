@@ -296,17 +296,18 @@ void test_transit_status_size(void) {
 }
 
 /**
- * @brief Test TransitStatus IS_EXTENDED always returns false.
+ * @brief Test TransitStatus HAS_EXTENSION always returns false.
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
-void test_transit_status_is_extended(void) {
+void test_transit_status_has_extension(void) {
   static const uint8_t payload[] = {
       0xFC,                                          /* flags[0:5]=111111 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_TRANSIT_STATUS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "IS_EXTENDED should always be false for non-extensible type");
+  bool has_ext = J2735_TRANSIT_STATUS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext,
+                            "HAS_EXTENSION should always be false for non-extensible type");
 }
 
 /**
@@ -355,6 +356,6 @@ void run_testsuite_transit_status(void) {
   RUN_TEST(test_transit_status_single_bit_none);
   RUN_TEST(test_transit_status_single_bit_occ_l);
   RUN_TEST(test_transit_status_size);
-  RUN_TEST(test_transit_status_is_extended);
+  RUN_TEST(test_transit_status_has_extension);
   RUN_TEST(test_transit_status_misaligned_access);
 }

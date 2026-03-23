@@ -144,7 +144,7 @@ _Static_assert(J2735_BW_TRANSIT_STATUS <= 56U,
 /*  PUBLIC API: TransitStatus Accessors                                                           */
 /* ============================================================================================== */
 /**
- * @brief Check if TransitStatus is in extended form.
+ * @brief Check if TransitStatus has an extension.
  *
  * TransitStatus is a fixed-size BIT STRING with 6 bits.
  * It does not have an extension marker, so this always returns 0 (false).
@@ -152,7 +152,7 @@ _Static_assert(J2735_BW_TRANSIT_STATUS <= 56U,
  * @param[in] buf Pointer to the start of the TransitStatus UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_TRANSIT_STATUS_IS_EXTENDED(buf) ((void)(buf), 0)
+#define J2735_TRANSIT_STATUS_HAS_EXTENSION(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of TransitStatus in bits.

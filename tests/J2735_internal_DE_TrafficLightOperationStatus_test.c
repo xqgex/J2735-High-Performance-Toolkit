@@ -74,8 +74,8 @@ void test_traffic_light_operation_status_non_extended(void) {
       0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Extension bit should be 0 for non-extended form");
+  bool has_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension bit should be 0 for non-extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0xAAU, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET(payload),
                                  "Flags should be 0xAA for non-extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(9U, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_SIZE(payload),
@@ -101,8 +101,8 @@ void test_traffic_light_operation_status_extended(void) {
       0x88, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Extension bit should be 1 for extended form");
+  bool has_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension bit should be 1 for extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0xFFU, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET(payload),
                                  "Flags should be 0xFF for extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(16U, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_SIZE(payload),
@@ -177,8 +177,8 @@ void test_traffic_light_operation_status_all_zeros_non_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET(payload),
                                  "All flags should be zero");
 }
@@ -198,8 +198,8 @@ void test_traffic_light_operation_status_non_extended_all_flags_on(void) {
       0x7F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0xFFU, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET(payload),
                                  "All 8 flags should be ON (0xFF)");
 }
@@ -213,8 +213,8 @@ void test_traffic_light_operation_status_extended_all_zeros(void) {
       0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Should be extended");
+  bool has_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Should be extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET(payload),
                                  "All flags should be zero in extended form");
 }
@@ -327,8 +327,8 @@ void test_traffic_light_operation_status_misaligned_access(void) {
   };
   const uint8_t *unaligned_ptr = &payload[1];
 
-  bool is_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Misaligned: should be non-extended");
+  bool has_ext = J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Misaligned: should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0xFFU, J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET(unaligned_ptr),
                                  "Misaligned: all flags should be ON");
 }

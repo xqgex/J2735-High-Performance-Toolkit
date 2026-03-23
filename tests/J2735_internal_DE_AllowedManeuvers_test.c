@@ -352,18 +352,19 @@ void test_allowed_maneuvers_size(void) {
 }
 
 /**
- * @brief Test AllowedManeuvers IS_EXTENDED always returns false.
+ * @brief Test AllowedManeuvers HAS_EXTENSION always returns false.
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
-void test_allowed_maneuvers_is_extended(void) {
+void test_allowed_maneuvers_has_extension(void) {
   static const uint8_t payload[] = {
       0xFF,                                          /* flags[0:7]=11111111 */
       0xF0,                                          /* flags[8:11]=1111 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_ALLOWED_MANEUVERS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "IS_EXTENDED should always be false for non-extensible type");
+  bool has_ext = J2735_ALLOWED_MANEUVERS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext,
+                            "HAS_EXTENSION should always be false for non-extensible type");
 }
 
 /**
@@ -416,6 +417,6 @@ void run_testsuite_allowed_maneuvers(void) {
   RUN_TEST(test_allowed_maneuvers_single_bit_straight_allowed);
   RUN_TEST(test_allowed_maneuvers_single_bit_reserved_1);
   RUN_TEST(test_allowed_maneuvers_size);
-  RUN_TEST(test_allowed_maneuvers_is_extended);
+  RUN_TEST(test_allowed_maneuvers_has_extension);
   RUN_TEST(test_allowed_maneuvers_misaligned_access);
 }

@@ -37,7 +37,7 @@ void test_vertical_acceleration_threshold_single_bit_right_rear(void);
 
 /* Metadata tests */
 void test_vertical_acceleration_threshold_size(void);
-void test_vertical_acceleration_threshold_is_extended(void);
+void test_vertical_acceleration_threshold_has_extension(void);
 
 /* Misalignment test */
 void test_vertical_acceleration_threshold_misaligned_access(void);

@@ -81,7 +81,7 @@
  * @internal
  * @brief Root size of ExteriorLights in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_EXTERIOR_LIGHTS 9U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_EXTERIOR_LIGHTS 9U
 
 /**
  * @internal
@@ -157,7 +157,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
  *
  * @param[in] raw17 Value previously returned by J2735_INTERNAL_RAW_READ_EXTERIOR_LIGHTS().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_EXTERIOR_LIGHTS_IS_EXTENDED() for public API.
+ * @note Internal use only. Use J2735_EXTERIOR_LIGHTS_HAS_EXTENSION() for public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_EXTERIOR_LIGHTS(raw17)                                         \
   (((raw17) >> (J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS - 1U)) != 0U)
@@ -194,8 +194,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
        ((uint16_t)((raw17) & ((1ULL << J2735_INTERNAL_EXT_SIZE_EXTERIOR_LIGHTS) - 1ULL)))          \
                                                       : /* Non-ext: bits 15..7 = 9 bits */         \
        ((uint16_t)(((raw17) >> (J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS - 1U -                \
-                                J2735_INTERNAL_ROOT_SIZE_EXTERIOR_LIGHTS)) &                       \
-                   ((1ULL << J2735_INTERNAL_ROOT_SIZE_EXTERIOR_LIGHTS) - 1ULL))))
+                                J2735_INTERNAL_ROOT_SIZE_BITS_EXTERIOR_LIGHTS)) &                  \
+                   ((1ULL << J2735_INTERNAL_ROOT_SIZE_BITS_EXTERIOR_LIGHTS) - 1ULL))))
 
 /**
  * @internal
@@ -217,7 +217,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
  *                    constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= 9 reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_EXTERIOR_LIGHTS_GET_*() accessors for public API.
  */
 #define J2735_INTERNAL_GET_ONE_EXTERIOR_LIGHTS(raw17, bit_pos)                                     \
@@ -231,7 +231,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
 /*  PUBLIC API: ExteriorLights Accessors                                                          */
 /* ============================================================================================== */
 /**
- * @brief Check if ExteriorLights is in extended form.
+ * @brief Check if ExteriorLights has an extension.
  *
  * Extended form includes 9 flags (bits 0-8).
  * Root form has only 9 flags (bits 0-8).
@@ -240,7 +240,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
  * @pre @p buf must point to valid ExteriorLights encoding with +7 byte padding.
  * @return Non-zero (true) if extended (9 flags), zero (false) if root (9 flags).
  */
-#define J2735_EXTERIOR_LIGHTS_IS_EXTENDED(buf)                                                     \
+#define J2735_EXTERIOR_LIGHTS_HAS_EXTENSION(buf)                                                   \
   J2735_INTERNAL_IS_EXTENSION_EXTERIOR_LIGHTS(J2735_INTERNAL_RAW_READ_EXTERIOR_LIGHTS(buf))
 
 /**
@@ -255,7 +255,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
 #define J2735_EXTERIOR_LIGHTS_SIZE(buf)                                                            \
   (J2735_INTERNAL_IS_EXTENSION_EXTERIOR_LIGHTS(J2735_INTERNAL_RAW_READ_EXTERIOR_LIGHTS(buf))       \
        ? J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS                                              \
-       : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_EXTERIOR_LIGHTS))
+       : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_BITS_EXTERIOR_LIGHTS))
 
 /**
  * @brief Get all ExteriorLights as a single uint16_t value.
@@ -268,7 +268,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_EXTERIOR_LIGHTS ==
  * @param[in] buf Pointer to the start of the ExteriorLights UPER encoding (const uint8_t*).
  * @pre @p buf must point to valid ExteriorLights encoding with +7 byte padding.
  * @return Right-aligned flag value (uint16_t). Bit 0 of result = first named bit.
- * @note Use J2735_EXTERIOR_LIGHTS_IS_EXTENDED() to determine if bit 9 is meaningful.
+ * @note Use J2735_EXTERIOR_LIGHTS_HAS_EXTENSION() to determine if bit 9 is meaningful.
  */
 #define J2735_EXTERIOR_LIGHTS_GET(buf)                                                             \
   J2735_INTERNAL_GET_ALL_EXTERIOR_LIGHTS(J2735_INTERNAL_RAW_READ_EXTERIOR_LIGHTS(buf))

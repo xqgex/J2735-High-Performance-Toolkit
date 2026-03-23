@@ -79,7 +79,7 @@
  * @internal
  * @brief Root size of PublicSafetyDirectingTrafficSubType in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE 7U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE 7U
 
 /**
  * @internal
@@ -158,7 +158,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
  * @param[in] raw15 Value previously returned by
  * J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED() for
+ * @note Internal use only. Use J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION() for
  * public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE(raw15)                \
@@ -201,8 +201,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
        : /* Non-ext: bits 13..7 = 7 bits */                                                        \
        ((uint8_t)(((raw15) >>                                                                      \
                    (J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE - 1U -   \
-                    J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE)) &          \
-                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE) -   \
+                    J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE)) &     \
+                  ((1ULL                                                                           \
+                    << J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE) -   \
                    1ULL))))
 
 /**
@@ -225,7 +226,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
  * J2735_INTERNAL_BIT_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_* constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= 7 reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET_*() accessors for
  * public API.
  */
@@ -246,7 +247,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
 /*  PUBLIC API: PublicSafetyDirectingTrafficSubType Accessors                                     */
 /* ============================================================================================== */
 /**
- * @brief Check if PublicSafetyDirectingTrafficSubType is in extended form.
+ * @brief Check if PublicSafetyDirectingTrafficSubType has an extension.
  *
  * Extended form includes 7 flags (bits 0-6).
  * Root form has only 7 flags (bits 0-6).
@@ -257,7 +258,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
  * padding.
  * @return Non-zero (true) if extended (7 flags), zero (false) if root (7 flags).
  */
-#define J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(buf)                            \
+#define J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(buf)                          \
   J2735_INTERNAL_IS_EXTENSION_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE(                            \
       J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE(buf))
 
@@ -277,7 +278,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
        J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE(buf))                      \
        ? J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE                     \
        : (J2735_INTERNAL_EXTENSION_MARKER_BITS +                                                   \
-          J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE))
+          J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE))
 
 /**
  * @brief Get all PublicSafetyDirectingTrafficSubType as a single uint8_t value.
@@ -292,7 +293,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
  * @pre @p buf must point to valid PublicSafetyDirectingTrafficSubType encoding with +7 byte
  * padding.
  * @return Right-aligned flag value (uint8_t). Bit 0 of result = first named bit.
- * @note Use J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED() to determine if bit 7 is
+ * @note Use J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION() to determine if bit 7 is
  * meaningful.
  */
 #define J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(buf)                                    \

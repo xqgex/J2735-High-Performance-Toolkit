@@ -101,8 +101,8 @@ void test_vehicle_event_flags_non_extended(void) {
   };
 
   /* Check extension bit */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Extension bit should be 0 for non-extended form");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_extension, "Extension bit should be 0 for non-extended form");
 
   /* Check flags value using unified getter */
   uint16_t const flags = J2735_VEHICLE_EVENT_FLAGS_GET(payload);
@@ -151,8 +151,8 @@ void test_vehicle_event_flags_extended(void) {
   };
 
   /* Check extension bit */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_extended, "Extension bit should be 1 for extended form");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_extension, "Extension bit should be 1 for extended form");
 
   /* Check flags value using unified getter */
   uint16_t const flags = J2735_VEHICLE_EVENT_FLAGS_GET(payload);
@@ -500,8 +500,8 @@ void test_vehicle_event_flags_all_zeros_non_extended(void) {
   };
 
   /* Verify extension bit */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Extension bit should be 0");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_extension, "Extension bit should be 0");
 
   /* Verify flags value is zero */
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x0000U, J2735_VEHICLE_EVENT_FLAGS_GET(payload),
@@ -552,8 +552,8 @@ void test_vehicle_event_flags_extended_single_jackknife(void) {
   };
 
   /* Verify extension bit */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_extended, "Extension bit should be 1");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_extension, "Extension bit should be 1");
 
   /* Verify flags value */
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x0001U, J2735_VEHICLE_EVENT_FLAGS_GET(payload),
@@ -598,8 +598,8 @@ void test_vehicle_event_flags_non_extended_all_root_flags_on_metadata(void) {
   };
 
   /* Verify non-extended */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Extension bit should be 0");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_extension, "Extension bit should be 0");
 
   /* Verify max 13-bit value */
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x1FFFU, J2735_VEHICLE_EVENT_FLAGS_GET(payload),
@@ -664,8 +664,8 @@ void test_vehicle_event_flags_extended_all_zeros(void) {
   };
 
   /* Verify extended */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_extended, "Extension bit should be 1");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_extension, "Extension bit should be 1");
 
   /* Verify zero flags */
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x0000U, J2735_VEHICLE_EVENT_FLAGS_GET(payload),
@@ -709,8 +709,8 @@ void test_vehicle_event_flags_non_extended_alternating_0x1555_metadata(void) {
   };
 
   /* Verify non-extended */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Extension bit should be 0");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_extension, "Extension bit should be 0");
 
   /* Verify alternating pattern */
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x1555U, J2735_VEHICLE_EVENT_FLAGS_GET(payload),
@@ -869,8 +869,8 @@ void test_vehicle_event_flags_non_extended_alternating_0x0AAA_metadata(void) {
   };
 
   /* Verify non-extended */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Extension bit should be 0");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_extension, "Extension bit should be 0");
 
   /* Verify alternating pattern */
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x0AAAU, J2735_VEHICLE_EVENT_FLAGS_GET(payload),
@@ -1152,8 +1152,8 @@ void test_vehicle_event_flags_extended_single_hazard_lights(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_extended, "Extension bit should be 1");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_extension, "Extension bit should be 1");
 
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x2000U, J2735_VEHICLE_EVENT_FLAGS_GET(payload),
                                   "Only bit 0 should be set in 14-bit form (0x2000)");
@@ -1198,8 +1198,8 @@ void test_vehicle_event_flags_misaligned_access(void) {
   const uint8_t *unaligned_ptr = &payload[1];
 
   /* Verify non-extended */
-  bool is_extended = J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_extended, "Misaligned: extension bit should be 0");
+  bool has_extension = J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_extension, "Misaligned: extension bit should be 0");
 
   /* Verify all 13 root flags ON */
   TEST_ASSERT_EQUAL_HEX16_MESSAGE(0x1FFFU, J2735_VEHICLE_EVENT_FLAGS_GET(unaligned_ptr),

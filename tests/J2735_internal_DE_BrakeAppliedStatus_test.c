@@ -294,17 +294,18 @@ void test_brake_applied_status_size(void) {
 }
 
 /**
- * @brief Test BrakeAppliedStatus IS_EXTENDED always returns false.
+ * @brief Test BrakeAppliedStatus HAS_EXTENSION always returns false.
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
-void test_brake_applied_status_is_extended(void) {
+void test_brake_applied_status_has_extension(void) {
   static const uint8_t payload[] = {
       0xF8,                                          /* flags[0:4]=11111 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_BRAKE_APPLIED_STATUS_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "IS_EXTENDED should always be false for non-extensible type");
+  bool has_ext = J2735_BRAKE_APPLIED_STATUS_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext,
+                            "HAS_EXTENSION should always be false for non-extensible type");
 }
 
 /**
@@ -353,6 +354,6 @@ void run_testsuite_brake_applied_status(void) {
   RUN_TEST(test_brake_applied_status_single_bit_unavailable);
   RUN_TEST(test_brake_applied_status_single_bit_right_rear);
   RUN_TEST(test_brake_applied_status_size);
-  RUN_TEST(test_brake_applied_status_is_extended);
+  RUN_TEST(test_brake_applied_status_has_extension);
   RUN_TEST(test_brake_applied_status_misaligned_access);
 }

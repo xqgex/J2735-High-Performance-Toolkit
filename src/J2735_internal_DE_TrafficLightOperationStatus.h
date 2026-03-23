@@ -80,7 +80,7 @@
  * @internal
  * @brief Root size of TrafficLightOperationStatus in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS 8U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS 8U
 
 /**
  * @internal
@@ -156,7 +156,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  * @param[in] raw16 Value previously returned by
  * J2735_INTERNAL_RAW_READ_TRAFFIC_LIGHT_OPERATION_STATUS().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED() for public API.
+ * @note Internal use only. Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION() for public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_TRAFFIC_LIGHT_OPERATION_STATUS(raw16)                          \
   (((raw16) >> (J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS - 1U)) != 0U)
@@ -196,8 +196,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
                   ((1ULL << J2735_INTERNAL_EXT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS) - 1ULL)))      \
        : /* Non-ext: bits 14..7 = 8 bits */                                                        \
        ((uint8_t)(((raw16) >> (J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS - 1U -  \
-                               J2735_INTERNAL_ROOT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS)) &         \
-                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS) - 1ULL))))
+                               J2735_INTERNAL_ROOT_SIZE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS)) &    \
+                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS) -        \
+                   1ULL))))
 
 /**
  * @internal
@@ -219,7 +220,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  * J2735_INTERNAL_BIT_TRAFFIC_LIGHT_OPERATION_STATUS_* constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= 8 reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET_*() accessors for public
  * API.
  */
@@ -239,7 +240,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
 /*  PUBLIC API: TrafficLightOperationStatus Accessors                                             */
 /* ============================================================================================== */
 /**
- * @brief Check if TrafficLightOperationStatus is in extended form.
+ * @brief Check if TrafficLightOperationStatus has an extension.
  *
  * Extended form includes 8 flags (bits 0-7).
  * Root form has only 8 flags (bits 0-7).
@@ -249,7 +250,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  * @pre @p buf must point to valid TrafficLightOperationStatus encoding with +7 byte padding.
  * @return Non-zero (true) if extended (8 flags), zero (false) if root (8 flags).
  */
-#define J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED(buf)                                      \
+#define J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION(buf)                                    \
   J2735_INTERNAL_IS_EXTENSION_TRAFFIC_LIGHT_OPERATION_STATUS(                                      \
       J2735_INTERNAL_RAW_READ_TRAFFIC_LIGHT_OPERATION_STATUS(buf))
 
@@ -268,7 +269,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
        J2735_INTERNAL_RAW_READ_TRAFFIC_LIGHT_OPERATION_STATUS(buf))                                \
        ? J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS                               \
        : (J2735_INTERNAL_EXTENSION_MARKER_BITS +                                                   \
-          J2735_INTERNAL_ROOT_SIZE_TRAFFIC_LIGHT_OPERATION_STATUS))
+          J2735_INTERNAL_ROOT_SIZE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS))
 
 /**
  * @brief Get all TrafficLightOperationStatus as a single uint8_t value.
@@ -282,7 +283,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_TRAFFIC_LIGHT_OPERATION_STATUS ==
  * uint8_t*).
  * @pre @p buf must point to valid TrafficLightOperationStatus encoding with +7 byte padding.
  * @return Right-aligned flag value (uint8_t). Bit 0 of result = first named bit.
- * @note Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_IS_EXTENDED() to determine if bit 8 is meaningful.
+ * @note Use J2735_TRAFFIC_LIGHT_OPERATION_STATUS_HAS_EXTENSION() to determine if bit 8 is
+ * meaningful.
  */
 #define J2735_TRAFFIC_LIGHT_OPERATION_STATUS_GET(buf)                                              \
   J2735_INTERNAL_GET_ALL_TRAFFIC_LIGHT_OPERATION_STATUS(                                           \

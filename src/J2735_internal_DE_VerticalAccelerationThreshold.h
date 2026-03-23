@@ -146,7 +146,7 @@ _Static_assert(J2735_BW_VERTICAL_ACCELERATION_THRESHOLD <= 56U,
 /*  PUBLIC API: VerticalAccelerationThreshold Accessors                                           */
 /* ============================================================================================== */
 /**
- * @brief Check if VerticalAccelerationThreshold is in extended form.
+ * @brief Check if VerticalAccelerationThreshold has an extension.
  *
  * VerticalAccelerationThreshold is a fixed-size BIT STRING with 5 bits.
  * It does not have an extension marker, so this always returns 0 (false).
@@ -155,7 +155,7 @@ _Static_assert(J2735_BW_VERTICAL_ACCELERATION_THRESHOLD <= 56U,
  * uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_VERTICAL_ACCELERATION_THRESHOLD_IS_EXTENDED(buf) ((void)(buf), 0)
+#define J2735_VERTICAL_ACCELERATION_THRESHOLD_HAS_EXTENSION(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of VerticalAccelerationThreshold in bits.

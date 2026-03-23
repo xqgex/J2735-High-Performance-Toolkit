@@ -37,7 +37,7 @@ void test_brake_applied_status_single_bit_right_rear(void);
 
 /* Metadata tests */
 void test_brake_applied_status_size(void);
-void test_brake_applied_status_is_extended(void);
+void test_brake_applied_status_has_extension(void);
 
 /* Misalignment test */
 void test_brake_applied_status_misaligned_access(void);

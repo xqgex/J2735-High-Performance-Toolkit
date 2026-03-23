@@ -66,14 +66,14 @@ class TestAssembleBitstringWireFormatDocs(SpecLoadingTestBase):
         self.assertIn("/*  Constants", code)
 
     def test_non_extensible_assembled_uses_bw_not_root_size(self) -> None:
-        """Non-extensible assembled output must use J2735_BW_*, not ROOT_SIZE."""
+        """Non-extensible assembled output must use J2735_BW_*, not ROOT_SIZE_BITS."""
         for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
                 code = generate_data_element(type_name, self.spec)
                 self.assertNotIn(
-                    f"J2735_INTERNAL_ROOT_SIZE_{prefix}",
+                    f"J2735_INTERNAL_ROOT_SIZE_BITS_{prefix}",
                     code,
-                    f"{type_name} assembled output should not contain ROOT_SIZE",
+                    f"{type_name} assembled output should not contain ROOT_SIZE_BITS",
                 )
                 self.assertIn(
                     f"J2735_BW_{prefix}",
@@ -82,9 +82,9 @@ class TestAssembleBitstringWireFormatDocs(SpecLoadingTestBase):
                 )
 
     def test_extensible_assembled_uses_root_size(self) -> None:
-        """Extensible assembled output must define ROOT_SIZE."""
+        """Extensible assembled output must define ROOT_SIZE_BITS."""
         code = generate_data_element("VehicleEventFlags", self.spec)
-        self.assertIn("J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS", code)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_BITS_VEHICLE_EVENT_FLAGS", code)
 
     def test_wire_format_uses_doxygen_verbatim_blocks(self) -> None:
         """Wire format diagrams must be wrapped in @par + @verbatim/@endverbatim."""

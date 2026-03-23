@@ -17,7 +17,7 @@
 """Tests for BIT STRING internal root size constants generator.
 
 Tests cover bitstring_internal_root_size.j2 which generates
-J2735_INTERNAL_ROOT_SIZE_{TYPE} constants for root bit count.
+J2735_INTERNAL_ROOT_SIZE_BITS_{TYPE} constants for root bit count.
 """
 
 from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
@@ -31,23 +31,23 @@ class TestRootSizeGenerator(SpecLoadingTestBase):
     def test_extensible_type_has_root_size_13(self) -> None:
         """VehicleEventFlags should have root_size=13."""
         code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
-        self.assertIn("J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS", code)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_BITS_VEHICLE_EVENT_FLAGS", code)
         self.assertIn("13U", code)
 
     def test_non_extensible_8bit_type(self) -> None:
         """GNSSstatus (8-bit) should have root_size=8."""
         code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
-        self.assertIn("J2735_INTERNAL_ROOT_SIZE_GNSS_STATUS", code)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_BITS_GNSS_STATUS", code)
         self.assertIn("8U", code)
 
     def test_non_extensible_12bit_type(self) -> None:
         """AllowedManeuvers (12-bit) should have root_size=12."""
         code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "AllowedManeuvers")
-        self.assertIn("J2735_INTERNAL_ROOT_SIZE_ALLOWED_MANEUVERS", code)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_BITS_ALLOWED_MANEUVERS", code)
         self.assertIn("12U", code)
 
     def test_small_2bit_type(self) -> None:
         """LaneDirection (2-bit) should have root_size=2."""
         code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "LaneDirection")
-        self.assertIn("J2735_INTERNAL_ROOT_SIZE_LANE_DIRECTION", code)
+        self.assertIn("J2735_INTERNAL_ROOT_SIZE_BITS_LANE_DIRECTION", code)
         self.assertIn("2U", code)

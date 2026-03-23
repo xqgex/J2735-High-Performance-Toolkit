@@ -151,7 +151,7 @@ _Static_assert(J2735_BW_LANE_SHARING <= 56U,
 /*  PUBLIC API: LaneSharing Accessors                                                             */
 /* ============================================================================================== */
 /**
- * @brief Check if LaneSharing is in extended form.
+ * @brief Check if LaneSharing has an extension.
  *
  * LaneSharing is a fixed-size BIT STRING with 10 bits.
  * It does not have an extension marker, so this always returns 0 (false).
@@ -159,7 +159,7 @@ _Static_assert(J2735_BW_LANE_SHARING <= 56U,
  * @param[in] buf Pointer to the start of the LaneSharing UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_LANE_SHARING_IS_EXTENDED(buf) ((void)(buf), 0)
+#define J2735_LANE_SHARING_HAS_EXTENSION(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of LaneSharing in bits.

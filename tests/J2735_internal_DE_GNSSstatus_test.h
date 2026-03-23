@@ -38,7 +38,7 @@ void test_gnss_status_single_bit_network_corrections_present(void);
 
 /* Metadata tests */
 void test_gnss_status_size(void);
-void test_gnss_status_is_extended(void);
+void test_gnss_status_has_extension(void);
 
 /* Misalignment test */
 void test_gnss_status_misaligned_access(void);

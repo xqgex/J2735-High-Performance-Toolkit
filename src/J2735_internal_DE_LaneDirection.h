@@ -136,7 +136,7 @@ _Static_assert(J2735_BW_LANE_DIRECTION <= 56U,
 /*  PUBLIC API: LaneDirection Accessors                                                           */
 /* ============================================================================================== */
 /**
- * @brief Check if LaneDirection is in extended form.
+ * @brief Check if LaneDirection has an extension.
  *
  * LaneDirection is a fixed-size BIT STRING with 2 bits.
  * It does not have an extension marker, so this always returns 0 (false).
@@ -144,7 +144,7 @@ _Static_assert(J2735_BW_LANE_DIRECTION <= 56U,
  * @param[in] buf Pointer to the start of the LaneDirection UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_LANE_DIRECTION_IS_EXTENDED(buf) ((void)(buf), 0)
+#define J2735_LANE_DIRECTION_HAS_EXTENSION(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of LaneDirection in bits.

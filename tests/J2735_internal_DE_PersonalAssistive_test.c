@@ -73,8 +73,8 @@ void test_personal_assistive_non_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_ASSISTIVE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Extension bit should be 0 for non-extended form");
+  bool has_ext = J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension bit should be 0 for non-extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x2AU, J2735_PERSONAL_ASSISTIVE_GET(payload),
                                  "Flags should be 0x2A for non-extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(7U, J2735_PERSONAL_ASSISTIVE_SIZE(payload),
@@ -109,8 +109,8 @@ void test_personal_assistive_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_ASSISTIVE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Extension bit should be 1 for extended form");
+  bool has_ext = J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension bit should be 1 for extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x3FU, J2735_PERSONAL_ASSISTIVE_GET(payload),
                                  "Flags should be 0x3F for extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(14U, J2735_PERSONAL_ASSISTIVE_SIZE(payload),
@@ -201,8 +201,8 @@ void test_personal_assistive_all_zeros_non_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_ASSISTIVE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PERSONAL_ASSISTIVE_GET(payload),
                                  "All flags should be zero");
 }
@@ -221,8 +221,8 @@ void test_personal_assistive_non_extended_all_flags_on(void) {
       0x7E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_ASSISTIVE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x3FU, J2735_PERSONAL_ASSISTIVE_GET(payload),
                                  "All 6 flags should be ON (0x3F)");
 }
@@ -242,8 +242,8 @@ void test_personal_assistive_extended_all_zeros(void) {
       0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PERSONAL_ASSISTIVE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Should be extended");
+  bool has_ext = J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Should be extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PERSONAL_ASSISTIVE_GET(payload),
                                  "All flags should be zero in extended form");
 }
@@ -359,8 +359,8 @@ void test_personal_assistive_misaligned_access(void) {
   };
   const uint8_t *unaligned_ptr = &payload[1];
 
-  bool is_ext = J2735_PERSONAL_ASSISTIVE_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Misaligned: should be non-extended");
+  bool has_ext = J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Misaligned: should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x3FU, J2735_PERSONAL_ASSISTIVE_GET(unaligned_ptr),
                                  "Misaligned: all flags should be ON");
 }
