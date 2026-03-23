@@ -112,7 +112,7 @@
  * @brief Bit offset of field 'lat' within BSMcoreData.
  */
 #define J2735_INTERNAL_OFF_BSM_CORE_DATA_LAT(buf)                                                  \
-  (J2735_INTERNAL_OFF_BSM_CORE_DATA_SEC_MARK(buf) + J2735_BW_DS_ECOND) /*  55 */
+  (J2735_INTERNAL_OFF_BSM_CORE_DATA_SEC_MARK(buf) + J2735_BW_D_SECOND) /*  55 */
 
 /**
  * @internal
@@ -216,7 +216,7 @@ _Static_assert((J2735_INTERNAL_OFF_BSM_CORE_DATA_SIZE(0) + J2735_BW_VEHICLE_SIZE
  */
 #define J2735_BSM_CORE_DATA_GET_SEC_MARK(buf)                                                      \
   ((uint16_t)J2735_READ_BITS((buf), J2735_INTERNAL_OFF_BSM_CORE_DATA_SEC_MARK(buf),                \
-                             J2735_BW_DS_ECOND))
+                             J2735_BW_D_SECOND))
 
 /**
  * @brief Get 'lat' (Latitude, signed 31 bits).

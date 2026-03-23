@@ -223,18 +223,18 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_CONFIDENCE                8U   /* Confidence: INTEGER (0..200) */
 #define J2735_BW_CONSECUTIVE_TRAFFIC_LIGHT 2U   /* ConsecutiveTrafficLight: ENUMERATED (3 values) */
 #define J2735_BW_COUNT                     6U   /* Count: INTEGER (0..32) */
-#define J2735_BW_DD_ATE                    21U  /* DDate: SEQUENCE (3 fields) */
-#define J2735_BW_DD_AY                     5U   /* DDay: INTEGER (0..31) */
-#define J2735_BW_DF_ULL_TIME               32U  /* DFullTime: SEQUENCE (5 fields) */
-#define J2735_BW_DH_OUR                    5U   /* DHour: INTEGER (0..31) */
-#define J2735_BW_DM_INUTE                  6U   /* DMinute: INTEGER (0..60) */
-#define J2735_BW_DM_ONTH                   4U   /* DMonth: INTEGER (0..12) */
-#define J2735_BW_DM_ONTH_DAY               9U   /* DMonthDay: SEQUENCE (2 fields) */
-#define J2735_BW_DO_FFSET                  11U  /* DOffset: INTEGER (-840..840) */
+#define J2735_BW_D_DATE                    21U  /* DDate: SEQUENCE (3 fields) */
+#define J2735_BW_D_DAY                     5U   /* DDay: INTEGER (0..31) */
+#define J2735_BW_D_FULL_TIME               32U  /* DFullTime: SEQUENCE (5 fields) */
+#define J2735_BW_D_HOUR                    5U   /* DHour: INTEGER (0..31) */
+#define J2735_BW_D_MINUTE                  6U   /* DMinute: INTEGER (0..60) */
+#define J2735_BW_D_MONTH                   4U   /* DMonth: INTEGER (0..12) */
+#define J2735_BW_D_MONTH_DAY               9U   /* DMonthDay: SEQUENCE (2 fields) */
+#define J2735_BW_D_OFFSET                  11U  /* DOffset: INTEGER (-840..840) */
 #define J2735_BW_DSRC_MSG_ID               15U  /* DSRCmsgID: INTEGER (0..32767) */
-#define J2735_BW_DS_ECOND                  16U  /* DSecond: INTEGER (0..65535) */
-#define J2735_BW_DY_EAR                    12U  /* DYear: INTEGER (0..4095) */
-#define J2735_BW_DY_EAR_MONTH              16U  /* DYearMonth: SEQUENCE (2 fields) */
+#define J2735_BW_D_SECOND                  16U  /* DSecond: INTEGER (0..65535) */
+#define J2735_BW_D_YEAR                    12U  /* DYear: INTEGER (0..4095) */
+#define J2735_BW_D_YEAR_MONTH              16U  /* DYearMonth: SEQUENCE (2 fields) */
 #define J2735_BW_DELTA_ANGLE               9U   /* DeltaAngle: INTEGER (-150..150) */
 #define J2735_BW_DELTA_TIME                8U   /* DeltaTime: INTEGER (-122..121) */
 #define J2735_BW_DIRECTION_OF_USE          2U   /* DirectionOfUse: ENUMERATED (4 values) */
@@ -284,7 +284,7 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_LAYER_TYPE               3U  /* LayerType: ENUMERATED (7 values) */
 #define J2735_BW_LIGHTBAR_IN_USE          3U  /* LightbarInUse: ENUMERATED (8 values) */
 #define J2735_BW_LONGITUDE                32U /* Longitude: INTEGER (-1799999999..1800000001) */
-#define J2735_BW_MUTCDC_ODE               3U  /* MUTCDCode: ENUMERATED (7 values) */
+#define J2735_BW_MUTCD_CODE               3U  /* MUTCDCode: ENUMERATED (7 values) */
 #define J2735_BW_MEAN_VARIATION           15U /* MeanVariation: INTEGER (0..25000) */
 #define J2735_BW_MERGE_DIVERGE_NODE_ANGLE 9U  /* MergeDivergeNodeAngle: INTEGER (-180..180) */
 #define J2735_BW_MINUTE_OF_THE_YEAR       20U /* MinuteOfTheYear: INTEGER (0..527040) */

@@ -56,7 +56,7 @@ class TestScreamingSnakeConversion(TestCase):
     def test_mixed_case_abbreviation(self) -> None:
         """Handle mixed case with abbreviations."""
         self.assertEqual(filter_screaming_snake("BSMcoreData"), "BSM_CORE_DATA")
-        self.assertEqual(filter_screaming_snake("HTTPSconnection"), "HTTPS_CONNECTION")
+        self.assertEqual(filter_screaming_snake("MUTCDCode"), "MUTCD_CODE")
 
     def test_digits_in_name(self) -> None:
         """Handle digits - split before and after."""

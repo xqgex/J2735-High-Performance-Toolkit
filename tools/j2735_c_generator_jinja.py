@@ -169,8 +169,16 @@ def filter_is_signed(field: SequenceField) -> bool:
 def filter_screaming_snake(name: str) -> str:
     """Convert CamelCase or mixedCase name to SCREAMING_SNAKE_CASE.
 
-    Handles abbreviations correctly: when 2+ uppercase letters are followed
-    by a lowercase letter, the abbreviation stays together.
+    Handles abbreviations correctly using a multi-phase uppercase split:
+
+    1. Single uppercase letter before CamelCase word (``DDate`` → ``D_DATE``).
+       A negative lookbehind prevents matching inside abbreviation runs,
+       so ``BSMcoreData`` stays ``BSM_CORE_DATA``.
+    2. Long abbreviation (4+ letters) before CamelCase word
+       (``MUTCDCode`` → ``MUTCD_CODE``).  The min-4 threshold protects
+       short abbreviations like BSM (3) and DSRC/GNSS (4).
+    3. Remaining abbreviation run (2+ uppercase) before lowercase
+       (``GNSSstatus`` → ``GNSS_STATUS``).
 
     This is registered as a Jinja filter for use in templates.
 
@@ -181,30 +189,77 @@ def filter_screaming_snake(name: str) -> str:
         SCREAMING_SNAKE_CASE version of the name.
 
     Examples:
+        Standard CamelCase:
+
         >>> filter_screaming_snake("msgCnt")
         'MSG_CNT'
         >>> filter_screaming_snake("MsgCount")
         'MSG_COUNT'
-        >>> filter_screaming_snake("BSMcoreData")
-        'BSM_CORE_DATA'
         >>> filter_screaming_snake("AccelerationSet4Way")
         'ACCELERATION_SET_4_WAY'
+
+        ASN.1 hyphenated names:
+
         >>> filter_screaming_snake("Offset-B10")
         'OFFSET_B_10'
         >>> filter_screaming_snake("Node-LL-24B")
         'NODE_LL_24_B'
         >>> filter_screaming_snake("NMEA-MsgType")
         'NMEA_MSG_TYPE'
+
+        Short abbreviation + lowercase continuation (must stay together):
+
+        >>> filter_screaming_snake("BSMcoreData")
+        'BSM_CORE_DATA'
+        >>> filter_screaming_snake("GNSSstatus")
+        'GNSS_STATUS'
+        >>> filter_screaming_snake("DSRCmsgID")
+        'DSRC_MSG_ID'
+
+        Single uppercase prefix + CamelCase (D-prefix date/time types):
+
+        >>> filter_screaming_snake("DDate")
+        'D_DATE'
+        >>> filter_screaming_snake("DDay")
+        'D_DAY'
+        >>> filter_screaming_snake("DHour")
+        'D_HOUR'
+        >>> filter_screaming_snake("DSecond")
+        'D_SECOND'
+        >>> filter_screaming_snake("DMonthDay")
+        'D_MONTH_DAY'
+        >>> filter_screaming_snake("DFullTime")
+        'D_FULL_TIME'
+
+        Long abbreviation (4+) before CamelCase word:
+
+        >>> filter_screaming_snake("MUTCDCode")
+        'MUTCD_CODE'
+        >>> filter_screaming_snake("RTCMPackage")
+        'RTCM_PACKAGE'
     """
     # Step 1: Replace hyphens with underscores (ASN.1 names like Offset-B10, Node-LL-24B)
     name = name.replace("-", "_")
-    # Step 2: Insert underscore after abbreviation (2+ uppercase) before lowercase
-    result = sub(r"([A-Z]{2,})([a-z])", r"\1_\2", name)
-    # Step 3: Insert underscore between lowercase and uppercase
+    # Step 2: Split single uppercase prefix before CamelCase word
+    #   DDate -> D_Date, DHour -> D_Hour
+    #   Negative lookbehind (?<![A-Z]) ensures we only match at the start of
+    #   an uppercase run, so BSMcoreData (B is preceded by nothing/start,
+    #   but S,M are preceded by uppercase) stays intact.
+    result = sub(r"(?<![A-Z])([A-Z])([A-Z][a-z])", r"\1_\2", name)
+    # Step 3: Split long abbreviation (4+ uppercase) before CamelCase word
+    #   MUTCDCode -> MUTCD_Code, RTCMPackage -> RTCM_Package
+    #   Min-4 threshold protects BSM (3) unconditionally. GNSS (4) and DSRC (4)
+    #   would match the {4,} pattern, but are safe because no spec name pairs
+    #   them with a CamelCase suffix (they use lowercase: GNSSstatus, DSRCmsgID).
+    result = sub(r"([A-Z]{4,})([A-Z][a-z])", r"\1_\2", result)
+    # Step 4: Split remaining abbreviation run (2+ uppercase) before lowercase
+    #   GNSSstatus -> GNSS_status, BSMcoreData -> BSM_coreData
+    result = sub(r"([A-Z]{2,})([a-z])", r"\1_\2", result)
+    # Step 5: Insert underscore between lowercase and uppercase
     result = sub(r"([a-z])([A-Z])", r"\1_\2", result)
-    # Step 4: Insert underscore between letter and digit
+    # Step 6: Insert underscore between letter and digit
     result = sub(r"([a-zA-Z])([0-9])", r"\1_\2", result)
-    # Step 5: Insert underscore between digit and letter
+    # Step 7: Insert underscore between digit and letter
     result = sub(r"([0-9])([a-zA-Z])", r"\1_\2", result)
     return result.upper()
 
