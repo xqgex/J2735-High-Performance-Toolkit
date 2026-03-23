@@ -16,23 +16,12 @@
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
 """Tests for CHOICE type code generation via generate_data_frame()."""
 
-from typing import ClassVar
-from unittest import TestCase
-
 from tools.j2735_c_generator_data_frame import generate_data_frame
-from tools.j2735_spec_parser import J2735Specification, parse_spec_file
-from tools.tests.conftest import SPEC_FILE_PATH
+from tools.tests.conftest import SpecLoadingTestBase
 
 
-class TestGenerateDataframeChoice(TestCase):
+class TestGenerateDataframeChoice(SpecLoadingTestBase):
     """Tests for generate_data_frame() with CHOICE types."""
-
-    spec: ClassVar[J2735Specification]
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Load spec once for all tests."""
-        cls.spec = parse_spec_file(SPEC_FILE_PATH)
 
     def test_generates_header_guard(self) -> None:
         """Generated code includes proper header guard."""
