@@ -24,7 +24,6 @@
   Context variables:
     - typedef: The full typedef object containing the metadata
 -#}
-{%- set data_type = typedef.type_class.name | lower -%}
 {%- set is_extensible = typedef.constraint.is_extensible -%}
 {%- set named_bits = typedef.constraint.named_bits -%}
 {%- set typedef_name = typedef.name -%}
@@ -160,15 +159,13 @@ _Static_assert(J2735_BW_{{ typedef_name_upper }} <= 56U,
 /*  INTERNAL: Extension Bit Check                                                                 */
 /* ============================================================================================== */
 {%  include 'bitstring/bitstring_internal_is_extension.j2' %}
-{%  if data_type == "bit_string" %}
 
 /* ============================================================================================== */
 /*  INTERNAL: Extract Flags                                                                       */
 /* ============================================================================================== */
-{%    include 'bitstring/bitstring_internal_get_all.j2' %}
+{%  include 'bitstring/bitstring_internal_get_all.j2' %}
 
-{%    include 'bitstring/bitstring_internal_get_one.j2' %}
-{% endif %}
+{%  include 'bitstring/bitstring_internal_get_one.j2' %}
 
 {%  set public_api_line = "PUBLIC API: " ~ typedef_name ~ " Accessors" %}
 /* ============================================================================================== */
@@ -179,7 +176,7 @@ _Static_assert(J2735_BW_{{ typedef_name_upper }} <= 56U,
 {%  include 'bitstring/bitstring_size.j2' %}
 
 {%  include 'bitstring/bitstring_get.j2' %}
-{%  if data_type == "bit_string" and named_bits %}
+{%  if named_bits %}
 
 {%    include 'bitstring/bitstring_get_one.j2' %}
 {%  endif %}

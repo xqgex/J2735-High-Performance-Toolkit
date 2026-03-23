@@ -62,7 +62,7 @@ _MAX_SINGLE_IO_BITS = 57
 def generate_data_frame(type_name: str, spec: J2735Specification) -> str:
     """Generate complete C header file for a Data Frame.
 
-    This is the main entry point for Data Element code generation. Dispatches
+    This is the main entry point for Data Frame code generation. Dispatches
     to the appropriate internal generator based on the ASN.1 type class.
 
     Supported types:
