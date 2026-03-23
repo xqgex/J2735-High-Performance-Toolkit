@@ -661,6 +661,47 @@ def generate_bitstring_code(template_path: str, spec: J2735Specification, type_n
     return get_template(env, template_path).render(typedef=typedef)
 
 
+def generate_sequence_code(  # pylint: disable=too-many-arguments
+    template_path: str,
+    spec: J2735Specification,
+    type_name: str,
+    *,
+    require_extensible: bool = False,
+    require_fixed_root: bool = False,
+    set_field_type_names: bool = False,
+) -> str:
+    """Generate SEQUENCE C code for a given template.
+
+    Args:
+        template_path: Path to the Jinja2 template for SEQUENCE code generation.
+        spec: The parsed J2735 specification.
+        type_name: Name of the SEQUENCE type (e.g., "BSMcoreData").
+        require_extensible: Return ``""`` if the SEQUENCE is not extensible.
+        require_fixed_root: Return ``""`` if ``root_uper_bit_width`` is ``None``.
+        set_field_type_names: If ``True``, include ``field_type_names`` in the template context.
+
+    Returns:
+        C code from the rendered template, or ``""`` if guards not met.
+
+    Raises:
+        ValueError: If type_name is not found or not a SEQUENCE.
+        jinja2.TemplateNotFound: If template_path does not exist.
+    """
+    typedef = get_sequence_typedef(type_name, spec)  # Note, can raise ValueError
+    assert isinstance(typedef.constraint, SequenceType)
+    if require_extensible and not typedef.constraint.is_extensible:
+        return ""
+    if require_fixed_root and typedef.constraint.root_uper_bit_width is None:
+        return ""
+    env = create_jinja_env()
+    context: dict[str, object] = {"typedef": typedef}
+    if set_field_type_names:
+        context["field_type_names"] = [
+            field.type_name for field in typedef.constraint.fields if not field.is_optional
+        ]
+    return get_template(env, template_path).render(**context)
+
+
 def get_sequence_typedef(type_name: str, spec: J2735Specification) -> ASN1TypeDefinition:
     """Lookup and validate a SEQUENCE type from the specification.
 

@@ -22,48 +22,26 @@ J2735_INTERNAL_PREFIX_BITS_{TYPE} constants (extension bit + optional count).
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import (
-    create_jinja_env,
-    get_template,
-)
-from tools.j2735_spec_constraints import SequenceType
-from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     SpecLoadingTestBase,
-    get_sequence_typedef,
+    generate_sequence_code,
     make_extensible_mock_spec,
     make_nested_mock_spec,
     make_optional_mock_spec,
 )
 
-_TEMPLATE_NAME = "sequence/sequence_internal_prefix_bits.j2"
-
-
-def generate_sequence_prefix_bits(type_name: str, spec: J2735Specification) -> str:
-    """Generate C #define constant for prefix bits of a SEQUENCE.
-
-    Args:
-        type_name: Name of the SEQUENCE type.
-        spec: The parsed J2735 specification.
-
-    Returns:
-        C code with #define constant.
-
-    Raises:
-        ValueError: If type_name is not found or not a SEQUENCE.
-    """
-    typedef = get_sequence_typedef(type_name, spec)
-    assert isinstance(typedef.constraint, SequenceType)
-    return get_template(create_jinja_env(), _TEMPLATE_NAME).render(typedef=typedef)
+_SEQUENCE_PREFIX_BITS_TEMPLATE_NAME = "sequence/sequence_internal_prefix_bits.j2"
 
 
 class TestPrefixBitsGeneration(TestCase):
-    """Tests for generate_sequence_prefix_bits function."""
+    """Tests for sequence_internal_prefix_bits.j2 template with mock specs."""
 
     def test_non_extensible_no_optional(self) -> None:
         """Non-extensible SEQUENCE with no optionals has 0 prefix bits."""
         spec = make_nested_mock_spec()
-        code = generate_sequence_prefix_bits("PositionalAccuracy", spec)
+        code = generate_sequence_code(
+            _SEQUENCE_PREFIX_BITS_TEMPLATE_NAME, spec, "PositionalAccuracy"
+        )
 
         self.assertIn("J2735_INTERNAL_PREFIX_BITS_POSITIONAL_ACCURACY", code)
         self.assertIn("0U + J2735_INTERNAL_PREAMBLE_BITS(0U)", code)
@@ -72,7 +50,7 @@ class TestPrefixBitsGeneration(TestCase):
     def test_extensible_no_optional(self) -> None:
         """Extensible SEQUENCE with no optionals has 1 prefix bit."""
         spec = make_extensible_mock_spec()
-        code = generate_sequence_prefix_bits("PathPrediction", spec)
+        code = generate_sequence_code(_SEQUENCE_PREFIX_BITS_TEMPLATE_NAME, spec, "PathPrediction")
 
         self.assertIn("J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION", code)
         self.assertIn("1U + J2735_INTERNAL_PREAMBLE_BITS(0U)", code)
@@ -81,7 +59,9 @@ class TestPrefixBitsGeneration(TestCase):
     def test_non_extensible_with_optional(self) -> None:
         """Non-extensible SEQUENCE with 1 optional has 1 prefix bit."""
         spec = make_optional_mock_spec()
-        code = generate_sequence_prefix_bits("IntersectionReferenceID", spec)
+        code = generate_sequence_code(
+            _SEQUENCE_PREFIX_BITS_TEMPLATE_NAME, spec, "IntersectionReferenceID"
+        )
 
         self.assertIn("J2735_INTERNAL_PREFIX_BITS_INTERSECTION_REFERENCE_ID", code)
         self.assertIn("0U + J2735_INTERNAL_PREAMBLE_BITS(1U)", code)
@@ -89,19 +69,21 @@ class TestPrefixBitsGeneration(TestCase):
 
     def test_not_found_raises(self) -> None:
         """Unknown type raises ValueError."""
-        spec = make_nested_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_prefix_bits("UnknownType", spec)
+            generate_sequence_code(
+                _SEQUENCE_PREFIX_BITS_TEMPLATE_NAME, make_nested_mock_spec(), "UnknownType"
+            )
 
         self.assertIn("not found", str(ctx.exception))
 
     def test_non_sequence_raises(self) -> None:
         """Non-SEQUENCE type raises ValueError."""
-        spec = make_extensible_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_prefix_bits("RadiusOfCurvature", spec)
+            generate_sequence_code(
+                _SEQUENCE_PREFIX_BITS_TEMPLATE_NAME,
+                make_nested_mock_spec(),
+                "SemiMajorAxisOrientation",
+            )
 
         self.assertIn("not a SEQUENCE", str(ctx.exception))
 
@@ -111,21 +93,25 @@ class TestPrefixBitsWithRealSpec(SpecLoadingTestBase):
 
     def test_real_bsm_core_data(self) -> None:
         """Real BSMcoreData (non-extensible, no optionals) has 0 prefix bits."""
-        code = generate_sequence_prefix_bits("BSMcoreData", self.spec)
+        code = generate_sequence_code(_SEQUENCE_PREFIX_BITS_TEMPLATE_NAME, self.spec, "BSMcoreData")
 
         self.assertIn("J2735_INTERNAL_PREFIX_BITS_BSM_CORE_DATA", code)
         self.assertIn("0 ext + 0 opt = 0 bits", code)
 
     def test_real_path_prediction(self) -> None:
         """Real PathPrediction (extensible, no optionals) has 1 prefix bit."""
-        code = generate_sequence_prefix_bits("PathPrediction", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_PREFIX_BITS_TEMPLATE_NAME, self.spec, "PathPrediction"
+        )
 
         self.assertIn("J2735_INTERNAL_PREFIX_BITS_PATH_PREDICTION", code)
         self.assertIn("1 ext + 0 opt = 1 bit", code)
 
     def test_real_intersection_reference_id(self) -> None:
         """Real IntersectionReferenceID (non-extensible, 1 optional) has 1 prefix bit."""
-        code = generate_sequence_prefix_bits("IntersectionReferenceID", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_PREFIX_BITS_TEMPLATE_NAME, self.spec, "IntersectionReferenceID"
+        )
 
         self.assertIn("J2735_INTERNAL_PREFIX_BITS_INTERSECTION_REFERENCE_ID", code)
         self.assertIn("0 ext + 1 opt = 1 bit", code)

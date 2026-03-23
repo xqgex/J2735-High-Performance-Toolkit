@@ -73,10 +73,12 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_section_comment_only(self) -> None:
         """Standalone comment line becomes section_comment for next field."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             -- Section header
             fieldA TypeA
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 1)
         self.assertEqual(fields[0].name, "fieldA")
         self.assertEqual(fields[0].section_comment, "Section header")
@@ -84,10 +86,12 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_inline_comment_only(self) -> None:
         """Comment after field on same line becomes inline_comment."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             fieldA TypeA, -- This is inline
             fieldB TypeB
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 2)
         self.assertEqual(fields[0].inline_comment, "This is inline")
         self.assertEqual(fields[0].section_comment, "")
@@ -95,22 +99,26 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_both_comment_types(self) -> None:
         """Field can have both section and inline comments."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             -- Group header
             value Count, -- The count value
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 1)
         self.assertEqual(fields[0].section_comment, "Group header")
         self.assertEqual(fields[0].inline_comment, "The count value")
 
     def test_section_comment_applies_to_first_field_only(self) -> None:
         """Section comment attaches only to the first field after it."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             -- This is a section
             fieldA TypeA,
             fieldB TypeB,
             fieldC TypeC
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 3)
         self.assertEqual(fields[0].section_comment, "This is a section")
         self.assertEqual(fields[1].section_comment, "")
@@ -118,12 +126,14 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_multiple_section_comments(self) -> None:
         """Multiple section comments attach to their following fields."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             -- First group
             fieldA TypeA,
             -- Second group
             fieldB TypeB
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 2)
         self.assertEqual(fields[0].section_comment, "First group")
         self.assertEqual(fields[1].section_comment, "Second group")
@@ -138,24 +148,28 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_extension_marker_skipped(self) -> None:
         """Extension marker (...) is skipped, not parsed as field."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             fieldA TypeA,
             ...,
             fieldB TypeB
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 2)
         self.assertEqual(fields[0].name, "fieldA")
         self.assertEqual(fields[1].name, "fieldB")
 
     def test_extension_marker_in_middle_with_comments(self) -> None:
         """Extension marker in middle preserves comments on surrounding fields."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             -- Before extension
             fieldA TypeA, -- inline A
             ...,
             -- After extension
             fieldB TypeB, -- inline B
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 2)
         self.assertEqual(fields[0].section_comment, "Before extension")
         self.assertEqual(fields[0].inline_comment, "inline A")
@@ -164,21 +178,25 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_extension_marker_with_comment(self) -> None:
         """Comment on extension marker line is discarded."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             fieldA TypeA,
             ... -- LOCAL_CONTENT
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 1)
         self.assertEqual(fields[0].name, "fieldA")
 
     def test_section_comment_before_extension_carries_over(self) -> None:
         """Section comment before extension marker carries to next real field."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             fieldA TypeA,
             -- Extension section
             ...,
             fieldB TypeB
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 2)
         # The section comment carries over because ... is skipped without
         # consuming the pending section comment
@@ -186,10 +204,12 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_multiple_fields_per_line_with_section_comment(self) -> None:
         """Section comment on line with multiple fields attaches to first."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             -- Multi-field line
             a TypeA, b TypeB, c TypeC
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 3)
         self.assertEqual(fields[0].section_comment, "Multi-field line")
         self.assertEqual(fields[1].section_comment, "")
@@ -197,7 +217,8 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_real_world_vehicle_data(self) -> None:
         """Real VehicleData example from J2735 spec."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             -- Values for width and length are sent in BSM part I
             height VehicleHeight OPTIONAL,
             bumpers BumperHeights OPTIONAL,
@@ -208,7 +229,8 @@ class TestSequenceCommentParsing(TestCase):
             pivotPoint PivotPointDescription OPTIONAL, -- Angle ignored
             axles Axles OPTIONAL,
             leanAngle INTEGER OPTIONAL -- For motorcycles only
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 8)
         self.assertEqual(
             fields[0].section_comment, "Values for width and length are sent in BSM part I"
@@ -222,7 +244,8 @@ class TestSequenceCommentParsing(TestCase):
 
     def test_real_world_school_bus(self) -> None:
         """Real SchoolBus example with multiple section comments."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             flashingAmberLights BOOLEAN,
             flashingRedLights BOOLEAN,
             -- School bus safety indicators
@@ -234,7 +257,8 @@ class TestSequenceCommentParsing(TestCase):
             -- Emergency indicators
             emergencyExitOpen BOOLEAN OPTIONAL,
             ...
-        }""")
+        }"""
+        )
         self.assertEqual(len(fields), 8)
         self.assertEqual(fields[0].section_comment, "")
         self.assertEqual(fields[1].section_comment, "")
@@ -253,13 +277,15 @@ class TestSequenceNestedBraces(TestCase):
 
     def test_nested_braces_regional_extension(self) -> None:
         """Parse SEQUENCE with regional extension containing nested braces."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             lat Latitude,
             long Longitude,
             elevation Elevation OPTIONAL,
             regional SEQUENCE (SIZE(1..4)) OF RegionalExtension {{Reg-Position3D}} OPTIONAL,
             ...
-        }""")
+        }"""
+        )
         # Bug: Currently returns 0 fields because {{...}} breaks the regex
         self.assertGreaterEqual(len(fields), 3, "Should parse at least lat, long, elevation")
         self.assertEqual(fields[0].name, "lat")
@@ -270,21 +296,25 @@ class TestSequenceNestedBraces(TestCase):
 
     def test_nested_braces_multiple_levels(self) -> None:
         """Parse SEQUENCE with deeply nested braces."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             coreData BSMcoreData,
             partII SEQUENCE (SIZE(1..8)) OF PartIIcontent {{ BSMpartIIExtension }} OPTIONAL,
             regional SEQUENCE (SIZE(1..4)) OF RegionalExtension {{Reg-BasicSafetyMessage}} OPTIONAL,
             ...
-        }""")
+        }"""
+        )
         self.assertGreaterEqual(len(fields), 1, "Should parse at least coreData")
         self.assertEqual(fields[0].name, "coreData")
         self.assertEqual(fields[0].type_name, "BSMcoreData")
 
     def test_simple_nested_braces(self) -> None:
         """Simple case with nested braces but no regional extension."""
-        fields = SequenceField.from_asn1("""SEQUENCE {
+        fields = SequenceField.from_asn1(
+            """SEQUENCE {
             id VehicleID,
             value MESSAGE-ID-AND-TYPE.&Type({MessageTypes}{@.messageId})
-        }""")
+        }"""
+        )
         self.assertGreaterEqual(len(fields), 1, "Should parse at least id field")
         self.assertEqual(fields[0].name, "id")
