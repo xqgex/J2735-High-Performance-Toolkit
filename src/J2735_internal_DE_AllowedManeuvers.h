@@ -64,6 +64,9 @@
 
 #include "J2735_internal_common.h"
 
+_Static_assert(J2735_BW_ALLOWED_MANEUVERS <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
+
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
