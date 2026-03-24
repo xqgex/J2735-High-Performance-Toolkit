@@ -688,7 +688,8 @@ def generate_sequence_code(  # pylint: disable=too-many-arguments
         jinja2.TemplateNotFound: If template_path does not exist.
     """
     typedef = get_sequence_typedef(type_name, spec)  # Note, can raise ValueError
-    assert isinstance(typedef.constraint, SequenceType)
+    if not isinstance(typedef.constraint, SequenceType):
+        raise TypeError(f"Type '{type_name}' is not constrained by a SequenceType.")
     if require_extensible and not typedef.constraint.is_extensible:
         return ""
     if require_fixed_root and typedef.constraint.root_uper_bit_width is None:
