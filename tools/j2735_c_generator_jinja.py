@@ -172,11 +172,14 @@ def filter_screaming_snake(name: str) -> str:
     Handles abbreviations correctly using a multi-phase uppercase split:
 
     1. Single uppercase letter before CamelCase word (``DDate`` → ``D_DATE``).
-       A negative lookbehind prevents matching inside abbreviation runs,
-       so ``BSMcoreData`` stays ``BSM_CORE_DATA``.
+       A start-of-string anchor ``^`` limits this to names that begin
+       with a single-letter prefix, so mid-name abbreviations like
+       ``LL`` in ``Node-LLmD-64b`` stay intact.
     2. Long abbreviation (4+ letters) before CamelCase word
        (``MUTCDCode`` → ``MUTCD_CODE``).  The min-4 threshold protects
-       short abbreviations like BSM (3) and DSRC/GNSS (4).
+       short abbreviations like BSM (3) unconditionally.  GNSS (4) and
+       DSRC (4) would match but are safe because no spec name pairs them
+       with a CamelCase suffix (they use lowercase: GNSSstatus, DSRCmsgID).
     3. Remaining abbreviation run (2+ uppercase) before lowercase
        (``GNSSstatus`` → ``GNSS_STATUS``).
 
@@ -197,6 +200,8 @@ def filter_screaming_snake(name: str) -> str:
         'MSG_COUNT'
         >>> filter_screaming_snake("AccelerationSet4Way")
         'ACCELERATION_SET_4_WAY'
+        >>> filter_screaming_snake("LATITUDE")
+        'LATITUDE'
 
         ASN.1 hyphenated names:
 
@@ -220,12 +225,6 @@ def filter_screaming_snake(name: str) -> str:
 
         >>> filter_screaming_snake("DDate")
         'D_DATE'
-        >>> filter_screaming_snake("DDay")
-        'D_DAY'
-        >>> filter_screaming_snake("DHour")
-        'D_HOUR'
-        >>> filter_screaming_snake("DSecond")
-        'D_SECOND'
         >>> filter_screaming_snake("DMonthDay")
         'D_MONTH_DAY'
         >>> filter_screaming_snake("DFullTime")
@@ -237,15 +236,22 @@ def filter_screaming_snake(name: str) -> str:
         'MUTCD_CODE'
         >>> filter_screaming_snake("RTCMPackage")
         'RTCM_PACKAGE'
+
+        Doubled letter after hyphen (LL = Lat/Lon abbreviation stays together):
+
+        >>> filter_screaming_snake("Node-LLmD-64b")
+        'NODE_LL_M_D_64_B'
+        >>> filter_screaming_snake("Node-LLdms-48b")
+        'NODE_LL_DMS_48_B'
     """
     # Step 1: Replace hyphens with underscores (ASN.1 names like Offset-B10, Node-LL-24B)
     name = name.replace("-", "_")
     # Step 2: Split single uppercase prefix before CamelCase word
     #   DDate -> D_Date, DHour -> D_Hour
-    #   Negative lookbehind (?<![A-Z]) ensures we only match at the start of
-    #   an uppercase run, so BSMcoreData (B is preceded by nothing/start,
-    #   but S,M are preceded by uppercase) stays intact.
-    result = sub(r"(?<![A-Z])([A-Z])([A-Z][a-z])", r"\1_\2", name)
+    #   Anchored to ^ so it only fires at the very start of the name.
+    #   This keeps mid-name abbreviations like LL in Node_LLmD intact,
+    #   while still splitting D-prefix types (DDate, DHour, etc.).
+    result = sub(r"^([A-Z])([A-Z][a-z])", r"\1_\2", name)
     # Step 3: Split long abbreviation (4+ uppercase) before CamelCase word
     #   MUTCDCode -> MUTCD_Code, RTCMPackage -> RTCM_Package
     #   Min-4 threshold protects BSM (3) unconditionally. GNSS (4) and DSRC (4)

@@ -73,6 +73,11 @@ class TestScreamingSnakeConversion(TestCase):
         self.assertEqual(filter_screaming_snake("VertOffset-B07"), "VERT_OFFSET_B_07")
         self.assertEqual(filter_screaming_snake("TimeInSecond-B16"), "TIME_IN_SECOND_B_16")
 
+    def test_doubled_letter_after_hyphen(self) -> None:
+        """LL abbreviation after hyphen stays together (Node-LLmD, Node-LLdms)."""
+        self.assertEqual(filter_screaming_snake("Node-LLmD-64b"), "NODE_LL_M_D_64_B")
+        self.assertEqual(filter_screaming_snake("Node-LLdms-48b"), "NODE_LL_DMS_48_B")
+
     def test_already_screaming(self) -> None:
         """Already SCREAMING_SNAKE stays the same."""
         self.assertEqual(filter_screaming_snake("MSG_COUNT"), "MSG_COUNT")
@@ -109,6 +114,11 @@ class TestSnakeCaseConversion(TestCase):
         self.assertEqual(filter_snake_case("Node-LL-24B"), "node_ll_24_b")
         self.assertEqual(filter_snake_case("OffsetLL-B12"), "offset_ll_b_12")
         self.assertEqual(filter_snake_case("NMEA-MsgType"), "nmea_msg_type")
+
+    def test_doubled_letter_after_hyphen(self) -> None:
+        """LL abbreviation after hyphen stays together (Node-LLmD, Node-LLdms)."""
+        self.assertEqual(filter_snake_case("Node-LLmD-64b"), "node_ll_m_d_64_b")
+        self.assertEqual(filter_snake_case("Node-LLdms-80b"), "node_ll_dms_80_b")
 
     def test_already_snake(self) -> None:
         """Already snake_case stays the same."""

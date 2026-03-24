@@ -353,8 +353,8 @@ class TestSequenceTypeProperties(TestCase):
             max_size=10,
         ),
     )
-    def test_extensible_sequence_has_none_width(self, widths: list[int]) -> None:
-        """Extensible SEQUENCE always has None bit-width."""
+    def test_extensible_sequence_has_root_field_sum(self, widths: list[int]) -> None:
+        """Extensible SEQUENCE returns root field sum (not None)."""
         fields = tuple(
             SequenceField(
                 name=f"field{i}",
@@ -367,7 +367,7 @@ class TestSequenceTypeProperties(TestCase):
             for i, w in enumerate(widths)
         )
         constraint = SequenceType(fields=fields, is_extensible=True)
-        self.assertIsNone(constraint.uper_bit_width)
+        self.assertEqual(constraint.uper_bit_width, sum(widths))
 
     @given(
         optional_mask=st.lists(
@@ -443,10 +443,10 @@ class TestSequenceTypeProperties(TestCase):
         seq = SequenceType(fields=(), is_extensible=False)
         self.assertEqual(seq.uper_bit_width, 0)
 
-    def test_empty_extensible_sequence_none_width(self) -> None:
-        """Empty extensible SEQUENCE has None bit-width."""
+    def test_empty_extensible_sequence_zero_width(self) -> None:
+        """Empty extensible SEQUENCE has 0 bit-width (no fields)."""
         seq = SequenceType(fields=(), is_extensible=True)
-        self.assertIsNone(seq.uper_bit_width)
+        self.assertEqual(seq.uper_bit_width, 0)
 
     def test_preamble_bits_many_optionals(self) -> None:
         """Preamble with many OPTIONAL fields."""

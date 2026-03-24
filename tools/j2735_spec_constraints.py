@@ -1474,8 +1474,15 @@ class SequenceType(UPERConstraint):
         """Calculate total UPER bit-width for all fields.
 
         Returns:
-            Sum of all field bit-widths if all are fixed, non-optional,
-            and the sequence is non-extensible. None otherwise.
+            Sum of all root field bit-widths if all are fixed and
+            non-optional. None otherwise (e.g., OPTIONAL fields or
+            variable-width children).
+
+        Note:
+            This does NOT include preamble bits (extension marker,
+            optional bitmap). Those are infrastructure, not fields.
+            Extensible SEQUENCEs return the root field sum, which is
+            used for J2735_BW_* constants and cross-check assertions.
 
         Examples:
             >>> SequenceType(fields=(
@@ -1509,11 +1516,9 @@ class SequenceType(UPERConstraint):
             ...         section_comment="",
             ...         inline_comment="",
             ...     ),
-            ... ), is_extensible=True).uper_bit_width is None
-            True
+            ... ), is_extensible=True).uper_bit_width
+            3
         """
-        if self.is_extensible:
-            return None
         if any(f.is_optional for f in self.fields):
             return None
         total = 0
