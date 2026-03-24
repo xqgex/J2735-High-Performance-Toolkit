@@ -99,6 +99,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR ==
                     J2735_INTERNAL_EXT_SIZE_USER_SIZE_AND_BEHAVIOUR),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
 
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_USER_SIZE_AND_BEHAVIOUR <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
+
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */

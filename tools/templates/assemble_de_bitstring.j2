@@ -130,6 +130,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} ==
                    (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_NSNNWN_SMALL_BITS +
                     J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }}),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
+
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
 {%  else %}
 
 _Static_assert(J2735_BW_{{ typedef_name_upper }} <= 56U,

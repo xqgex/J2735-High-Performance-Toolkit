@@ -101,6 +101,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_
                     J2735_INTERNAL_EXT_SIZE_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
 
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
+
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */

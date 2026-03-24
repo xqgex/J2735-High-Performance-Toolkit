@@ -108,6 +108,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
                     J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
 
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
+
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
