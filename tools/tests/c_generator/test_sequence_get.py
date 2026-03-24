@@ -22,48 +22,24 @@ J2735_{TYPE}_GET_{FIELD}(buf) macros for field access.
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import (
-    create_jinja_env,
-    get_template,
-)
-from tools.j2735_spec_constraints import SequenceType
-from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     SpecLoadingTestBase,
-    get_sequence_typedef,
+    generate_sequence_code,
     make_extensible_mock_spec,
     make_nested_mock_spec,
     make_optional_mock_spec,
 )
 
-_TEMPLATE_NAME = "sequence/sequence_get.j2"
-
-
-def generate_sequence_get(type_name: str, spec: J2735Specification) -> str:
-    """Generate C #define macros for field getters of a SEQUENCE.
-
-    Args:
-        type_name: Name of the SEQUENCE type.
-        spec: The parsed J2735 specification.
-
-    Returns:
-        C code with #define macros for each field.
-
-    Raises:
-        ValueError: If type_name is not found or not a SEQUENCE.
-    """
-    typedef = get_sequence_typedef(type_name, spec)
-    assert isinstance(typedef.constraint, SequenceType)
-    return get_template(create_jinja_env(), _TEMPLATE_NAME).render(typedef=typedef)
+_SEQUENCE_GET_TEMPLATE_NAME = "sequence/sequence_get.j2"
 
 
 class TestGetGeneration(TestCase):
-    """Tests for generate_sequence_get function."""
+    """Tests for sequence_get.j2 template with mock specs."""
 
     def test_unsigned_field(self) -> None:
         """Unsigned field uses cast to uint type."""
         spec = make_nested_mock_spec()
-        code = generate_sequence_get("PositionalAccuracy", spec)
+        code = generate_sequence_code(_SEQUENCE_GET_TEMPLATE_NAME, spec, "PositionalAccuracy")
 
         self.assertIn("J2735_POSITIONAL_ACCURACY_GET_SEMI_MAJOR(buf)", code)
         self.assertIn("(uint8_t)", code)
@@ -72,7 +48,7 @@ class TestGetGeneration(TestCase):
     def test_signed_field(self) -> None:
         """Signed field uses SIGN_EXTEND macro."""
         spec = make_extensible_mock_spec()
-        code = generate_sequence_get("PathPrediction", spec)
+        code = generate_sequence_code(_SEQUENCE_GET_TEMPLATE_NAME, spec, "PathPrediction")
 
         self.assertIn("J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(buf)", code)
         self.assertIn("J2735_INTERNAL_SIGN_EXTEND", code)
@@ -81,26 +57,26 @@ class TestGetGeneration(TestCase):
     def test_optional_field_has_precondition(self) -> None:
         """Optional field has @pre comment for HAS macro."""
         spec = make_optional_mock_spec()
-        code = generate_sequence_get("IntersectionReferenceID", spec)
+        code = generate_sequence_code(_SEQUENCE_GET_TEMPLATE_NAME, spec, "IntersectionReferenceID")
 
         self.assertIn("J2735_INTERSECTION_REFERENCE_ID_GET_REGION(buf)", code)
         self.assertIn("@pre J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf)", code)
 
     def test_not_found_raises(self) -> None:
         """Unknown type raises ValueError."""
-        spec = make_nested_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_get("UnknownType", spec)
+            generate_sequence_code(
+                _SEQUENCE_GET_TEMPLATE_NAME, make_nested_mock_spec(), "UnknownType"
+            )
 
         self.assertIn("not found", str(ctx.exception))
 
     def test_non_sequence_raises(self) -> None:
         """Non-SEQUENCE type raises ValueError."""
-        spec = make_extensible_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_get("RadiusOfCurvature", spec)
+            generate_sequence_code(
+                _SEQUENCE_GET_TEMPLATE_NAME, make_nested_mock_spec(), "SemiMajorAxisAccuracy"
+            )
 
         self.assertIn("not a SEQUENCE", str(ctx.exception))
 
@@ -110,28 +86,30 @@ class TestGetWithRealSpec(SpecLoadingTestBase):
 
     def test_real_bsm_core_data_unsigned(self) -> None:
         """Real BSMcoreData msgCnt is unsigned."""
-        code = generate_sequence_get("BSMcoreData", self.spec)
+        code = generate_sequence_code(_SEQUENCE_GET_TEMPLATE_NAME, self.spec, "BSMcoreData")
 
         self.assertIn("J2735_BSM_CORE_DATA_GET_MSG_CNT(buf)", code)
         self.assertIn("(uint8_t)", code)
 
     def test_real_bsm_core_data_signed(self) -> None:
         """Real BSMcoreData lat is signed (uses SIGN_EXTEND)."""
-        code = generate_sequence_get("BSMcoreData", self.spec)
+        code = generate_sequence_code(_SEQUENCE_GET_TEMPLATE_NAME, self.spec, "BSMcoreData")
 
         self.assertIn("J2735_BSM_CORE_DATA_GET_LAT(buf)", code)
         self.assertIn("J2735_INTERNAL_SIGN_EXTEND", code)
 
     def test_real_intersection_reference_id_optional(self) -> None:
         """Real IntersectionReferenceID region has @pre comment."""
-        code = generate_sequence_get("IntersectionReferenceID", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_GET_TEMPLATE_NAME, self.spec, "IntersectionReferenceID"
+        )
 
         self.assertIn("J2735_INTERSECTION_REFERENCE_ID_GET_REGION(buf)", code)
         self.assertIn("@pre J2735_INTERSECTION_REFERENCE_ID_HAS_REGION(buf)", code)
 
     def test_real_path_prediction_signed(self) -> None:
         """Real PathPrediction radiusOfCurve is signed."""
-        code = generate_sequence_get("PathPrediction", self.spec)
+        code = generate_sequence_code(_SEQUENCE_GET_TEMPLATE_NAME, self.spec, "PathPrediction")
 
         self.assertIn("J2735_PATH_PREDICTION_GET_RADIUS_OF_CURVE(buf)", code)
         self.assertIn("J2735_INTERNAL_SIGN_EXTEND", code)

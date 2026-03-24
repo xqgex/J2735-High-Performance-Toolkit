@@ -16,67 +16,34 @@
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
 """Tests for root size constant generation.
 
-Tests cover generate_sequence_root_size function for extensible SEQUENCE types.
+Tests cover sequence_internal_root_size_bits.j2 template for extensible SEQUENCE types.
 """
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import (
-    create_jinja_env,
-    get_template,
-)
-from tools.j2735_spec_constraints import SequenceType
-from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     SpecLoadingTestBase,
-    get_sequence_typedef,
+    generate_sequence_code,
     make_extensible_mock_spec,
     make_nested_mock_spec,
 )
 
-_TEMPLATE_NAME = "sequence/sequence_internal_root_size_bits.j2"
-
-
-def generate_sequence_root_size(type_name: str, spec: J2735Specification) -> str:
-    """Generate C #define constant for root size of an extensible SEQUENCE.
-
-    Only generates output for extensible SEQUENCE types with fixed-width
-    root components (no OPTIONAL fields).
-
-    Args:
-        type_name: Name of the SEQUENCE type (e.g., "PathPrediction").
-        spec: The parsed J2735 specification.
-
-    Returns:
-        C code with #define constant, or empty string if not applicable.
-
-    Raises:
-        ValueError: If type_name is not found or not a SEQUENCE.
-    """
-    typedef = get_sequence_typedef(type_name, spec)
-    assert isinstance(typedef.constraint, SequenceType)  # Guaranteed by getter, required by Mypy
-    if not typedef.constraint.is_extensible or typedef.constraint.root_uper_bit_width is None:
-        return ""
-    template = get_template(create_jinja_env(), _TEMPLATE_NAME)
-
-    # Build list of field type names for symbolic expression
-    field_type_names = [
-        field.type_name for field in typedef.constraint.fields if not field.is_optional
-    ]
-
-    return template.render(
-        field_type_names=field_type_names,
-        typedef=typedef,
-    )
+_SEQUENCE_ROOT_SIZE_BITS_TEMPLATE_NAME = "sequence/sequence_internal_root_size_bits.j2"
 
 
 class TestRootSizeGeneration(TestCase):
-    """Tests for generate_sequence_root_size function."""
+    """Tests for sequence_internal_root_size_bits.j2 template with mock specs."""
 
     def test_extensible_sequence_exact_output(self) -> None:
         """Extensible SEQUENCE generates expected macro."""
-        spec = make_extensible_mock_spec()
-        code = generate_sequence_root_size("PathPrediction", spec)
+        code = generate_sequence_code(
+            _SEQUENCE_ROOT_SIZE_BITS_TEMPLATE_NAME,
+            make_extensible_mock_spec(),
+            "PathPrediction",
+            require_extensible=True,
+            require_fixed_root=True,
+            set_field_type_names=True,
+        )
 
         # PathPrediction: 1 preamble + 16 radius + 8 confidence = 25 bits
         # Uses symbolic expression for clarity (clang-format handles line breaking)
@@ -89,7 +56,14 @@ class TestRootSizeGeneration(TestCase):
     def test_non_extensible_returns_empty(self) -> None:
         """Non-extensible SEQUENCE returns empty string."""
         spec = make_nested_mock_spec()
-        code = generate_sequence_root_size("PositionalAccuracy", spec)
+        code = generate_sequence_code(
+            _SEQUENCE_ROOT_SIZE_BITS_TEMPLATE_NAME,
+            spec,
+            "PositionalAccuracy",
+            require_extensible=True,
+            require_fixed_root=True,
+            set_field_type_names=True,
+        )
 
         self.assertEqual(code, "")
 
@@ -98,7 +72,7 @@ class TestRootSizeGeneration(TestCase):
         spec = make_extensible_mock_spec()
 
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_root_size("UnknownType", spec)
+            generate_sequence_code(_SEQUENCE_ROOT_SIZE_BITS_TEMPLATE_NAME, spec, "UnknownType")
 
         self.assertIn("not found", str(ctx.exception))
 
@@ -107,7 +81,7 @@ class TestRootSizeGeneration(TestCase):
         spec = make_extensible_mock_spec()
 
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_root_size("RadiusOfCurvature", spec)
+            generate_sequence_code(_SEQUENCE_ROOT_SIZE_BITS_TEMPLATE_NAME, spec, "Confidence")
 
         self.assertIn("not a SEQUENCE", str(ctx.exception))
 
@@ -117,7 +91,14 @@ class TestRootSizeWithRealSpec(SpecLoadingTestBase):
 
     def test_real_path_prediction(self) -> None:
         """Real PathPrediction from spec."""
-        code = generate_sequence_root_size("PathPrediction", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_ROOT_SIZE_BITS_TEMPLATE_NAME,
+            self.spec,
+            "PathPrediction",
+            require_extensible=True,
+            require_fixed_root=True,
+            set_field_type_names=True,
+        )
 
         # Uses symbolic expression for clarity (clang-format handles line breaking)
         self.assertIn("#define J2735_INTERNAL_ROOT_SIZE_BITS_PATH_PREDICTION", code)
@@ -128,6 +109,13 @@ class TestRootSizeWithRealSpec(SpecLoadingTestBase):
 
     def test_real_bsm_core_data_returns_empty(self) -> None:
         """Real BSMcoreData (non-extensible) returns empty string."""
-        code = generate_sequence_root_size("BSMcoreData", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_ROOT_SIZE_BITS_TEMPLATE_NAME,
+            self.spec,
+            "BSMcoreData",
+            require_extensible=True,
+            require_fixed_root=True,
+            set_field_type_names=True,
+        )
 
         self.assertEqual(code, "")

@@ -40,7 +40,7 @@ _VARIABLE_BITS: Final[str] = (
 )
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class SequenceWireVariant:
     """A wire format variant for a SEQUENCE type.
 
@@ -328,7 +328,7 @@ class ChoiceAlternativeDict(TypedDict):
     needs_shift: bool
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True, slots=True)
 class ChoiceWireVariant:
     """A wire format variant for a CHOICE alternative.
 

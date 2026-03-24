@@ -37,6 +37,10 @@
  * @par Wire Format Summary:
  * - Non-extended form (8 bits): [ext=0][7 flag bits] — exact byte, no padding
  * - Extended form (15 bits): [ext=1][nsnnwn=7 bits][7 flag bits]
+ *
+ * @par Bit Numbering Convention:
+ * - ASN.1 bit 0 = leftmost/MSB of BIT STRING content (unavailable)
+ * - ASN.1 bit 6 = rightmost root bit (highwayServiceVehiclePersonnel)
  */
 
 #include <stdint.h>
@@ -72,8 +76,8 @@ void test_public_safety_directing_traffic_sub_type_non_extended(void) {
       0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Extension bit should be 0 for non-extended form");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension bit should be 0 for non-extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x55U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "Flags should be 0x55 for non-extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(8U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_SIZE(payload),
@@ -99,8 +103,8 @@ void test_public_safety_directing_traffic_sub_type_extended(void) {
       0x87, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Extension bit should be 1 for extended form");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension bit should be 1 for extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x7FU, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "Flags should be 0x7F for extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(15U,
@@ -185,8 +189,8 @@ void test_public_safety_directing_traffic_sub_type_all_zeros_non_extended(void) 
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "All flags should be zero");
 }
@@ -205,8 +209,8 @@ void test_public_safety_directing_traffic_sub_type_non_extended_all_flags_on(voi
       0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x7FU, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "All 7 flags should be ON (0x7F)");
 }
@@ -220,8 +224,8 @@ void test_public_safety_directing_traffic_sub_type_extended_all_zeros(void) {
       0x87, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Should be extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Should be extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(payload),
                                  "All flags should be zero in extended form");
 }
@@ -336,14 +340,14 @@ void test_public_safety_directing_traffic_sub_type_single_bit_6_highway_service(
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_public_safety_directing_traffic_sub_type_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7F,                                          /* ext(0)+flags(1111111) */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
   const uint8_t *unaligned_ptr = &payload[1];
 
-  bool is_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Misaligned: should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Misaligned: should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x7FU,
                                  J2735_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE_GET(unaligned_ptr),
                                  "Misaligned: all flags should be ON");

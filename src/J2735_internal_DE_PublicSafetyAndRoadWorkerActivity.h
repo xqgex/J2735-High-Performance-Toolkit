@@ -78,7 +78,7 @@
  * @internal
  * @brief Root size of PublicSafetyAndRoadWorkerActivity in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY 6U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY 6U
 
 /**
  * @internal
@@ -99,6 +99,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
                    (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_NSNNWN_SMALL_BITS +
                     J2735_INTERNAL_EXT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
+
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
 
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
@@ -153,7 +156,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
  * @param[in] raw14 Value previously returned by
  * J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED() for
+ * @note Internal use only. Use J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION() for
  * public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY(raw14)                  \
@@ -196,8 +199,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
        : /* Non-ext: bits 12..7 = 6 bits */                                                        \
        ((uint8_t)(((raw14) >>                                                                      \
                    (J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY - 1U -     \
-                    J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY)) &            \
-                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY) -     \
+                    J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY)) &       \
+                  ((1ULL                                                                           \
+                    << J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY) -     \
                    1ULL))))
 
 /**
@@ -220,7 +224,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
  * J2735_INTERNAL_BIT_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_* constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= 6 reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET_*() accessors for
  * public API.
  */
@@ -241,7 +245,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
 /*  PUBLIC API: PublicSafetyAndRoadWorkerActivity Accessors                                       */
 /* ============================================================================================== */
 /**
- * @brief Check if PublicSafetyAndRoadWorkerActivity is in extended form.
+ * @brief Check if PublicSafetyAndRoadWorkerActivity has an extension.
  *
  * Extended form includes 6 flags (bits 0-5).
  * Root form has only 6 flags (bits 0-5).
@@ -251,7 +255,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
  * @pre @p buf must point to valid PublicSafetyAndRoadWorkerActivity encoding with +7 byte padding.
  * @return Non-zero (true) if extended (6 flags), zero (false) if root (6 flags).
  */
-#define J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED(buf)                              \
+#define J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION(buf)                            \
   J2735_INTERNAL_IS_EXTENSION_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY(                              \
       J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY(buf))
 
@@ -270,7 +274,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
        J2735_INTERNAL_RAW_READ_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY(buf))                        \
        ? J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY                       \
        : (J2735_INTERNAL_EXTENSION_MARKER_BITS +                                                   \
-          J2735_INTERNAL_ROOT_SIZE_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY))
+          J2735_INTERNAL_ROOT_SIZE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY))
 
 /**
  * @brief Get all PublicSafetyAndRoadWorkerActivity as a single uint8_t value.
@@ -284,7 +288,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVI
  * uint8_t*).
  * @pre @p buf must point to valid PublicSafetyAndRoadWorkerActivity encoding with +7 byte padding.
  * @return Right-aligned flag value (uint8_t). Bit 0 of result = first named bit.
- * @note Use J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED() to determine if bit 6 is
+ * @note Use J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION() to determine if bit 6 is
  * meaningful.
  */
 #define J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET(buf)                                      \

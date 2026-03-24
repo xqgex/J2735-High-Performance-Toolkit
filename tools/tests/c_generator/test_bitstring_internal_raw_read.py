@@ -68,7 +68,7 @@ class TestRawReadGenerator(SpecLoadingTestBase):
                 )
 
     def test_non_extensible_raw_read_uses_bw_constant(self) -> None:
-        """Non-extensible RAW_READ should read J2735_BW_* bits, not ROOT_SIZE."""
+        """Non-extensible RAW_READ should read J2735_BW_* bits, not ROOT_SIZE_BITS."""
         for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
             with self.subTest(type_name=type_name):
                 code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, type_name)
@@ -78,9 +78,9 @@ class TestRawReadGenerator(SpecLoadingTestBase):
                     f"{type_name} RAW_READ should use J2735_BW_* as bit count",
                 )
                 self.assertNotIn(
-                    f"J2735_INTERNAL_ROOT_SIZE_{prefix}",
+                    f"J2735_INTERNAL_ROOT_SIZE_BITS_{prefix}",
                     code,
-                    f"{type_name} RAW_READ should not reference ROOT_SIZE",
+                    f"{type_name} RAW_READ should not reference ROOT_SIZE_BITS",
                 )
 
     def test_extensible_raw_read_uses_max_wire_bits(self) -> None:

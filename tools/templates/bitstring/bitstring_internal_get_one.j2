@@ -63,7 +63,7 @@
  *                    constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= {{ root_size }} reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_{{ typedef_name_upper }}_GET_*() accessors for public API.
  */
 #define J2735_INTERNAL_GET_ONE_{{ typedef_name_upper }}(raw{{ read_bits }}, bit_pos) \

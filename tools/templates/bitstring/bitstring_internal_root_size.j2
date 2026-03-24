@@ -20,7 +20,7 @@
   BIT STRING Internal Root Size Constants Template
 
   Generates C #define constants for ASN.1 BIT STRING root size.
-  Pattern: J2735_INTERNAL_ROOT_SIZE_{TYPE} {ROOT_SIZE}U
+  Pattern: J2735_INTERNAL_ROOT_SIZE_BITS_{TYPE} {ROOT_SIZE}U
 
   Context variables:
     - typedef: The full typedef object containing the metadata
@@ -30,7 +30,7 @@
 
   Output format:
     /** @internal @brief Root size of... */
-    #define J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS 13U
+    #define J2735_INTERNAL_ROOT_SIZE_BITS_VEHICLE_EVENT_FLAGS 13U
 -#}
 {%- set root_size = typedef.constraint.root_size -%}
 {%- set typedef_name = typedef.name -%}
@@ -39,4 +39,4 @@
  * @internal
  * @brief Root size of {{ typedef_name }} in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }} {{ root_size }}U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name_upper }} {{ root_size }}U

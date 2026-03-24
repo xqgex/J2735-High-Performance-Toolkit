@@ -35,7 +35,7 @@ void test_lane_direction_single_bit_egress_path(void);
 
 /* Metadata tests */
 void test_lane_direction_size(void);
-void test_lane_direction_is_extended(void);
+void test_lane_direction_has_extension(void);
 
 /* Misalignment test */
 void test_lane_direction_misaligned_access(void);

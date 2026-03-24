@@ -36,6 +36,10 @@
  * @par Wire Format Summary:
  * - Non-extended form (7 bits): [ext=0][6 flag bits]
  * - Extended form (14 bits): [ext=1][nsnnwn=7 bits][6 flag bits]
+ *
+ * @par Bit Numbering Convention:
+ * - ASN.1 bit 0 = leftmost/MSB of BIT STRING content (unavailable)
+ * - ASN.1 bit 5 = rightmost root bit (otherActivities)
  */
 
 #include <stdint.h>
@@ -66,8 +70,8 @@ void test_public_safety_and_road_worker_activity_non_extended(void) {
       0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Extension bit should be 0 for non-extended form");
+  bool has_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension bit should be 0 for non-extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x2AU, J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET(payload),
                                  "Flags should be 0x2A for non-extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(7U, J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_SIZE(payload),
@@ -93,8 +97,8 @@ void test_public_safety_and_road_worker_activity_extended(void) {
       0x86, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Extension bit should be 1 for extended form");
+  bool has_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension bit should be 1 for extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x3FU, J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET(payload),
                                  "Flags should be 0x3F for extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(14U, J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_SIZE(payload),
@@ -170,8 +174,8 @@ void test_public_safety_and_road_worker_activity_all_zeros_non_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET(payload),
                                  "All flags should be zero");
 }
@@ -190,8 +194,8 @@ void test_public_safety_and_road_worker_activity_non_extended_all_flags_on(void)
       0x7E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x3FU, J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET(payload),
                                  "All 6 flags should be ON (0x3F)");
 }
@@ -205,8 +209,8 @@ void test_public_safety_and_road_worker_activity_extended_all_zeros(void) {
       0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Should be extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Should be extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET(payload),
                                  "All flags should be zero in extended form");
 }
@@ -319,14 +323,14 @@ void test_public_safety_and_road_worker_activity_single_bit_5_other_activities(v
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_public_safety_and_road_worker_activity_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7E,                                          /* ext(0)+flags(111111)+pad(1) */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
   const uint8_t *unaligned_ptr = &payload[1];
 
-  bool is_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Misaligned: should be non-extended");
+  bool has_ext = J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Misaligned: should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x3FU,
                                  J2735_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY_GET(unaligned_ptr),
                                  "Misaligned: all flags should be ON");

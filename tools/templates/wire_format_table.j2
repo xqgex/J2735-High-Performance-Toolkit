@@ -21,6 +21,7 @@
 
   Renders a single wire format variant as a Unicode box-drawing table.
   Works directly with SequenceWireVariant containing SequenceField objects.
+  Delegates box-drawing rendering to wire_format_draw_box.j2.
 
   Context variables:
     - variant: SequenceWireVariant object (from j2735_c_generator_wire_format)
@@ -75,16 +76,4 @@
 {%-   set _ = segments.append(("Bits " ~ bit_pos.val ~ "+", "(extension data)", 16)) -%}
 {%- endif -%}
 
-{#- Calculate column widths -#}
-{%- set widths = [] -%}
-{%- for seg in segments -%}
-{%-   set w = [seg[0] | length, seg[1] | length, seg[2]] | max -%}
-{%-   set _ = widths.append(w) -%}
-{%- endfor %}
- * ┌{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┬{% endif %}{% endfor %}┐
- * │{% for i in range(segments | length) %} {{ "%-*s" | format(widths[i], segments[i][0]) }} │{% endfor %}
-
- * ├{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┼{% endif %}{% endfor %}┤
- * │{% for i in range(segments | length) %} {{ "%-*s" | format(widths[i], segments[i][1]) }} │{% endfor %}
-
- * └{% for w in widths %}{{ "─" * (w + 2) }}{% if not loop.last %}┴{% endif %}{% endfor %}┘
+{%  include 'wire_format_draw_box.j2' %}

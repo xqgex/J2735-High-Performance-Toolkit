@@ -38,7 +38,7 @@ void test_allowed_maneuvers_single_bit_reserved_1(void);
 
 /* Metadata tests */
 void test_allowed_maneuvers_size(void);
-void test_allowed_maneuvers_is_extended(void);
+void test_allowed_maneuvers_has_extension(void);
 
 /* Misalignment test */
 void test_allowed_maneuvers_misaligned_access(void);

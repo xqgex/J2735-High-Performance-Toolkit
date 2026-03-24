@@ -22,48 +22,24 @@ J2735_INTERNAL_OPT_{TYPE}_{FIELD} constants for OPTIONAL fields.
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import (
-    create_jinja_env,
-    get_template,
-)
-from tools.j2735_spec_constraints import SequenceType
-from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     SpecLoadingTestBase,
-    get_sequence_typedef,
+    generate_sequence_code,
     make_extensible_mock_spec,
     make_nested_mock_spec,
     make_optional_mock_spec,
 )
 
-_TEMPLATE_NAME = "sequence/sequence_internal_opt.j2"
-
-
-def generate_sequence_opt(type_name: str, spec: J2735Specification) -> str:
-    """Generate C #define constants for optional field indices of a SEQUENCE.
-
-    Args:
-        type_name: Name of the SEQUENCE type.
-        spec: The parsed J2735 specification.
-
-    Returns:
-        C code with #define constants, or empty string if no optionals.
-
-    Raises:
-        ValueError: If type_name is not found or not a SEQUENCE.
-    """
-    typedef = get_sequence_typedef(type_name, spec)
-    assert isinstance(typedef.constraint, SequenceType)
-    return get_template(create_jinja_env(), _TEMPLATE_NAME).render(typedef=typedef)
+_SEQUENCE_OPT_TEMPLATE_NAME = "sequence/sequence_internal_opt.j2"
 
 
 class TestOptGeneration(TestCase):
-    """Tests for generate_sequence_opt function."""
+    """Tests for sequence_internal_opt.j2 template with mock specs."""
 
     def test_sequence_with_optional_field(self) -> None:
         """SEQUENCE with 1 optional field generates index constant."""
         spec = make_optional_mock_spec()
-        code = generate_sequence_opt("IntersectionReferenceID", spec)
+        code = generate_sequence_code(_SEQUENCE_OPT_TEMPLATE_NAME, spec, "IntersectionReferenceID")
 
         self.assertIn("J2735_INTERNAL_OPT_INTERSECTION_REFERENCE_ID_REGION", code)
         self.assertIn("0U", code)
@@ -72,32 +48,32 @@ class TestOptGeneration(TestCase):
     def test_sequence_without_optional_returns_empty(self) -> None:
         """SEQUENCE with no optional fields returns empty string."""
         spec = make_nested_mock_spec()
-        code = generate_sequence_opt("PositionalAccuracy", spec)
+        code = generate_sequence_code(_SEQUENCE_OPT_TEMPLATE_NAME, spec, "PositionalAccuracy")
 
         self.assertEqual(code, "")
 
     def test_extensible_without_optional_returns_empty(self) -> None:
         """Extensible SEQUENCE with no optional fields returns empty string."""
         spec = make_extensible_mock_spec()
-        code = generate_sequence_opt("PathPrediction", spec)
+        code = generate_sequence_code(_SEQUENCE_OPT_TEMPLATE_NAME, spec, "PathPrediction")
 
         self.assertEqual(code, "")
 
     def test_not_found_raises(self) -> None:
         """Unknown type raises ValueError."""
-        spec = make_optional_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_opt("UnknownType", spec)
+            generate_sequence_code(
+                _SEQUENCE_OPT_TEMPLATE_NAME, make_optional_mock_spec(), "UnknownType"
+            )
 
         self.assertIn("not found", str(ctx.exception))
 
     def test_non_sequence_raises(self) -> None:
         """Non-SEQUENCE type raises ValueError."""
-        spec = make_optional_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_opt("RoadRegulatorID", spec)
+            generate_sequence_code(
+                _SEQUENCE_OPT_TEMPLATE_NAME, make_optional_mock_spec(), "RoadRegulatorID"
+            )
 
         self.assertIn("not a SEQUENCE", str(ctx.exception))
 
@@ -107,19 +83,21 @@ class TestOptWithRealSpec(SpecLoadingTestBase):
 
     def test_real_intersection_reference_id(self) -> None:
         """Real IntersectionReferenceID has 1 optional field (region)."""
-        code = generate_sequence_opt("IntersectionReferenceID", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_OPT_TEMPLATE_NAME, self.spec, "IntersectionReferenceID"
+        )
 
         self.assertIn("J2735_INTERNAL_OPT_INTERSECTION_REFERENCE_ID_REGION", code)
         self.assertIn("0U", code)
 
     def test_real_bsm_core_data_returns_empty(self) -> None:
         """Real BSMcoreData (no optionals) returns empty string."""
-        code = generate_sequence_opt("BSMcoreData", self.spec)
+        code = generate_sequence_code(_SEQUENCE_OPT_TEMPLATE_NAME, self.spec, "BSMcoreData")
 
         self.assertEqual(code, "")
 
     def test_real_path_prediction_returns_empty(self) -> None:
         """Real PathPrediction (no optionals) returns empty string."""
-        code = generate_sequence_opt("PathPrediction", self.spec)
+        code = generate_sequence_code(_SEQUENCE_OPT_TEMPLATE_NAME, self.spec, "PathPrediction")
 
         self.assertEqual(code, "")

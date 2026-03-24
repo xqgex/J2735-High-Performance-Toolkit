@@ -182,7 +182,6 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 /*  Required for O(1) bit-stream navigation.                                                      */
 /*  Constraint: All bit-widths must satisfy 1 <= width <= 56 for use with J2735_READ_BITS.        */
 /* ============================================================================================== */
-#define J2735_BW_64_B 63U /* 64b: SEQUENCE (2 fields) */
 #define J2735_BW_ACCEL_STEER_YAW_RATE_CONFIDENCE                                                   \
   8U /* AccelSteerYawRateConfidence: SEQUENCE (3 fields) */
 #define J2735_BW_ACCELERATION              12U  /* Acceleration: INTEGER (-2000..2001) */
@@ -196,6 +195,7 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_ANGLE                     15U  /* Angle: INTEGER (0..28800) */
 #define J2735_BW_ANIMAL_PROPELLED_TYPE     2U   /* AnimalPropelledType: ENUMERATED (4 values) */
 #define J2735_BW_ANIMAL_TYPE               2U   /* AnimalType: ENUMERATED (4 values) */
+#define J2735_BW_ANTENNA_OFFSET_SET        31U  /* AntennaOffsetSet: SEQUENCE (3 fields) */
 #define J2735_BW_ANTI_LOCK_BRAKE_STATUS    2U   /* AntiLockBrakeStatus: ENUMERATED (4 values) */
 #define J2735_BW_APPROACH_ID               4U   /* ApproachID: INTEGER (0..15) */
 #define J2735_BW_APPROACH_OR_LANE          1U   /* ApproachOrLane: CHOICE (2 alternatives) */
@@ -223,22 +223,21 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_CONFIDENCE                8U   /* Confidence: INTEGER (0..200) */
 #define J2735_BW_CONSECUTIVE_TRAFFIC_LIGHT 2U   /* ConsecutiveTrafficLight: ENUMERATED (3 values) */
 #define J2735_BW_COUNT                     6U   /* Count: INTEGER (0..32) */
-#define J2735_BW_DD_ATE                    21U  /* DDate: SEQUENCE (3 fields) */
-#define J2735_BW_DD_AY                     5U   /* DDay: INTEGER (0..31) */
-#define J2735_BW_DF_ULL_TIME               32U  /* DFullTime: SEQUENCE (5 fields) */
-#define J2735_BW_DH_OUR                    5U   /* DHour: INTEGER (0..31) */
-#define J2735_BW_DM_INUTE                  6U   /* DMinute: INTEGER (0..60) */
-#define J2735_BW_DM_ONTH                   4U   /* DMonth: INTEGER (0..12) */
-#define J2735_BW_DM_ONTH_DAY               9U   /* DMonthDay: SEQUENCE (2 fields) */
-#define J2735_BW_DO_FFSET                  11U  /* DOffset: INTEGER (-840..840) */
+#define J2735_BW_D_DATE                    21U  /* DDate: SEQUENCE (3 fields) */
+#define J2735_BW_D_DAY                     5U   /* DDay: INTEGER (0..31) */
+#define J2735_BW_D_FULL_TIME               32U  /* DFullTime: SEQUENCE (5 fields) */
+#define J2735_BW_D_HOUR                    5U   /* DHour: INTEGER (0..31) */
+#define J2735_BW_D_MINUTE                  6U   /* DMinute: INTEGER (0..60) */
+#define J2735_BW_D_MONTH                   4U   /* DMonth: INTEGER (0..12) */
+#define J2735_BW_D_MONTH_DAY               9U   /* DMonthDay: SEQUENCE (2 fields) */
+#define J2735_BW_D_OFFSET                  11U  /* DOffset: INTEGER (-840..840) */
 #define J2735_BW_DSRC_MSG_ID               15U  /* DSRCmsgID: INTEGER (0..32767) */
-#define J2735_BW_DS_ECOND                  16U  /* DSecond: INTEGER (0..65535) */
-#define J2735_BW_DY_EAR                    12U  /* DYear: INTEGER (0..4095) */
-#define J2735_BW_DY_EAR_MONTH              16U  /* DYearMonth: SEQUENCE (2 fields) */
+#define J2735_BW_D_SECOND                  16U  /* DSecond: INTEGER (0..65535) */
+#define J2735_BW_D_YEAR                    12U  /* DYear: INTEGER (0..4095) */
+#define J2735_BW_D_YEAR_MONTH              16U  /* DYearMonth: SEQUENCE (2 fields) */
 #define J2735_BW_DELTA_ANGLE               9U   /* DeltaAngle: INTEGER (-150..150) */
 #define J2735_BW_DELTA_TIME                8U   /* DeltaTime: INTEGER (-122..121) */
 #define J2735_BW_DIRECTION_OF_USE          2U   /* DirectionOfUse: ENUMERATED (4 values) */
-#define J2735_BW_DISTANCE_UNITS            3U   /* DistanceUnits: ENUMERATED (8 values) */
 #define J2735_BW_DRIVE_AXLE_LIFT_AIR_PRESSURE                                                      \
   10U                                         /* DriveAxleLiftAirPressure: INTEGER (0..1000)       \
                                                */
@@ -252,7 +251,6 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_ELEVATION                16U /* Elevation: INTEGER (-4096..61439) */
 #define J2735_BW_ELEVATION_CONFIDENCE     3U  /* ElevationConfidence: ENUMERATED (8 values) */
 #define J2735_BW_EXTENT                   4U  /* Extent: ENUMERATED (16 values) */
-#define J2735_BW_EXTERIOR_LIGHTS          9U  /* ExteriorLights: BIT STRING (SIZE(9)) */
 #define J2735_BW_FUEL_TYPE                4U  /* FuelType: INTEGER (0..15) */
 #define J2735_BW_FURTHER_INFO_ID          16U /* FurtherInfoID: OCTET STRING (SIZE(2)) */
 #define J2735_BW_GNSS_STATUS              8U  /* GNSSstatus: BIT STRING (SIZE(8)) */
@@ -264,13 +262,10 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_GROSS_SPEED              5U  /* GrossSpeed: INTEGER (0..31) */
 #define J2735_BW_HEADING                  15U /* Heading: INTEGER (0..28800) */
 #define J2735_BW_HEADING_CONFIDENCE       3U  /* HeadingConfidence: ENUMERATED (8 values) */
-#define J2735_BW_HEADING_SLICE            16U /* HeadingSlice: BIT STRING (SIZE(16)) */
 #define J2735_BW_HUMAN_PROPELLED_TYPE     3U  /* HumanPropelledType: ENUMERATED (6 values) */
 #define J2735_BW_ICE                      1U  /* Ice: SEQUENCE (1 fields) */
 #define J2735_BW_ICE_TYPE                 1U  /* IceType: ENUMERATED (1 values) */
 #define J2735_BW_INTERSECTION_ID          16U /* IntersectionID: INTEGER (0..65535) */
-#define J2735_BW_INTERSECTION_STATUS_OBJECT                                                        \
-  16U                                         /* IntersectionStatusObject: BIT STRING (SIZE(16)) */
 #define J2735_BW_IS_DOLLY                 1U  /* IsDolly: BOOLEAN */
 #define J2735_BW_ISO_3833_VEHICLE_TYPE    7U  /* Iso3833VehicleType: INTEGER (0..100) */
 #define J2735_BW_LANE_CONNECTION_ID       8U  /* LaneConnectionID: INTEGER (0..255) */
@@ -284,7 +279,7 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_LAYER_TYPE               3U  /* LayerType: ENUMERATED (7 values) */
 #define J2735_BW_LIGHTBAR_IN_USE          3U  /* LightbarInUse: ENUMERATED (8 values) */
 #define J2735_BW_LONGITUDE                32U /* Longitude: INTEGER (-1799999999..1800000001) */
-#define J2735_BW_MUTCDC_ODE               3U  /* MUTCDCode: ENUMERATED (7 values) */
+#define J2735_BW_MUTCD_CODE               3U  /* MUTCDCode: ENUMERATED (7 values) */
 #define J2735_BW_MEAN_VARIATION           15U /* MeanVariation: INTEGER (0..25000) */
 #define J2735_BW_MERGE_DIVERGE_NODE_ANGLE 9U  /* MergeDivergeNodeAngle: INTEGER (-180..180) */
 #define J2735_BW_MINUTE_OF_THE_YEAR       20U /* MinuteOfTheYear: INTEGER (0..527040) */
@@ -294,6 +289,21 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_MSG_CRC                  16U /* MsgCRC: OCTET STRING (SIZE(2)) */
 #define J2735_BW_MSG_COUNT                7U  /* MsgCount: INTEGER (0..127) */
 #define J2735_BW_MULTI_VEHICLE_RESPONSE   2U  /* MultiVehicleResponse: ENUMERATED (4 values) */
+#define J2735_BW_NMEA_MSG_TYPE            15U /* NMEA-MsgType: INTEGER (0..32767) */
+#define J2735_BW_NMEA_REVISION            3U  /* NMEA-Revision: ENUMERATED (7 values) */
+#define J2735_BW_NODE_LL_24_B             24U /* Node-LL-24B: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_LL_28_B             28U /* Node-LL-28B: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_LL_32_B             32U /* Node-LL-32B: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_LL_36_B             36U /* Node-LL-36B: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_LL_44_B             44U /* Node-LL-44B: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_LL_48_B             48U /* Node-LL-48B: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_LL_M_D_64_B         63U /* Node-LLmD-64b: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_XY_20_B             20U /* Node-XY-20b: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_XY_22_B             22U /* Node-XY-22b: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_XY_24_B             24U /* Node-XY-24b: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_XY_26_B             26U /* Node-XY-26b: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_XY_28_B             28U /* Node-XY-28b: SEQUENCE (2 fields) */
+#define J2735_BW_NODE_XY_32_B             32U /* Node-XY-32b: SEQUENCE (2 fields) */
 #define J2735_BW_NODE_ATTRIBUTE_LL        1U  /* NodeAttributeLL: ENUMERATED (2 values) */
 #define J2735_BW_NODE_ATTRIBUTE_XY        1U  /* NodeAttributeXY: ENUMERATED (2 values) */
 #define J2735_BW_NODE_OFFSET_POINT_LL     4U  /* NodeOffsetPointLL: CHOICE (14 alternatives) */
@@ -303,38 +313,45 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_OBJECT_COUNT                  10U /* ObjectCount: INTEGER (0..1023) */
 #define J2735_BW_OBSTACLE_DIRECTION            15U /* ObstacleDirection */
 #define J2735_BW_OBSTACLE_DISTANCE             15U /* ObstacleDistance: INTEGER (0..32767) */
+#define J2735_BW_OFFSET_B_09                   9U  /* Offset-B09: INTEGER (-256..255) */
+#define J2735_BW_OFFSET_B_10                   10U /* Offset-B10: INTEGER (-512..511) */
+#define J2735_BW_OFFSET_B_11                   11U /* Offset-B11: INTEGER (-1024..1023) */
+#define J2735_BW_OFFSET_B_12                   12U /* Offset-B12: INTEGER (-2048..2047) */
+#define J2735_BW_OFFSET_B_13                   13U /* Offset-B13: INTEGER (-4096..4095) */
+#define J2735_BW_OFFSET_B_14                   14U /* Offset-B14: INTEGER (-8192..8191) */
+#define J2735_BW_OFFSET_B_16                   16U /* Offset-B16: INTEGER (-32768..32767) */
+#define J2735_BW_OFFSET_LL_B_12                12U /* OffsetLL-B12: INTEGER (-2048..2047) */
+#define J2735_BW_OFFSET_LL_B_14                14U /* OffsetLL-B14: INTEGER (-8192..8191) */
+#define J2735_BW_OFFSET_LL_B_16                16U /* OffsetLL-B16: INTEGER (-32768..32767) */
+#define J2735_BW_OFFSET_LL_B_18                18U /* OffsetLL-B18: INTEGER (-131072..131071) */
+#define J2735_BW_OFFSET_LL_B_22                22U /* OffsetLL-B22: INTEGER (-2097152..2097151) */
+#define J2735_BW_OFFSET_LL_B_24                24U /* OffsetLL-B24: INTEGER (-8388608..8388607) */
 #define J2735_BW_PATH_PREDICTION               24U /* PathPrediction: SEQUENCE (2 fields) */
 #define J2735_BW_PEDESTRIAN_BICYCLE_DETECT     1U  /* PedestrianBicycleDetect: BOOLEAN */
 #define J2735_BW_PEDESTRIAN_CALL               1U  /* PedestrianCall: BOOLEAN */
 #define J2735_BW_PERMISSIVE_NON_PROTECTED      1U /* PermissiveNonProtected: ENUMERATED (2 values) */
-#define J2735_BW_PERSONAL_ASSISTIVE            6U /* PersonalAssistive: BIT STRING (SIZE(6)) */
 #define J2735_BW_PERSONAL_CLUSTER_RADIUS       7U /* PersonalClusterRadius: INTEGER (0..100) */
 #define J2735_BW_PERSONAL_CROSSING_IN_PROGRESS 1U /* PersonalCrossingInProgress: BOOLEAN */
 #define J2735_BW_PERSONAL_CROSSING_REQUEST     1U /* PersonalCrossingRequest: BOOLEAN */
-#define J2735_BW_PERSONAL_DEVICE_USAGE_STATE                                                       \
-  9U                                           /* PersonalDeviceUsageState: BIT STRING (SIZE(9))   \
-                                                */
-#define J2735_BW_PERSONAL_DEVICE_USER_TYPE 3U  /* PersonalDeviceUserType: ENUMERATED (5 values) */
-#define J2735_BW_PIVOTING_ALLOWED          1U  /* PivotingAllowed: BOOLEAN */
-#define J2735_BW_PORTLAND_CEMENT           2U  /* PortlandCement: SEQUENCE (1 fields) */
-#define J2735_BW_PORTLAND_CEMENT_TYPE      2U  /* PortlandCementType: ENUMERATED (3 values) */
-#define J2735_BW_POSITION_CONFIDENCE       4U  /* PositionConfidence: ENUMERATED (16 values) */
-#define J2735_BW_POSITION_CONFIDENCE_SET   7U  /* PositionConfidenceSet: SEQUENCE (2 fields) */
-#define J2735_BW_POSITIONAL_ACCURACY       32U /* PositionalAccuracy: SEQUENCE (3 fields) */
+#define J2735_BW_PERSONAL_DEVICE_USER_TYPE     3U /* PersonalDeviceUserType: ENUMERATED (5 values) */
+#define J2735_BW_PIVOT_POINT_DESCRIPTION       27U /* PivotPointDescription: SEQUENCE (3 fields) */
+#define J2735_BW_PIVOTING_ALLOWED              1U  /* PivotingAllowed: BOOLEAN */
+#define J2735_BW_PORTLAND_CEMENT               2U  /* PortlandCement: SEQUENCE (1 fields) */
+#define J2735_BW_PORTLAND_CEMENT_TYPE          2U  /* PortlandCementType: ENUMERATED (3 values) */
+#define J2735_BW_POSITION_CONFIDENCE           4U  /* PositionConfidence: ENUMERATED (16 values) */
+#define J2735_BW_POSITION_CONFIDENCE_SET       7U  /* PositionConfidenceSet: SEQUENCE (2 fields) */
+#define J2735_BW_POSITIONAL_ACCURACY           32U /* PositionalAccuracy: SEQUENCE (3 fields) */
 #define J2735_BW_PRIORITIZATION_RESPONSE_STATUS                                                    \
   3U                                       /* PrioritizationResponseStatus: ENUMERATED (8 values) */
-#define J2735_BW_PRIORITY               8U /* Priority: OCTET STRING (SIZE(1)) */
-#define J2735_BW_PRIORITY_REQUEST_TYPE  2U /* PriorityRequestType: ENUMERATED (4 values) */
-#define J2735_BW_PRIVILEGED_EVENT_FLAGS 16U /* PrivilegedEventFlags: BIT STRING (SIZE(16)) */
-#define J2735_BW_PRIVILEGED_EVENTS      21U /* PrivilegedEvents: SEQUENCE (2 fields) */
-#define J2735_BW_PROBE_SEGMENT_NUMBER   15U /* ProbeSegmentNumber: INTEGER (0..32767) */
-#define J2735_BW_PROPELLED_INFORMATION  2U  /* PropelledInformation: CHOICE (3 alternatives) */
-#define J2735_BW_PUBLIC_SAFETY_AND_ROAD_WORKER_ACTIVITY                                            \
-  6U /* PublicSafetyAndRoadWorkerActivity: BIT STRING (SIZE(6)) */
-#define J2735_BW_PUBLIC_SAFETY_DIRECTING_TRAFFIC_SUB_TYPE                                          \
-  7U /* PublicSafetyDirectingTrafficSubType: BIT STRING (SIZE(7)) */
+#define J2735_BW_PRIORITY              8U  /* Priority: OCTET STRING (SIZE(1)) */
+#define J2735_BW_PRIORITY_REQUEST_TYPE 2U  /* PriorityRequestType: ENUMERATED (4 values) */
+#define J2735_BW_PROBE_SEGMENT_NUMBER  15U /* ProbeSegmentNumber: INTEGER (0..32767) */
+#define J2735_BW_PROPELLED_INFORMATION 2U  /* PropelledInformation: CHOICE (3 alternatives) */
 #define J2735_BW_PUBLIC_SAFETY_EVENT_RESPONDER_WORKER_TYPE                                         \
   3U /* PublicSafetyEventResponderWorkerType: ENUMERATED (8 values) */
+#define J2735_BW_RTCM_REVISION            2U  /* RTCM-Revision: ENUMERATED (4 values) */
+#define J2735_BW_RTCM_HEADER              39U /* RTCMheader: SEQUENCE (2 fields) */
+#define J2735_BW_RADIUS_B_12              12U /* Radius-B12: INTEGER (0..4095) */
 #define J2735_BW_RADIUS_OF_CURVATURE      16U /* RadiusOfCurvature: INTEGER (-32767..32767) */
 #define J2735_BW_RAIN_SENSOR              3U  /* RainSensor: ENUMERATED (8 values) */
 #define J2735_BW_REGION_ID                8U  /* RegionId: INTEGER (0..255) */
@@ -355,6 +372,7 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_ROCK                     1U  /* Rock: SEQUENCE (1 fields) */
 #define J2735_BW_ROCK_TYPE                1U  /* RockType: ENUMERATED (1 values) */
 #define J2735_BW_SSP_INDEX                5U  /* SSPindex: INTEGER (0..31) */
+#define J2735_BW_SCALE_B_12               12U /* Scale-B12: INTEGER (-2048..2047) */
 #define J2735_BW_SECOND_OF_TIME           6U  /* SecondOfTime: INTEGER (0..61) */
 #define J2735_BW_SEGMENT_ATTRIBUTE_LL     4U  /* SegmentAttributeLL: ENUMERATED (10 values) */
 #define J2735_BW_SEGMENT_ATTRIBUTE_XY     4U  /* SegmentAttributeXY: ENUMERATED (10 values) */
@@ -394,6 +412,8 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_THROTTLE_CONFIDENCE      2U  /* ThrottleConfidence: ENUMERATED (4 values) */
 #define J2735_BW_THROTTLE_POSITION        8U  /* ThrottlePosition: INTEGER (0..200) */
 #define J2735_BW_TIME_CONFIDENCE          5U  /* TimeConfidence: ENUMERATED (17 values) */
+#define J2735_BW_TIME_IN_SECOND_B_16      16U /* TimeInSecond-B16: INTEGER (0..65535) */
+#define J2735_BW_TIME_IN_SECOND_B_8       8U  /* TimeInSecond-B8: INTEGER (0..255) */
 #define J2735_BW_TIME_INTERVAL_CONFIDENCE 4U  /* TimeIntervalConfidence: INTEGER (0..15) */
 #define J2735_BW_TIME_MARK                16U /* TimeMark: INTEGER (0..36111) */
 #define J2735_BW_TIME_OFFSET              16U /* TimeOffset: INTEGER (1..65535) */
@@ -402,28 +422,20 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_TIRE_PRESSURE            8U  /* TirePressure: INTEGER (0..250) */
 #define J2735_BW_TIRE_PRESSURE_THRESHOLD_DETECTION                                                 \
   3U /* TirePressureThresholdDetection: ENUMERATED (8 values) */
-#define J2735_BW_TIRE_TEMP               16U /* TireTemp: INTEGER (-8736..55519) */
-#define J2735_BW_TRACTION_CONTROL_STATUS 2U  /* TractionControlStatus: ENUMERATED (4 values) */
-#define J2735_BW_TRAFFIC_LIGHT_CONTROLLER_STATUS                                                   \
-  8U /* TrafficLightControllerStatus: BIT STRING (SIZE(8)) */
-#define J2735_BW_TRAFFIC_LIGHT_DIRECTION_CODE 9U /* TrafficLightDirectionCode: INTEGER (0..359) */
-#define J2735_BW_TRAFFIC_LIGHT_ID             1U /* TrafficLightID: CHOICE (2 alternatives) */
+#define J2735_BW_TIRE_TEMP                    16U /* TireTemp: INTEGER (-8736..55519) */
+#define J2735_BW_TRACTION_CONTROL_STATUS      2U  /* TractionControlStatus: ENUMERATED (4 values) */
+#define J2735_BW_TRAFFIC_LIGHT_DIRECTION_CODE 9U  /* TrafficLightDirectionCode: INTEGER (0..359) */
+#define J2735_BW_TRAFFIC_LIGHT_ID             1U  /* TrafficLightID: CHOICE (2 alternatives) */
 #define J2735_BW_TRAFFIC_LIGHT_INTERVAL_TYPE                                                       \
-  1U /* TrafficLightIntervalType: ENUMERATED (2 values) */
-#define J2735_BW_TRAFFIC_LIGHT_OPERATION_STATUS                                                    \
-  8U /* TrafficLightOperationStatus: BIT STRING (SIZE(8)) */
-#define J2735_BW_TRAFFIC_LIGHT_TYPE        3U  /* TrafficLightType: ENUMERATED (6 values) */
-#define J2735_BW_TRAFFIC_LIGHTING_STATUS   2U  /* TrafficLightingStatus: ENUMERATED (3 values) */
+  1U                                           /* TrafficLightIntervalType: ENUMERATED (2 values) */
 #define J2735_BW_TRAILER_MASS              8U  /* TrailerMass: INTEGER (0..255) */
 #define J2735_BW_TRAILER_WEIGHT            16U /* TrailerWeight: INTEGER (0..64255) */
 #define J2735_BW_TRANSIT_STATUS            6U  /* TransitStatus: BIT STRING (SIZE(6)) */
 #define J2735_BW_TRANSIT_VEHICLE_OCCUPANCY 3U  /* TransitVehicleOccupancy: ENUMERATED (8 values) */
-#define J2735_BW_TRANSIT_VEHICLE_STATUS    8U  /* TransitVehicleStatus: BIT STRING (SIZE(8)) */
 #define J2735_BW_TRANSMISSION_AND_SPEED    16U /* TransmissionAndSpeed: SEQUENCE (2 fields) */
 #define J2735_BW_TRANSMISSION_STATE        3U  /* TransmissionState: ENUMERATED (8 values) */
 #define J2735_BW_TRAVELER_INFO_TYPE        2U  /* TravelerInfoType: ENUMERATED (4 values) */
 #define J2735_BW_UNIQUE_MSGID              72U /* UniqueMSGID: OCTET STRING (SIZE(9)) */
-#define J2735_BW_USER_SIZE_AND_BEHAVIOUR   5U  /* UserSizeAndBehaviour: BIT STRING (SIZE(5)) */
 #define J2735_BW_VARIATION_STD_DEV         12U /* VariationStdDev: INTEGER (0..2500) */
 #define J2735_BW_VEHICLE_HEIGHT            7U  /* VehicleHeight: INTEGER (0..127) */
 #define J2735_BW_VEHICLE_ID                1U  /* VehicleID: CHOICE (2 alternatives) */
@@ -435,6 +447,12 @@ _Static_assert(J2735_INTERNAL_NSNNWN_SMALL_BITS ==
 #define J2735_BW_VEHICLE_TYPE          5U  /* VehicleType: ENUMERATED (17 values) */
 #define J2735_BW_VEHICLE_WIDTH         10U /* VehicleWidth: INTEGER (0..1023) */
 #define J2735_BW_VELOCITY              13U /* Velocity: INTEGER (0..8191) */
+#define J2735_BW_VERT_OFFSET_B_07      7U  /* VertOffset-B07: INTEGER (-64..63) */
+#define J2735_BW_VERT_OFFSET_B_08      8U  /* VertOffset-B08: INTEGER (-128..127) */
+#define J2735_BW_VERT_OFFSET_B_09      9U  /* VertOffset-B09: INTEGER (-256..255) */
+#define J2735_BW_VERT_OFFSET_B_10      10U /* VertOffset-B10: INTEGER (-512..511) */
+#define J2735_BW_VERT_OFFSET_B_11      11U /* VertOffset-B11: INTEGER (-1024..1023) */
+#define J2735_BW_VERT_OFFSET_B_12      12U /* VertOffset-B12: INTEGER (-2048..2047) */
 #define J2735_BW_VERTICAL_ACCELERATION 8U  /* VerticalAcceleration: INTEGER (-127..127) */
 #define J2735_BW_VERTICAL_ACCELERATION_THRESHOLD                                                   \
   5U                                       /* VerticalAccelerationThreshold: BIT STRING (SIZE(5)) */

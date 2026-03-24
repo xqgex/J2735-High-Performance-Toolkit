@@ -37,7 +37,7 @@ void test_transit_status_single_bit_occ_l(void);
 
 /* Metadata tests */
 void test_transit_status_size(void);
-void test_transit_status_is_extended(void);
+void test_transit_status_has_extension(void);
 
 /* Misalignment test */
 void test_transit_status_misaligned_access(void);

@@ -16,24 +16,13 @@
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
 """Tests for SEQUENCE type assembly via generate_data_frame()."""
 
-from typing import ClassVar
-from unittest import TestCase
-
 from tools.j2735_c_generator_data_frame import generate_data_frame
 from tools.j2735_spec_constraints import SequenceType
-from tools.j2735_spec_parser import J2735Specification, parse_spec_file
-from tools.tests.conftest import SPEC_FILE_PATH
+from tools.tests.conftest import SpecLoadingTestBase
 
 
-class TestAssembleDfSequenceStaticAsserts(TestCase):
+class TestAssembleDfSequenceStaticAsserts(SpecLoadingTestBase):
     """Tests for _Static_assert generation in assembled SEQUENCE headers."""
-
-    spec: ClassVar[J2735Specification]
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        """Load spec once for all tests."""
-        cls.spec = parse_spec_file(SPEC_FILE_PATH)
 
     def test_extensible_sequence_has_root_size_assert(self) -> None:
         """Extensible SEQUENCE validates ROOT_SIZE_BITS == PREFIX + BW_*."""

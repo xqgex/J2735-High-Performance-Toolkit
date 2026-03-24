@@ -49,9 +49,9 @@
  *
  * @param[in] buf Pointer to {{ typedef_name }} UPER encoding (const uint8_t*).
  * @pre @p buf must point to valid encoding with +7 byte padding.
- * @pre Caller should verify J2735_{{ typedef_name_upper }}_IS_EXTENDED(buf) returns true.
+ * @pre Caller should verify J2735_{{ typedef_name_upper }}_HAS_EXTENSION(buf) returns true.
  * @return 0 or 1.
- * @warning Returns garbage (0 or 1) for non-extended messages. Always check IS_EXTENDED first.
+ * @warning Returns garbage (0 or 1) for non-extended messages. Always check HAS_EXTENSION first.
  */
 {%    else %}
 /**

@@ -229,19 +229,20 @@ void test_lane_direction_size(void) {
 }
 
 /**
- * @brief Test LaneDirection IS_EXTENDED always returns false.
+ * @brief Test LaneDirection HAS_EXTENSION always returns false.
  *
- * LaneDirection is non-extensible, so IS_EXTENDED must always return 0.
+ * LaneDirection is non-extensible, so HAS_EXTENSION must always return 0.
  */
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
-void test_lane_direction_is_extended(void) {
+void test_lane_direction_has_extension(void) {
   static const uint8_t payload[] = {
       0xC0,                                          /* flags[0:1]=11 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_LANE_DIRECTION_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "IS_EXTENDED should always be false for non-extensible type");
+  bool has_ext = J2735_LANE_DIRECTION_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext,
+                            "HAS_EXTENSION should always be false for non-extensible type");
 }
 
 /**
@@ -267,7 +268,7 @@ void test_lane_direction_is_extended(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_lane_direction_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0xFF,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0xC0,                                          /* flags[0:1]=11 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
@@ -292,6 +293,6 @@ void run_testsuite_lane_direction(void) {
   RUN_TEST(test_lane_direction_single_bit_ingress_path);
   RUN_TEST(test_lane_direction_single_bit_egress_path);
   RUN_TEST(test_lane_direction_size);
-  RUN_TEST(test_lane_direction_is_extended);
+  RUN_TEST(test_lane_direction_has_extension);
   RUN_TEST(test_lane_direction_misaligned_access);
 }

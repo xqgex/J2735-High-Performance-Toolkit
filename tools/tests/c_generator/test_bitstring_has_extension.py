@@ -14,28 +14,28 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
-"""Tests for BIT STRING public is-extended macro generator.
+"""Tests for BIT STRING public has-extension macro generator.
 
-Tests cover generate_bitstring_is_extended which generates
-J2735_<TYPE>_IS_EXTENDED public API macros.
+Tests cover generate_bitstring_has_extension which generates
+J2735_<TYPE>_HAS_EXTENSION public API macros.
 """
 
 from tools.tests.conftest import SpecLoadingTestBase, generate_bitstring_code
 
-_TEMPLATE_NAME = "bitstring/bitstring_is_extended.j2"
+_TEMPLATE_NAME = "bitstring/bitstring_has_extension.j2"
 
 
-class TestIsExtendedGenerator(SpecLoadingTestBase):
-    """Tests for generate_bitstring_is_extended."""
+class TestHasExtensionGenerator(SpecLoadingTestBase):
+    """Tests for generate_bitstring_has_extension."""
 
     def test_extensible_type_has_public_api(self) -> None:
-        """VehicleEventFlags should have IS_EXTENDED macro."""
+        """VehicleEventFlags should have HAS_EXTENSION macro."""
         code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "VehicleEventFlags")
-        self.assertIn("J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED", code)
+        self.assertIn("J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION", code)
         # Should call internal macro
         self.assertIn("J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS", code)
 
     def test_non_extensible_type_always_false(self) -> None:
         """GNSSstatus should always return 0 (never extended)."""
         code = generate_bitstring_code(_TEMPLATE_NAME, self.spec, "GNSSstatus")
-        self.assertIn("J2735_GNSS_STATUS_IS_EXTENDED", code)
+        self.assertIn("J2735_GNSS_STATUS_HAS_EXTENSION", code)

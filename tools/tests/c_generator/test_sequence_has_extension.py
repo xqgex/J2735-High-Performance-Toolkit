@@ -16,56 +16,30 @@
 # SPDX-FileCopyrightText: 2026 Yogev Neumann
 """Tests for has-extension macro generation.
 
-Tests cover generate_sequence_has_extension function for extensible SEQUENCE types.
+Tests cover sequence_has_extension.j2 template for extensible SEQUENCE types.
 """
 
 from unittest import TestCase
 
-from tools.j2735_c_generator_jinja import (
-    create_jinja_env,
-    get_template,
-)
-from tools.j2735_spec_constraints import SequenceType
-from tools.j2735_spec_parser import J2735Specification
 from tools.tests.conftest import (
     SpecLoadingTestBase,
-    get_sequence_typedef,
+    generate_sequence_code,
     make_extensible_mock_spec,
     make_nested_mock_spec,
 )
 
-_TEMPLATE_NAME = "sequence/sequence_has_extension.j2"
-
-
-def generate_sequence_has_extension(type_name: str, spec: J2735Specification) -> str:
-    """Generate C #define macro for checking extension bit in a SEQUENCE.
-
-    Only generates output for extensible SEQUENCE types.
-
-    Args:
-        type_name: Name of the SEQUENCE type (e.g., "PathPrediction").
-        spec: The parsed J2735 specification.
-
-    Returns:
-        C code with #define macro, or empty string if not extensible.
-
-    Raises:
-        ValueError: If type_name is not found or not a SEQUENCE.
-    """
-    typedef = get_sequence_typedef(type_name, spec)
-    assert isinstance(typedef.constraint, SequenceType)  # Guaranteed by getter, required by Mypy
-    if not typedef.constraint.is_extensible:
-        return ""
-    return get_template(create_jinja_env(), _TEMPLATE_NAME).render(typedef=typedef)
+_SEQUENCE_HAS_EXTENSION_TEMPLATE_NAME = "sequence/sequence_has_extension.j2"
 
 
 class TestHasExtensionGeneration(TestCase):
-    """Tests for generate_sequence_has_extension function."""
+    """Tests for sequence_has_extension.j2 template with mock specs."""
 
     def test_extensible_sequence_exact_output(self) -> None:
         """Extensible SEQUENCE generates exact expected output."""
         spec = make_extensible_mock_spec()
-        code = generate_sequence_has_extension("PathPrediction", spec)
+        code = generate_sequence_code(
+            _SEQUENCE_HAS_EXTENSION_TEMPLATE_NAME, spec, "PathPrediction", require_extensible=True
+        )
 
         expected = (
             "/**\n"
@@ -80,25 +54,30 @@ class TestHasExtensionGeneration(TestCase):
     def test_non_extensible_returns_empty(self) -> None:
         """Non-extensible SEQUENCE returns empty string."""
         spec = make_nested_mock_spec()
-        code = generate_sequence_has_extension("PositionalAccuracy", spec)
+        code = generate_sequence_code(
+            _SEQUENCE_HAS_EXTENSION_TEMPLATE_NAME,
+            spec,
+            "PositionalAccuracy",
+            require_extensible=True,
+        )
 
         self.assertEqual(code, "")
 
     def test_not_found_raises(self) -> None:
         """Unknown type raises ValueError."""
-        spec = make_extensible_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_has_extension("UnknownType", spec)
+            generate_sequence_code(
+                _SEQUENCE_HAS_EXTENSION_TEMPLATE_NAME, make_extensible_mock_spec(), "UnknownType"
+            )
 
         self.assertIn("not found", str(ctx.exception))
 
     def test_non_sequence_raises(self) -> None:
         """Non-SEQUENCE type raises ValueError."""
-        spec = make_extensible_mock_spec()
-
         with self.assertRaises(ValueError) as ctx:
-            generate_sequence_has_extension("RadiusOfCurvature", spec)
+            generate_sequence_code(
+                _SEQUENCE_HAS_EXTENSION_TEMPLATE_NAME, make_extensible_mock_spec(), "Confidence"
+            )
 
         self.assertIn("not a SEQUENCE", str(ctx.exception))
 
@@ -108,7 +87,12 @@ class TestHasExtensionWithRealSpec(SpecLoadingTestBase):
 
     def test_real_path_prediction(self) -> None:
         """Real PathPrediction from spec."""
-        code = generate_sequence_has_extension("PathPrediction", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_HAS_EXTENSION_TEMPLATE_NAME,
+            self.spec,
+            "PathPrediction",
+            require_extensible=True,
+        )
 
         expected = (
             "/**\n"
@@ -122,6 +106,8 @@ class TestHasExtensionWithRealSpec(SpecLoadingTestBase):
 
     def test_real_bsm_core_data_returns_empty(self) -> None:
         """Real BSMcoreData (non-extensible) returns empty string."""
-        code = generate_sequence_has_extension("BSMcoreData", self.spec)
+        code = generate_sequence_code(
+            _SEQUENCE_HAS_EXTENSION_TEMPLATE_NAME, self.spec, "BSMcoreData", require_extensible=True
+        )
 
         self.assertEqual(code, "")

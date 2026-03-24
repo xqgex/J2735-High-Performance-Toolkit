@@ -60,6 +60,9 @@
 
 #include "J2735_internal_common.h"
 
+_Static_assert(J2735_BW_GNSS_STATUS <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
+
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
@@ -144,7 +147,7 @@
 /*  PUBLIC API: GNSSstatus Accessors                                                              */
 /* ============================================================================================== */
 /**
- * @brief Check if GNSSstatus is in extended form.
+ * @brief Check if GNSSstatus has an extension.
  *
  * GNSSstatus is a fixed-size BIT STRING with 8 bits.
  * It does not have an extension marker, so this always returns 0 (false).
@@ -152,7 +155,7 @@
  * @param[in] buf Pointer to the start of the GNSSstatus UPER encoding (const uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_GNSS_STATUS_IS_EXTENDED(buf) ((void)(buf), 0)
+#define J2735_GNSS_STATUS_HAS_EXTENSION(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of GNSSstatus in bits.

@@ -24,7 +24,6 @@
   Context variables:
     - typedef: The full typedef object containing the metadata
 -#}
-{%- set data_type = typedef.type_class.name | lower -%}
 {%- set is_extensible = typedef.constraint.is_extensible -%}
 {%- set named_bits = typedef.constraint.named_bits -%}
 {%- set typedef_name = typedef.name -%}
@@ -131,6 +130,13 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} ==
                    (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_NSNNWN_SMALL_BITS +
                     J2735_INTERNAL_EXT_SIZE_{{ typedef_name_upper }}),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
+
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
+{%  else %}
+
+_Static_assert(J2735_BW_{{ typedef_name_upper }} <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
 {%  endif %}
 {%  if named_bits %}
 
@@ -156,26 +162,24 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} ==
 /*  INTERNAL: Extension Bit Check                                                                 */
 /* ============================================================================================== */
 {%  include 'bitstring/bitstring_internal_is_extension.j2' %}
-{%  if data_type == "bit_string" %}
 
 /* ============================================================================================== */
 /*  INTERNAL: Extract Flags                                                                       */
 /* ============================================================================================== */
-{%    include 'bitstring/bitstring_internal_get_all.j2' %}
+{%  include 'bitstring/bitstring_internal_get_all.j2' %}
 
-{%    include 'bitstring/bitstring_internal_get_one.j2' %}
-{% endif %}
+{%  include 'bitstring/bitstring_internal_get_one.j2' %}
 
 {%  set public_api_line = "PUBLIC API: " ~ typedef_name ~ " Accessors" %}
 /* ============================================================================================== */
 /*  {{ "%-*s"|format(W, public_api_line) }}  */
 /* ============================================================================================== */
-{%  include 'bitstring/bitstring_is_extended.j2' %}
+{%  include 'bitstring/bitstring_has_extension.j2' %}
 
 {%  include 'bitstring/bitstring_size.j2' %}
 
 {%  include 'bitstring/bitstring_get.j2' %}
-{%  if data_type == "bit_string" and named_bits %}
+{%  if named_bits %}
 
 {%    include 'bitstring/bitstring_get_one.j2' %}
 {%  endif %}

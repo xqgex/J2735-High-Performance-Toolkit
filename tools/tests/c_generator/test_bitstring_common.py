@@ -47,8 +47,8 @@ class TestConsistency(SpecLoadingTestBase):
         get_one_int = generate_bitstring_code(
             "bitstring/bitstring_internal_get_one.j2", self.spec, type_name
         )
-        is_extended = generate_bitstring_code(
-            "bitstring/bitstring_is_extended.j2", self.spec, type_name
+        has_extension = generate_bitstring_code(
+            "bitstring/bitstring_has_extension.j2", self.spec, type_name
         )
         size = generate_bitstring_code("bitstring/bitstring_size.j2", self.spec, type_name)
         get_pub = generate_bitstring_code("bitstring/bitstring_get.j2", self.spec, type_name)
@@ -62,7 +62,7 @@ class TestConsistency(SpecLoadingTestBase):
         self.assertIn(f"J2735_INTERNAL_IS_EXTENSION_{prefix}", is_ext)
         self.assertIn(f"J2735_INTERNAL_GET_ALL_{prefix}", get_all)
         self.assertIn(f"J2735_INTERNAL_GET_ONE_{prefix}", get_one_int)
-        self.assertIn(f"J2735_{prefix}_IS_EXTENDED", is_extended)
+        self.assertIn(f"J2735_{prefix}_HAS_EXTENSION", has_extension)
         self.assertIn(f"J2735_{prefix}_SIZE", size)
         self.assertIn(f"J2735_{prefix}_GET", get_pub)
         self.assertIn(f"J2735_{prefix}_GET_", get_one_pub)

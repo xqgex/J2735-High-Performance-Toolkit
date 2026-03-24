@@ -78,7 +78,7 @@
  * @internal
  * @brief Root size of PersonalAssistive in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_PERSONAL_ASSISTIVE 6U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_PERSONAL_ASSISTIVE 6U
 
 /**
  * @internal
@@ -99,6 +99,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
                    (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_NSNNWN_SMALL_BITS +
                     J2735_INTERNAL_EXT_SIZE_PERSONAL_ASSISTIVE),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
+
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
 
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
@@ -151,7 +154,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
  *
  * @param[in] raw14 Value previously returned by J2735_INTERNAL_RAW_READ_PERSONAL_ASSISTIVE().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_PERSONAL_ASSISTIVE_IS_EXTENDED() for public API.
+ * @note Internal use only. Use J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION() for public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_PERSONAL_ASSISTIVE(raw14)                                      \
   (((raw14) >> (J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE - 1U)) != 0U)
@@ -188,8 +191,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
        ((uint8_t)((raw14) & ((1ULL << J2735_INTERNAL_EXT_SIZE_PERSONAL_ASSISTIVE) - 1ULL)))        \
                                                          : /* Non-ext: bits 12..7 = 6 bits */      \
        ((uint8_t)(((raw14) >> (J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE - 1U -              \
-                               J2735_INTERNAL_ROOT_SIZE_PERSONAL_ASSISTIVE)) &                     \
-                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_PERSONAL_ASSISTIVE) - 1ULL))))
+                               J2735_INTERNAL_ROOT_SIZE_BITS_PERSONAL_ASSISTIVE)) &                \
+                  ((1ULL << J2735_INTERNAL_ROOT_SIZE_BITS_PERSONAL_ASSISTIVE) - 1ULL))))
 
 /**
  * @internal
@@ -211,7 +214,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
  *                    constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= 6 reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_PERSONAL_ASSISTIVE_GET_*() accessors for public API.
  */
 #define J2735_INTERNAL_GET_ONE_PERSONAL_ASSISTIVE(raw14, bit_pos)                                  \
@@ -227,7 +230,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
 /*  PUBLIC API: PersonalAssistive Accessors                                                       */
 /* ============================================================================================== */
 /**
- * @brief Check if PersonalAssistive is in extended form.
+ * @brief Check if PersonalAssistive has an extension.
  *
  * Extended form includes 6 flags (bits 0-5).
  * Root form has only 6 flags (bits 0-5).
@@ -236,7 +239,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
  * @pre @p buf must point to valid PersonalAssistive encoding with +7 byte padding.
  * @return Non-zero (true) if extended (6 flags), zero (false) if root (6 flags).
  */
-#define J2735_PERSONAL_ASSISTIVE_IS_EXTENDED(buf)                                                  \
+#define J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION(buf)                                                \
   J2735_INTERNAL_IS_EXTENSION_PERSONAL_ASSISTIVE(J2735_INTERNAL_RAW_READ_PERSONAL_ASSISTIVE(buf))
 
 /**
@@ -251,7 +254,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
 #define J2735_PERSONAL_ASSISTIVE_SIZE(buf)                                                         \
   (J2735_INTERNAL_IS_EXTENSION_PERSONAL_ASSISTIVE(J2735_INTERNAL_RAW_READ_PERSONAL_ASSISTIVE(buf)) \
        ? J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE                                           \
-       : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_PERSONAL_ASSISTIVE))
+       : (J2735_INTERNAL_EXTENSION_MARKER_BITS +                                                   \
+          J2735_INTERNAL_ROOT_SIZE_BITS_PERSONAL_ASSISTIVE))
 
 /**
  * @brief Get all PersonalAssistive as a single uint8_t value.
@@ -264,7 +268,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_PERSONAL_ASSISTIVE ==
  * @param[in] buf Pointer to the start of the PersonalAssistive UPER encoding (const uint8_t*).
  * @pre @p buf must point to valid PersonalAssistive encoding with +7 byte padding.
  * @return Right-aligned flag value (uint8_t). Bit 0 of result = first named bit.
- * @note Use J2735_PERSONAL_ASSISTIVE_IS_EXTENDED() to determine if bit 6 is meaningful.
+ * @note Use J2735_PERSONAL_ASSISTIVE_HAS_EXTENSION() to determine if bit 6 is meaningful.
  */
 #define J2735_PERSONAL_ASSISTIVE_GET(buf)                                                          \
   J2735_INTERNAL_GET_ALL_PERSONAL_ASSISTIVE(J2735_INTERNAL_RAW_READ_PERSONAL_ASSISTIVE(buf))

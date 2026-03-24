@@ -86,7 +86,7 @@
  * @internal
  * @brief Root size of VehicleEventFlags in bits.
  */
-#define J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS 13U
+#define J2735_INTERNAL_ROOT_SIZE_BITS_VEHICLE_EVENT_FLAGS 13U
 
 /**
  * @internal
@@ -107,6 +107,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
                    (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_NSNNWN_SMALL_BITS +
                     J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS),
                "MAX_WIRE_BITS must equal ext_marker + nsnnwn + ext_size");
+
+_Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
 
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
@@ -167,7 +170,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  *
  * @param[in] raw22 Value previously returned by J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED() for public API.
+ * @note Internal use only. Use J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION() for public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS(raw22)                                     \
   (((raw22) >> (J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS - 1U)) != 0U)
@@ -204,8 +207,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
        ((uint16_t)((raw22) & ((1ULL << J2735_INTERNAL_EXT_SIZE_VEHICLE_EVENT_FLAGS) - 1ULL)))      \
                                                           : /* Non-ext: bits 20..8 = 13 bits */    \
        ((uint16_t)(((raw22) >> (J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS - 1U -            \
-                                J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS)) &                   \
-                   ((1ULL << J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS) - 1ULL))))
+                                J2735_INTERNAL_ROOT_SIZE_BITS_VEHICLE_EVENT_FLAGS)) &              \
+                   ((1ULL << J2735_INTERNAL_ROOT_SIZE_BITS_VEHICLE_EVENT_FLAGS) - 1ULL))))
 
 /**
  * @internal
@@ -227,7 +230,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  *                    constants.
  * @return 0 or 1 as uint8_t.
  * @warning For non-extended messages, bit_pos >= 13 reads undefined garbage bits.
- *          Caller should verify IS_EXTENDED before accessing extension-only flags.
+ *          Caller should verify HAS_EXTENSION before accessing extension-only flags.
  * @note Internal use only. Use J2735_VEHICLE_EVENT_FLAGS_GET_*() accessors for public API.
  */
 #define J2735_INTERNAL_GET_ONE_VEHICLE_EVENT_FLAGS(raw22, bit_pos)                                 \
@@ -243,7 +246,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
 /*  PUBLIC API: VehicleEventFlags Accessors                                                       */
 /* ============================================================================================== */
 /**
- * @brief Check if VehicleEventFlags is in extended form.
+ * @brief Check if VehicleEventFlags has an extension.
  *
  * Extended form includes 14 flags (bits 0-13).
  * Root form has only 13 flags (bits 0-12).
@@ -252,7 +255,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  * @pre @p buf must point to valid VehicleEventFlags encoding with +7 byte padding.
  * @return Non-zero (true) if extended (14 flags), zero (false) if root (13 flags).
  */
-#define J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(buf)                                                 \
+#define J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(buf)                                               \
   J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS(J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS(buf))
 
 /**
@@ -268,7 +271,8 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
   (J2735_INTERNAL_IS_EXTENSION_VEHICLE_EVENT_FLAGS(                                                \
        J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS(buf))                                           \
        ? J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS                                          \
-       : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_VEHICLE_EVENT_FLAGS))
+       : (J2735_INTERNAL_EXTENSION_MARKER_BITS +                                                   \
+          J2735_INTERNAL_ROOT_SIZE_BITS_VEHICLE_EVENT_FLAGS))
 
 /**
  * @brief Get all VehicleEventFlags as a single uint16_t value.
@@ -281,7 +285,7 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  * @param[in] buf Pointer to the start of the VehicleEventFlags UPER encoding (const uint8_t*).
  * @pre @p buf must point to valid VehicleEventFlags encoding with +7 byte padding.
  * @return Right-aligned flag value (uint16_t). Bit 0 of result = first named bit.
- * @note Use J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED() to determine if bit 13 is meaningful.
+ * @note Use J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION() to determine if bit 13 is meaningful.
  */
 #define J2735_VEHICLE_EVENT_FLAGS_GET(buf)                                                         \
   J2735_INTERNAL_GET_ALL_VEHICLE_EVENT_FLAGS(J2735_INTERNAL_RAW_READ_VEHICLE_EVENT_FLAGS(buf))
@@ -436,9 +440,9 @@ _Static_assert(J2735_INTERNAL_MAX_WIRE_BITS_VEHICLE_EVENT_FLAGS ==
  *
  * @param[in] buf Pointer to VehicleEventFlags UPER encoding (const uint8_t*).
  * @pre @p buf must point to valid encoding with +7 byte padding.
- * @pre Caller should verify J2735_VEHICLE_EVENT_FLAGS_IS_EXTENDED(buf) returns true.
+ * @pre Caller should verify J2735_VEHICLE_EVENT_FLAGS_HAS_EXTENSION(buf) returns true.
  * @return 0 or 1.
- * @warning Returns garbage (0 or 1) for non-extended messages. Always check IS_EXTENDED first.
+ * @warning Returns garbage (0 or 1) for non-extended messages. Always check HAS_EXTENSION first.
  */
 #define J2735_VEHICLE_EVENT_FLAGS_GET_EVENT_JACK_KNIFE(buf)                                        \
   J2735_INTERNAL_GET_ONE_VEHICLE_EVENT_FLAGS(                                                      \

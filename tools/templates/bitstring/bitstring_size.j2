@@ -53,7 +53,7 @@
   (J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}( \
     J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}(buf)) \
     ? J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} \
-    : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_{{ typedef_name_upper }}))
+    : (J2735_INTERNAL_EXTENSION_MARKER_BITS + J2735_INTERNAL_ROOT_SIZE_BITS_{{ typedef_name_upper }}))
 {%  else %}
 /**
  * @brief Get wire size of {{ typedef_name }} in bits.

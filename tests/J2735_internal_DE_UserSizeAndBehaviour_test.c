@@ -77,8 +77,8 @@ void test_user_size_and_behaviour_non_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Extension bit should be 0 for non-extended form");
+  bool has_ext = J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Extension bit should be 0 for non-extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x15U, J2735_USER_SIZE_AND_BEHAVIOUR_GET(payload),
                                  "Flags should be 0x15 for non-extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(6U, J2735_USER_SIZE_AND_BEHAVIOUR_SIZE(payload),
@@ -126,8 +126,8 @@ void test_user_size_and_behaviour_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Extension bit should be 1 for extended form");
+  bool has_ext = J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Extension bit should be 1 for extended form");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x1FU, J2735_USER_SIZE_AND_BEHAVIOUR_GET(payload),
                                  "Flags should be 0x1F for extended form");
   TEST_ASSERT_EQUAL_UINT32_MESSAGE(13U, J2735_USER_SIZE_AND_BEHAVIOUR_SIZE(payload),
@@ -221,8 +221,8 @@ void test_user_size_and_behaviour_all_zeros_non_extended(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_USER_SIZE_AND_BEHAVIOUR_GET(payload),
                                  "All flags should be zero");
 }
@@ -245,8 +245,8 @@ void test_user_size_and_behaviour_non_extended_all_flags_on(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED(payload);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Should be non-extended");
+  bool has_ext = J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION(payload);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x1FU, J2735_USER_SIZE_AND_BEHAVIOUR_GET(payload),
                                  "All 5 flags should be ON (0x1F)");
 }
@@ -268,8 +268,8 @@ void test_user_size_and_behaviour_extended_all_zeros(void) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
 
-  bool is_ext = J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED(payload);
-  TEST_ASSERT_TRUE_MESSAGE(is_ext, "Should be extended");
+  bool has_ext = J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION(payload);
+  TEST_ASSERT_TRUE_MESSAGE(has_ext, "Should be extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x00U, J2735_USER_SIZE_AND_BEHAVIOUR_GET(payload),
                                  "All flags should be zero in extended form");
 }
@@ -403,14 +403,14 @@ void test_user_size_and_behaviour_single_bit_4_slow_moving(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_user_size_and_behaviour_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7C,                                          /* ext(0)+flags(11111)+pad(2) */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
   const uint8_t *unaligned_ptr = &payload[1];
 
-  bool is_ext = J2735_USER_SIZE_AND_BEHAVIOUR_IS_EXTENDED(unaligned_ptr);
-  TEST_ASSERT_FALSE_MESSAGE(is_ext, "Misaligned: should be non-extended");
+  bool has_ext = J2735_USER_SIZE_AND_BEHAVIOUR_HAS_EXTENSION(unaligned_ptr);
+  TEST_ASSERT_FALSE_MESSAGE(has_ext, "Misaligned: should be non-extended");
   TEST_ASSERT_EQUAL_HEX8_MESSAGE(0x1FU, J2735_USER_SIZE_AND_BEHAVIOUR_GET(unaligned_ptr),
                                  "Misaligned: all flags should be ON");
 }

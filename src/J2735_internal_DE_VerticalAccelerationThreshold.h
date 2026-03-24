@@ -57,6 +57,9 @@
 
 #include "J2735_internal_common.h"
 
+_Static_assert(J2735_BW_VERTICAL_ACCELERATION_THRESHOLD <= 56U,
+               "BIT STRING must fit in a single 56-bit J2735_READ_BITS call");
+
 /* ============================================================================================== */
 /*  INTERNAL: Bit Position Constants                                                              */
 /*                                                                                                */
@@ -143,7 +146,7 @@
 /*  PUBLIC API: VerticalAccelerationThreshold Accessors                                           */
 /* ============================================================================================== */
 /**
- * @brief Check if VerticalAccelerationThreshold is in extended form.
+ * @brief Check if VerticalAccelerationThreshold has an extension.
  *
  * VerticalAccelerationThreshold is a fixed-size BIT STRING with 5 bits.
  * It does not have an extension marker, so this always returns 0 (false).
@@ -152,7 +155,7 @@
  * uint8_t*).
  * @return Always 0 (false) - this type is not extensible.
  */
-#define J2735_VERTICAL_ACCELERATION_THRESHOLD_IS_EXTENDED(buf) ((void)(buf), 0)
+#define J2735_VERTICAL_ACCELERATION_THRESHOLD_HAS_EXTENSION(buf) ((void)(buf), 0)
 
 /**
  * @brief Get wire size of VerticalAccelerationThreshold in bits.

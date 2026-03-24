@@ -48,7 +48,7 @@
  *
  * @param[in] raw{{ read_bits }} Value previously returned by J2735_INTERNAL_RAW_READ_{{ typedef_name_upper }}().
  * @return Non-zero (true) if extended form, zero (false) if root form.
- * @note Internal use only. Use J2735_{{ typedef_name_upper }}_IS_EXTENDED() for public API.
+ * @note Internal use only. Use J2735_{{ typedef_name_upper }}_HAS_EXTENSION() for public API.
  */
 #define J2735_INTERNAL_IS_EXTENSION_{{ typedef_name_upper }}(raw{{ read_bits }}) \
   (((raw{{ read_bits }}) >> (J2735_INTERNAL_MAX_WIRE_BITS_{{ typedef_name_upper }} - 1U)) != 0U)

@@ -38,7 +38,7 @@ void test_lane_sharing_single_bit_reserved(void);
 
 /* Metadata tests */
 void test_lane_sharing_size(void);
-void test_lane_sharing_is_extended(void);
+void test_lane_sharing_has_extension(void);
 
 /* Misalignment test */
 void test_lane_sharing_misaligned_access(void);

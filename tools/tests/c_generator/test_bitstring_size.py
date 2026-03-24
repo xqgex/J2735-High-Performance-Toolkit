@@ -63,7 +63,7 @@ class TestSizeGenerator(SpecLoadingTestBase):
         """Non-extensible SIZE must not add J2735_INTERNAL_EXTENSION_MARKER_BITS.
 
         Non-extensible BIT STRING has no extension marker on the wire.
-        SIZE should be exactly ROOT_SIZE, not EXTENSION_MARKER_BITS + ROOT_SIZE.
+        SIZE should be exactly ROOT_SIZE_BITS, not EXTENSION_MARKER_BITS + ROOT_SIZE_BITS.
         Example: LaneDirection SIZE should be 2, not 1+2=3.
         """
         for type_name, prefix in NON_EXTENSIBLE_BITSTRING_TYPES:
