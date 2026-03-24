@@ -38,6 +38,10 @@
  * @par Wire Format Summary:
  * - Non-extended form (9 bits): [ext=0][8 flag bits]
  * - Extended form (16 bits): [ext=1][nsnnwn=7 bits][8 flag bits] — exact 2 bytes
+ *
+ * @par Bit Numbering Convention:
+ * - ASN.1 bit 0 = leftmost/MSB of BIT STRING content (manual)
+ * - ASN.1 bit 7 = rightmost root bit (reserved)
  */
 
 #include <stdint.h>
@@ -321,7 +325,7 @@ void test_traffic_light_operation_status_single_bit_7_reserved(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_traffic_light_operation_status_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7F, 0x80,                                    /* ext(0)+all flags ON */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };

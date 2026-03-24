@@ -1190,7 +1190,7 @@ void test_vehicle_event_flags_extended_single_hazard_lights(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vehicle_event_flags_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7F,                                          /* ext(0) + flags[12:6] = 01111111 */
       0xFC,                                          /* flags[5:0] + padding = 11111100 */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */

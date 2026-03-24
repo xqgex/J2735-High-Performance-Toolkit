@@ -332,7 +332,7 @@ void test_vertical_acceleration_threshold_has_extension(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_vertical_acceleration_threshold_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0xFF,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0xF8,                                          /* flags[0:4]=11111 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };

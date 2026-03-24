@@ -387,7 +387,7 @@ void test_allowed_maneuvers_has_extension(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_allowed_maneuvers_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0xFF,                                          /* flags[0:7]=11111111 */
       0xF0,                                          /* flags[8:11]=1111 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */

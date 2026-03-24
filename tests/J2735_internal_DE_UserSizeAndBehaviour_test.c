@@ -403,7 +403,7 @@ void test_user_size_and_behaviour_single_bit_4_slow_moving(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_user_size_and_behaviour_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7C,                                          /* ext(0)+flags(11111)+pad(2) */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };

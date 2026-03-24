@@ -21,7 +21,30 @@
  * @author Yogev Neumann
  * @brief Tests for BSMcoreData non-extensible SEQUENCE.
  *
- * The data frame BSMcoreData is a simple case with no extensions or optional fields.
+ * @par ASN.1 Type Under Test:
+ * @code
+ * BSMcoreData ::= SEQUENCE {
+ *     msgCnt        MsgCount,             --  7 bits
+ *     id            TemporaryID,          -- 32 bits
+ *     secMark       DSecond,              -- 16 bits
+ *     lat           Latitude,             -- 31 bits (signed)
+ *     long          Longitude,            -- 32 bits (signed)
+ *     elev          Elevation,            -- 16 bits (signed)
+ *     accuracy      PositionalAccuracy,   -- 32 bits
+ *     transmission  TransmissionState,    --  3 bits
+ *     speed         Speed,                -- 13 bits
+ *     heading       Heading,              -- 15 bits
+ *     angle         SteeringWheelAngle,   --  8 bits (signed)
+ *     accelSet      AccelerationSet4Way,  -- 48 bits
+ *     brakes        BrakeSystemStatus,    -- 15 bits
+ *     size          VehicleSize           -- 22 bits
+ * }
+ * @endcode
+ *
+ * @par Wire Format Summary:
+ * - Fixed form (290 bits): all required fields, no preamble
+ * - No extension marker (non-extensible type)
+ * - No optional fields
  */
 
 #include <stdint.h>
@@ -349,9 +372,12 @@ void test_bsm_core_data_misaligned_access(void) {
       0xC7, /* lat[21:14] */
       0xF2, /* lat[13:6] */
       0xE8, /* lat[5:0] + padding */
+      /* 32 bytes safety padding: BSM is 290 bits (~37 bytes). J2735_READ_BITS
+         loads 8 bytes at a time, so the buffer must extend beyond the last
+         field under test to avoid out-of-bounds reads. */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
   };
 
   /* Offset pointer by 1 byte to force misalignment */

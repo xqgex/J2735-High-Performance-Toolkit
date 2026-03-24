@@ -440,7 +440,7 @@ void test_inline_read_length_determinant_nonzero_bit_offset(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_length_determinant_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0xFF,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x2A,                                          /* 0_0101010: short form, length=42 */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
@@ -1075,7 +1075,7 @@ void test_inline_read_nsnnwn_nonzero_bit_offset(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_inline_read_nsnnwn_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0xFF,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x14,                                          /* 0_001010_0: small form, value=10 */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
@@ -1656,7 +1656,7 @@ void test_inline_skip_extensions_misaligned_access(void) {
    * Bytes:  00000001 00000001 10101011
    *         0x01     0x01     0xAB       */
   static const uint8_t payload[] = {
-      0xFF,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x01,                                          /* nsnnwn=0 + bitmap=1 */
       0x01,                                          /* length_det=00000001 (1 byte) */
       0xAB,                                          /* extension content (8 bits) */

@@ -36,6 +36,10 @@
  * @par Wire Format Summary:
  * - Non-extended form (7 bits): [ext=0][6 flag bits]
  * - Extended form (14 bits): [ext=1][nsnnwn=7 bits][6 flag bits]
+ *
+ * @par Bit Numbering Convention:
+ * - ASN.1 bit 0 = leftmost/MSB of BIT STRING content (unavailable)
+ * - ASN.1 bit 5 = rightmost root bit (cognition)
  */
 
 #include <stdint.h>
@@ -353,7 +357,7 @@ void test_personal_assistive_single_bit_5_cognition(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_personal_assistive_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7E,                                          /* ext(0)+flags(111111)+pad(1) */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };

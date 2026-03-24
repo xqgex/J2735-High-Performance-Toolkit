@@ -39,6 +39,10 @@
  * @par Wire Format Summary:
  * - Non-extended form (10 bits): [ext=0][9 flag bits]
  * - Extended form (17 bits): [ext=1][nsnnwn=7 bits][9 flag bits]
+ *
+ * @par Bit Numbering Convention:
+ * - ASN.1 bit 0 = leftmost/MSB of BIT STRING content (lowBeamHeadlightsOn)
+ * - ASN.1 bit 8 = rightmost root bit (parkingLightsOn)
  */
 
 #include <stdint.h>
@@ -371,7 +375,7 @@ void test_exterior_lights_single_bit_8_parking_lights(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_exterior_lights_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7F, 0xC0,                                    /* ext(0)+all flags ON */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };

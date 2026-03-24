@@ -21,7 +21,18 @@
  * @author Yogev Neumann
  * @brief Tests for IntersectionReferenceID non-extensible SEQUENCE.
  *
- * The data frame IntersectionReferenceID is a simple case with an optional field.
+ * @par ASN.1 Type Under Test:
+ * @code
+ * IntersectionReferenceID ::= SEQUENCE {
+ *     region  RoadRegulatorID OPTIONAL,  -- 16 bits
+ *     id      IntersectionID             -- 16 bits
+ * }
+ * @endcode
+ *
+ * @par Wire Format Summary:
+ * - Region absent (17 bits): [Opt=0][id(16)]
+ * - Region present (33 bits): [Opt=1][region(16)][id(16)]
+ * - 1-bit optional preamble, no extension marker
  */
 
 #include <stdint.h>

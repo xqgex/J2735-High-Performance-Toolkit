@@ -21,8 +21,18 @@
  * @author Yogev Neumann
  * @brief Tests for ApproachOrLane CHOICE type.
  *
- * ApproachOrLane is a non-extensible CHOICE with 2 alternatives.
- * This validates CHOICE index reading and alternative value extraction.
+ * @par ASN.1 Type Under Test:
+ * @code
+ * ApproachOrLane ::= CHOICE {
+ *     approach  ApproachID,  -- 4 bits
+ *     lane      LaneID       -- 8 bits
+ * }
+ * @endcode
+ *
+ * @par Wire Format Summary:
+ * - Approach selected (5 bits): [Index=0][ApproachID(4)]
+ * - Lane selected (9 bits): [Index=1][LaneID(8)]
+ * - Non-extensible CHOICE, 1-bit index
  *
  * All tests use the efficient single-I/O pattern:
  * @code

@@ -37,6 +37,10 @@
  * @par Wire Format Summary:
  * - Non-extended form (8 bits): [ext=0][7 flag bits] — exact byte, no padding
  * - Extended form (15 bits): [ext=1][nsnnwn=7 bits][7 flag bits]
+ *
+ * @par Bit Numbering Convention:
+ * - ASN.1 bit 0 = leftmost/MSB of BIT STRING content (unavailable)
+ * - ASN.1 bit 6 = rightmost root bit (highwayServiceVehiclePersonnel)
  */
 
 #include <stdint.h>
@@ -336,7 +340,7 @@ void test_public_safety_directing_traffic_sub_type_single_bit_6_highway_service(
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_public_safety_directing_traffic_sub_type_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0x00,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0x7F,                                          /* ext(0)+flags(1111111) */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };

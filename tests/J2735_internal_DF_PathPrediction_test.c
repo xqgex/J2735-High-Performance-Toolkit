@@ -21,7 +21,19 @@
  * @author Yogev Neumann
  * @brief Tests for PathPrediction extensible SEQUENCE.
  *
- * The data frame PathPrediction is a simple case with an extension field.
+ * @par ASN.1 Type Under Test:
+ * @code
+ * PathPrediction ::= SEQUENCE {
+ *     radiusOfCurve  RadiusOfCurvature,  -- 16 bits (signed)
+ *     confidence     Confidence,         --  8 bits
+ *     ...
+ * }
+ * @endcode
+ *
+ * @par Wire Format Summary:
+ * - Non-extended (25 bits): [Ext=0][radiusOfCurve(16)][confidence(8)]
+ * - Extended (25+ bits): [Ext=1][radiusOfCurve(16)][confidence(8)][ext data]
+ * - Extension marker at bit 0
  */
 
 #include <stdint.h>

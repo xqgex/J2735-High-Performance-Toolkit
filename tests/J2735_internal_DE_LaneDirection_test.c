@@ -268,7 +268,7 @@ void test_lane_direction_has_extension(void) {
 /* cppcheck-suppress misra-c2012-8.7 ; Unity RUN_TEST requires external linkage */
 void test_lane_direction_misaligned_access(void) {
   static const uint8_t payload[] = {
-      0xFF,                                          /* junk byte for misalignment */
+      0xFF,                                          /* padding byte to force misalignment */
       0xC0,                                          /* flags[0:1]=11 + padding */
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* safety padding */
   };
